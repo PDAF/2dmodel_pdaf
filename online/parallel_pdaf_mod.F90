@@ -12,7 +12,7 @@
 !! PDAF is peformed in init_parallel_pdaf.
 !!
 !! __Revision history:__
-!! * 2004-10 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
 module parallel_pdaf_mod

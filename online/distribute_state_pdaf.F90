@@ -23,7 +23,9 @@
 subroutine distribute_state_pdaf(dim_p, state_p)
 
   use model_pdaf_mod, &             ! Model variables
-       only: nx_p, ny, fieldA_p
+       only: nx_p, ny, fieldA_p, fieldB_p
+  use statevector_pdaf_mod, &       ! State vector variables
+       only: id, sfields
 
   implicit none
   
@@ -32,7 +34,7 @@ subroutine distribute_state_pdaf(dim_p, state_p)
   real, intent(inout) :: state_p(dim_p)  !< Process-local state vector
 
 ! *** local variables ***
-  integer :: j         ! Counters
+  integer :: i, j, s         ! Counters
 
 
 ! *************************************************
@@ -40,13 +42,27 @@ subroutine distribute_state_pdaf(dim_p, state_p)
 ! *** for process-local model domain            ***
 !**************************************************
 
-  ! + For the 2D tutorial model the state vector and
-  ! + the model field are identical. Hence, the field
-  ! + array is directly initialized from an ensemble 
-  ! + state vector by each model Process.
+  ! +++ Note on counter s:
+  ! +++ Using the counter s looks primitive, but it
+  ! +++ makes the code fail-save because it avoids
+  ! +++ index calculations involving nx_p or ny.
 
+  ! FieldA
+  s = sfields(id%fieldA)%off
   do j = 1, nx_p
-     fieldA_p(1:ny, j) = state_p(1 + (j-1)*ny : j*ny)
+     do i = 1, ny
+        s = s + 1
+        fieldA_p(i, j) = state_p(s)
+     end do
+  end do
+
+  ! FieldB
+  s = sfields(id%fieldB)%off
+  do j = 1, nx_p
+     do i = 1, ny
+        s = s + 1
+        fieldB_p(i, j) = state_p(s)
+     end do
   end do
 
 end subroutine distribute_state_pdaf

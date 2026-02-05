@@ -23,7 +23,9 @@
 subroutine collect_state_pdaf(dim_p, state_p)
 
   use model_pdaf_mod, &             ! Model variables
-       only: nx_p, ny, fieldA_p
+       only: nx_p, ny, fieldA_p, fieldB_p
+  use statevector_pdaf_mod, &       ! State vector variables
+       only: id, sfields
 
   implicit none
   
@@ -32,7 +34,7 @@ subroutine collect_state_pdaf(dim_p, state_p)
   real, intent(inout) :: state_p(dim_p)  !< local state vector
 
 ! *** local variables ***
-  integer :: j         ! Counters
+  integer :: i, j, s         ! Counters
   
 
 ! *************************************************
@@ -40,13 +42,27 @@ subroutine collect_state_pdaf(dim_p, state_p)
 ! *** for process-local model domain            ***
 ! *************************************************
 
-  ! + For the 2D tutorial model the state vector and
-  ! + the model field are identical. Hence, state vector
-  ! + directly initialized from the model field by
-  ! + each model Process.
+  ! +++ Note on counter s:
+  ! +++ Using the counter s looks primitive, but it
+  ! +++ makes the code fail-save because it avoids
+  ! +++ index calculations involving nx_p or ny.
 
+  ! FieldA
+  s = sfields(id%fieldA)%off
   do j = 1, nx_p
-     state_p(1 + (j-1)*ny : j*ny) = fieldA_p(1:ny, j)
+     do i = 1, ny
+        s = s + 1
+        state_p(s) = fieldA_p(i, j)
+     end do
+  end do
+
+  ! FieldB
+  s = sfields(id%fieldB)%off
+  do j = 1, nx_p
+     do i = 1, ny
+        s = s + 1
+        state_p(s) = fieldB_p(i, j)
+     end do
   end do
 
 end subroutine collect_state_pdaf

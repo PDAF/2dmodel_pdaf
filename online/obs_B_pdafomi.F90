@@ -45,7 +45,7 @@
 !!           module-internal distances and index arrays.
 !!
 !! __Revision history:__
-!! * 2019-06 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
 module obs_B_pdafomi
@@ -149,6 +149,8 @@ contains
          only: filtertype, cradius
     use model_pdaf_mod, &
          only: nx, ny, nx_p
+    use statevector_pdaf_mod, &
+         only: id, sfields
 
     implicit none
 
@@ -253,7 +255,7 @@ contains
              cnt0_p = cnt0_p + 1
              if (obs_field(i,j) > -999.0) then
                 cnt_p = cnt_p + 1
-                thisobs%id_obs_p(1, cnt_p) = cnt0_p
+                thisobs%id_obs_p(1, cnt_p) = cnt0_p + sfields(id%fieldB)%off
                 obs_p(cnt_p) = obs_field(i, j)
                 ocoord_p(1, cnt_p) = real(j)
                 ocoord_p(2, cnt_p) = real(i)

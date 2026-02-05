@@ -39,34 +39,37 @@ SRC_MODEL =  	model_parallel_mod.F90 \
 MOD_ASSIM = 	model_pdaf_mod.F90 \
 		parallel_pdaf_mod.F90 \
 		assimilation_pdaf_mod.F90 \
-		statevector_mod.F90 \
+		statevector_pdaf_mod.F90 \
 		parser_mpi.F90
-
-# Routines of observation handling (PDAF-OMI)
-SRC_PDAFOMI = 	obs_A_pdafomi.F90 \
-		obs_B_pdafomi.F90 \
-		callback_obs_pdafomi.F90
 
 # Interface to PDAF - model sided
 SRC_PDAF_INT =  init_parallel_pdaf.F90 \
 		finalize_pdaf.F90 \
 		init_pdaf.F90 \
-		init_pdaf_parse.F90 \
 		assimilate_pdaf.F90
 
-# Generic user-supplied routines
-SRC_USER_GEN  = init_ens_pdaf.F90 \
+# user-supplied call-back routines
+SRC_CB  =       init_ens_pdaf.F90 \
 		prepoststep_pdaf.F90 \
 		next_observation_pdaf.F90 \
 		distribute_state_pdaf.F90 \
 		collect_state_pdaf.F90
 
-# User-supplied routines for localized analysis (LESTKF/LSEIK/LETKF)
-SRC_USER_LOCAL = init_n_domains_pdaf.F90 \
+# User-supplied call-back routines for localization
+SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
 		init_dim_l_pdaf.F90
 
+# Routines for PDAF-OMI observation handling
+SRC_CB_OMI = 	obs_A_pdafomi.F90 \
+		obs_B_pdafomi.F90 \
+		callback_obs_pdafomi.F90
+
+# Additional routines call by other routines
+SRC_MISC =      init_pdaf_parse.F90 \
+		output_pdaf.F90
+
 # Full list of user-supplied routines for online modes
-SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_PDAFOMI) $(SRC_PDAF_INT) $(SRC_USER_GEN) $(SRC_USER_LOCAL)
+SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_MISC) $(SRC_CB_LOCAL)
 
 #######################################################
 # object files
@@ -126,10 +129,10 @@ cleanpdaf:
 	cd $(BASEDIR); make clean
 
 cleandata:
-	rm -f ens*ana.txt ens*for.txt state_*ana.txt state_*for.txt true*.txt
+	rm -f ens*.txt state*.txt true*.txt variance*txt
 
 cleandataq:
-	@rm -f ens*ana.txt ens*for.txt state_*ana.txt state_*for.txt
+	@rm -f ens*.txt state*.txt true*.txt variance*txt
 
 ######################################################
 # List arch files

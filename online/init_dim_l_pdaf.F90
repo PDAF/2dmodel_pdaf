@@ -25,6 +25,8 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
        only: coords_l
   use parallel_pdaf_mod, &          ! assimilation parallelization variables
        only: mype_filter
+  use statevector_pdaf_mod, &       ! State vector variables
+       only: n_fields, id, sfields
 
   implicit none
 
@@ -43,7 +45,7 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 ! *** Initialize local state dimension ***
 ! ****************************************
   
-  dim_l = 1
+  dim_l = n_fields
 
 
 ! **********************************************
@@ -68,8 +70,11 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   ! Allocate array
   allocate(id_lstate_in_pstate(dim_l))
 
-  ! Here the local domain is a single grid point and variable given by DOMAIN_P
-  id_lstate_in_pstate(1) = domain_p
+  ! Here the local domain is a single grid point holding two variables
+  ! The variables given by DOMAIN_P + offsets
+  DO i=1, n_fields
+     id_lstate_in_pstate(i) = domain_p + sfields(i)%off
+  END DO
 
   ! Provide the index vector to PDAF
   call PDAFlocal_set_indices(dim_l, id_lstate_in_pstate)

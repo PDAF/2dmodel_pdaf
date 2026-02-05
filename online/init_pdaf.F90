@@ -30,7 +30,7 @@ subroutine init_pdaf()
        locweight, cradius, sradius, &
        type_trans, type_sqrt, &
        observe_ens, type_obs_init, do_omi_obsstats
-  use statevector_pdaf, &         ! Routien to initialize state vector
+  use statevector_pdaf_mod, &     ! Routine to initialize state vector
        only: setup_statevector
   use obs_A_pdafomi, &            ! Variables for observation type A
        only: assim_A, rms_obs_A

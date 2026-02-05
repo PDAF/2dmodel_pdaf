@@ -11,7 +11,7 @@
 !! lower one. 
 !!
 !! __Revision history:__
-!! * 2013-09 - Lars Nerger - Initial code based on dummy model example
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
 program main

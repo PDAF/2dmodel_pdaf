@@ -17,7 +17,7 @@
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-module statevector_pdaf
+module statevector_pdaf_mod
 
   implicit none
   save
@@ -34,10 +34,11 @@ module statevector_pdaf
   !< Fortran type storing size and offset of each model field in the state vector
   !< This is generic, but one could extend this type to more variables
   type state_field
-     integer :: dim            ! size of field in state vector
-     integer :: off            ! offset of field in state vector
-     integer :: ndims          ! Number of dimensions
-     character(len=10) :: name ! Name of field variable (optional)
+     integer :: dim               ! size of field in state vector
+     integer :: off               ! offset of field in state vector
+     integer :: ndims             ! Number of dimensions
+     character(len=10) :: name    ! Name of field variable (optional)
+     character(len=10) :: fname   ! Name in output file (optional)     
   end type state_field
 
   !---- The next variables usually do not need editing -----
@@ -102,10 +103,12 @@ contains
     ! fieldA
     sfields(id%fieldA)%ndims = 2
     sfields(id%fieldA)%name = 'fieldA'
+    sfields(id%fieldA)%fname = 'A'
 
     ! fieldB
     sfields(id%fieldB)%ndims = 2
     sfields(id%fieldB)%name = 'fieldB'
+    sfields(id%fieldB)%fname = 'B'
 
 
 ! **************************************
@@ -202,4 +205,4 @@ contains
 
   end subroutine setup_statevector
 
-end module statevector_pdaf
+end module statevector_pdaf_mod
