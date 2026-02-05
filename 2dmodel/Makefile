@@ -34,6 +34,7 @@ SRC_MODEL =  	model_parallel_mod.F90 \
 		model_mod.F90 \
 		model_init_mod.F90 \
 		model_step_mod.F90 \
+		model_post_mod.F90 \
 		main.F90
 
 #######################################################
@@ -52,6 +53,7 @@ info:
 	@echo "Depending on whether PDAF should be active, one has to define";
 	@echo "USE_PDAF in the include file in make.arch/ file for preprocessing.";
 	@echo  "List available settings for PDAF_ARCH with 'make listarch'";
+	@echo "Path to PDAF (PDAFDIR): " $(PDAFDIR);
 	@echo "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
 	@echo "------------------------------------------------------------------";
 

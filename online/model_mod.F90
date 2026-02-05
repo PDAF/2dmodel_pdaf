@@ -20,6 +20,8 @@ module model_mod
   integer :: total_steps             !< Total number of time steps
   real, allocatable :: fieldA_p(:,:) !< Process-local part of model field A
   real, allocatable :: fieldB_p(:,:) !< Process-local part of model field B
+  real, allocatable :: coords_x_p(:) !< Process-local coordinates in x-direction
+  real, allocatable :: coords_y_p(:) !< Process-local coordinates in y-direction
 
   integer :: nx_p                    !< Process-local size in x-direction
 

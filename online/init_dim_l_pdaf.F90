@@ -20,7 +20,7 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   use PDAF, &                       ! Routine to provide local indices to PDAF
        only: PDAFlocal_set_indices
   use model_pdaf_mod, &             ! Model variables
-       only: ny, nx_p
+       only: ny, nx_p, coords_x_p, coords_y_p
   use assimilation_pdaf_mod, &      ! Variables for assimilation
        only: coords_l
   use parallel_pdaf_mod, &          ! assimilation parallelization variables
@@ -36,8 +36,8 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   integer, intent(out) :: dim_l    !< Local state dimension
 
 ! *** local variables ***
-  integer :: i                       ! Counters
-  integer :: off_p                   ! Process-local offset in global state vector
+  integer :: i                     ! Counters
+  integer :: idx(2)                ! Grid point indices for index domain_p
   integer, allocatable :: id_lstate_in_pstate(:) !< Indices of local state vector in Process-local global state vector
 
 
@@ -52,14 +52,13 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 ! *** Initialize coordinates of local domain ***
 ! **********************************************
 
-  ! Global coordinates of local analysis domain
-  ! We use grid point indices as coordinates, but could e.g. use meters
-  off_p = 0
-  do i = 1, mype_filter
-     off_p = off_p + nx_p*ny
-  end do
-  coords_l(1) = real(ceiling(real(domain_p+off_p)/real(ny)))
-  coords_l(2) = real(domain_p+off_p) - (coords_l(1)-1)*real(ny)
+  ! Determine grid point indices from domain_p
+  idx(1) = real(ceiling(real(domain_p)/real(ny)))
+  idx(2) = real(domain_p) - (idx(1)-1)*real(ny)
+
+  ! Initialize local coordinate array
+  coords_l(1) = coords_x_p(idx(1))
+  coords_l(2) = coords_y_p(idx(2))
 
 
 ! ******************************************************

@@ -1,4 +1,3 @@
-!-------------------------------------------------------------------------------
 !>  Initialize model
 !!
 !! Initialization routine for the simple 2D model without
@@ -18,7 +17,8 @@ contains
   subroutine initialize()
 
     use model_mod, &              ! Model variables
-         only: nx, ny, nx_p, fieldA_p, fieldB_p, total_steps
+         only: nx, ny, nx_p, fieldA_p, fieldB_p, &
+         coords_x_p, coords_y_p, total_steps
     use model_parallel_mod, &     ! Model parallelzation variables
          only: mype_world, npes_world, mype_2Dmodel, npes_2Dmodel, abort_parallel
 
@@ -65,6 +65,8 @@ contains
     ! allocate memory for process-local part of fields
     allocate(fieldA_p(ny, nx_p))
     allocate(fieldB_p(ny, nx_p))
+    allocate(coords_x_p(nx_p))
+    allocate(coords_y_p(ny))
 
 
 ! *************************************
@@ -106,6 +108,24 @@ contains
     end do
 
     deallocate(field)
+
+
+! *************************************
+! *** Initialize coordinates        ***
+! *************************************
+
+    ! The model coordinates are the grid point indices
+    ! stored as real values
+
+    ! Account for decomposition in x-direction
+    do i = 1, nx_p
+       coords_x_p(i) = real(i + nx_p*mype_2Dmodel)
+    end do
+
+    ! We don't use decomposition in y-direction
+    do j = 1, ny
+       coords_y_p(j) = real(j)
+    end do
 
   end subroutine initialize
 

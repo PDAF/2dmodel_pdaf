@@ -22,6 +22,8 @@ program main
        only: initialize
   use model_step_mod, &              ! Model integration
        only: stepping
+  use model_post_mod, &          ! Model integration
+       only: postprocess
 
   implicit none
 
@@ -55,11 +57,10 @@ program main
 ! ***      Clean up      ***
 ! **************************
 
-#ifdef USE_PDAF
-  ! End parallelization
-  call finalize_pdaf()
-#endif
+  ! Clean up model fields
+  call postprocess()
 
+  ! End parallelization
   call finalize_parallel()
 
 end program main

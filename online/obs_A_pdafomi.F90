@@ -4,8 +4,8 @@
 !! OBSTYPE = A
 !!
 !! __Observation type A:__
-!! The observation type A in this tutorial are 28 observations at specified 
-!! model grid points.
+!! The observation type A in this tutorial are observations of fieldA
+!! at specified model grid points.
 !!
 !! The subroutines in this module are for the particular handling of
 !! a single observation type.
@@ -175,7 +175,7 @@ contains
 ! *********************************************
 
     if (mype_filter==0) &
-         write (*,'(8x,a)') 'Assimilate observations - obs type A'
+         write (*,'(a,5x,a)') 'model-PDAF','Assimilate observations - obs type A'
 
     ! Store whether to assimilate this observation type (used in routines below)
     if (assim_A) thisobs%doassim = 1
