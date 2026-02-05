@@ -102,7 +102,7 @@ subroutine init_pdaf()
 
 ! *** specifications for observations ***
   rms_obs_A = 0.5    ! Observation error standard deviation for observation A
-  rms_obs_B = 0.5    ! Observation error standard deviation for observation B
+  rms_obs_B = 0.25   ! Observation error standard deviation for observation B
 
 ! *** Localization settings
   locweight = 0     ! Type of localizating weighting
