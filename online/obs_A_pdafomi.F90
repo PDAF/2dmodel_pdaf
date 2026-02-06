@@ -50,8 +50,6 @@
 !!
 module obs_A_pdafomi
 
-  use parallel_pdaf_mod, &
-       only: mype_filter    ! Rank of filter process
   use PDAF, &
        only: obs_f, obs_l   ! Declaration of observation data types
  
@@ -143,14 +141,17 @@ contains
 !!
   subroutine init_dim_obs_A(step, dim_obs)
 
-    use PDAF, &
-         only: PDAFomi_gather_obs
-    use assimilation_pdaf_mod, &
-         only: filtertype, cradius
-    use model_pdaf_mod, &
-         only: nx, ny, nx_p
-    use statevector_pdaf_mod, &
+    use PDAF, &                          ! PDAF
+         only: PDAFomi_gather_obs, PDAF_local_type, PDAFomi_set_localize_covar
+    use parallel_pdaf_mod, &             ! Parallelization variables
+         only: mype_filter
+    use assimilation_pdaf_mod, &         ! Variables for assimilation
+         only: filtertype, cradius, coords_p, dim_state_p, &
+         locweight, cradius, sradius
+    use statevector_pdaf_mod, &          ! Statevector variables
          only: id, sfields
+    use model_pdaf_mod, &                ! Model variables
+         only: nx, ny, nx_p, n_dim
 
     implicit none
 
@@ -301,6 +302,16 @@ contains
 
     call PDAFomi_gather_obs(thisobs, dim_obs_p, obs_p, ivar_obs_p, ocoord_p, &
          thisobs%ncoord, cradius, dim_obs)
+
+
+! ***************************************************************
+! *** Provide localization information for LEnKF, EnsRF, EAKF ***
+! ***************************************************************
+
+    IF (PDAF_local_type() > 1) THEN
+       CALL PDAFomi_set_localize_covar(thisobs, dim_state_p, n_dim, coords_p, &
+            locweight, cradius, sradius)
+    END IF
 
 
 ! *********************************************************

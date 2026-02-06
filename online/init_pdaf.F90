@@ -17,7 +17,7 @@
 subroutine init_pdaf()
 
   use model_pdaf_mod, &           ! Model variables
-       only: nx, ny, nx_p
+       only: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p
   use PDAF                        ! PDAF
   use parallel_pdaf_mod, &        ! Parallelization variables
        only: mype_ens, mype_filter, n_modeltasks, &
@@ -27,11 +27,11 @@ subroutine init_pdaf()
        screen, filtertype, subtype, &
        delt_obs, type_iau, steps_iau, &
        type_forget, forget, &
-       locweight, cradius, sradius, &
+       locweight, cradius, sradius, coords_p, &
        type_trans, type_sqrt, &
        observe_ens, type_obs_init, do_omi_obsstats
   use statevector_pdaf_mod, &     ! Routine to initialize state vector
-       only: setup_statevector
+       only: setup_statevector, n_fields
   use obs_A_pdafomi, &            ! Variables for observation type A
        only: assim_A, rms_obs_A
   use obs_B_pdafomi, &            ! Variables for observation type B
@@ -40,11 +40,11 @@ subroutine init_pdaf()
   implicit none
 
 ! *** Local variables ***
+  integer :: i, j, k, s, off_nx   ! Counters
   integer :: pdaf_param_i(2)      ! Integer parameter array for filter
   real    :: pdaf_param_r(1)      ! Real parameter array for filter
   integer :: status_pdaf          ! PDAF status flag
   real    :: lim_coords(2,2)      ! limiting coordinates of process sub-domain
-  integer :: i, off_nx            ! Counters
 
 ! *** External subroutines ***
   external :: init_ens_pdaf            ! Ensemble initialization
@@ -105,10 +105,10 @@ subroutine init_pdaf()
   rms_obs_B = 0.25   ! Observation error standard deviation for observation B
 
 ! *** Localization settings
-  locweight = 0     ! Type of localizating weighting
-  cradius = 0.0     ! Cut-off radius in grid points for observation domain in local filters
-  sradius = cradius ! Support radius for 5th-order polynomial
-                    ! or radius for 1/e for exponential weighting
+  locweight = 2      ! Type of localizating weighting
+  cradius = 5.0      ! Cut-off radius in local filters (in units of model coordinate)
+  sradius = cradius  ! Support radius for 5th-order polynomial
+                     ! or radius for 1/e for exponential weighting
 
 
 ! ***********************************
@@ -176,15 +176,35 @@ subroutine init_pdaf()
        prepoststep_pdaf, status_pdaf)
 
 
+! ***************************************************
+! *** Set coordinates of elements in state vector ***
+! *** (used for localization in EnKF/ENSRF)       ***
+! ***************************************************
+
+  ALLOCATE(coords_p(n_dim, dim_state_p))
+
+  ! For localization in EnKF and EnSRF/EAKF, PDAFomi_set_localize_covar
+  ! is called in the observation modules. This routine requires a 
+  ! coordinate array corresponding to the state vector.
+
+  s = 0
+  DO k = 1, n_fields
+     DO i = 1, nx_p
+        DO j = 1, ny
+           s = s + 1
+           coords_p(1, s) = coords_x_p(i)
+           coords_p(2, s) = coords_y_p(j)
+        END DO
+     END DO
+  END DO
+
+
 ! ************************************************************************
 ! *** Set domain coordinate limits (for use with OMI's use_global_obs) ***
 ! ************************************************************************
   
   ! Get offset of local domain in global domain in x-direction
-  off_nx = 0
-  do i = 1, mype_filter
-     off_nx = off_nx + nx_p
-  end do
+  off_nx = nx_p*mype_filter
 
   lim_coords(1,1) = real(off_nx + 1)     ! West
   lim_coords(1,2) = real(off_nx + nx_p)  ! East

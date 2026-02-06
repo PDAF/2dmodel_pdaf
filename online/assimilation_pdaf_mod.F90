@@ -60,7 +60,8 @@ module assimilation_pdaf_mod
   integer :: filtertype   !< Select filter algorithm:
                           !<   * SEIK (1), EnKF (2), LSEIK (3), ETKF (4)
                           !<   LETKF (5), ESTKF (6), LESTKF (7), NETF (9), LNETF (10)
-                          !<   LKNETF (11), PF (12), GENOBS (100), 3DVAR (200)
+                          !<   LKNETF (11), PF (12), EnSRF/EAKF (13)
+                          !< GENOBS (100), 3DVAR (200)
   integer :: subtype      !< Subtype of filter algorithm
                           !<   * SEIK:
                           !<     (0) ensemble forecast; new formulation

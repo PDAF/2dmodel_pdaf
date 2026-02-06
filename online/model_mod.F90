@@ -17,6 +17,7 @@ module model_mod
 
   integer :: nx                      !< Size of 2D grid in x-direction
   integer :: ny                      !< Size of 2D grid in y-direction
+  integer :: n_dim                   !< Number of model dimensions
   integer :: total_steps             !< Total number of time steps
   real, allocatable :: fieldA_p(:,:) !< Process-local part of model field A
   real, allocatable :: fieldB_p(:,:) !< Process-local part of model field B
