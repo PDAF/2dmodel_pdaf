@@ -9,18 +9,18 @@
 
 
 # User specifications
-# 1. Set BASEDIR, the directory where the PDAF package resides
+# 1. Set PDAFDIR, the directory where the PDAF package resides
 # 2. Set PDAF_ARCH to include compile definitions
-#    (See directory BASEDIR/make.arch for files. PDAF_ARCH is filename without .h)
+#    (See directory PDAFDIR/make.arch for files. PDAF_ARCH is filename without .h)
 
 # Root directory of PDAF package
-#BASEDIR = ../..
+#PDAFDIR = ../..
 
 # Include machine-specific definitions
 # For available include files see directory make.arch
 # To choose a file, set PDAF_ARCH either here or by an
 # environment variable.
-include $(BASEDIR)/make.arch/$(PDAF_ARCH).h
+include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 
 
 # End of user specifications
@@ -45,9 +45,9 @@ MOD_ASSIM = 	model_pdaf_mod.F90 \
 
 # Interface to PDAF - model sided
 SRC_PDAF_INT =  init_parallel_pdaf.F90 \
-		finalize_pdaf.F90 \
 		init_pdaf.F90 \
-		assimilate_pdaf.F90
+		assimilate_pdaf.F90 \
+		finalize_pdaf.F90
 
 # user-supplied call-back routines
 SRC_CB  =       init_ens_pdaf.F90 \
@@ -102,13 +102,13 @@ model : $(OBJ_MODEL)
 model_pdaf : libpdaf-d.a $(OBJ_MODEL) $(OBJ_PDAF_USER)
 	$(LD)  $(OPT_LNK)  -o $@ \
 	$(OBJ_MODEL) $(OBJ_PDAF_USER) \
-	-L$(BASEDIR)/lib -lpdaf-d $(LINK_LIBS)
+	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS)
 
 ######################################################
 
 libpdaf-d.a: 
 	@echo "++++++ Generate Filter library ++++++"
-	@cd $(BASEDIR); make;
+	@cd $(PDAFDIR); make;
 
 
 ######################################################
@@ -116,7 +116,7 @@ libpdaf-d.a:
 # use pattern rule to create rules for all object files
 
 %.o: %.F90
-	$(FC) $(OPT) $(CPP_DEFS) -I$(BASEDIR)/include  -c $*.F90
+	$(FC) $(OPT) $(CPP_DEFS) -I$(PDAFDIR)/include  -c $*.F90
 
 ######################################################
 # Cleans
@@ -128,7 +128,7 @@ clean :
 
 cleanpdaf:
 	@echo "+++ Clean up PDAF directory"
-	cd $(BASEDIR); make clean
+	cd $(PDAFDIR); make clean
 
 cleandata:
 	rm -f ens*.txt state*.txt true*.txt variance*txt

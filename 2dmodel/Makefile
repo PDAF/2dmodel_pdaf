@@ -12,7 +12,7 @@
 # 1. Set PDAFDIR, the directory where the PDAF package resides
 #    either in this file, in the 'make' command, or as environment variable
 # 2. Set PDAF_ARCH to include compile definitions
-#    (See directory BASEDIR/make.arch for files. PDAF_ARCH is filename without .h)
+#    (See directory PDAFDIR/make.arch for files. PDAF_ARCH is filename without .h)
 
 # Root directory of PDAF package
 #PDAFDIR = ../..
@@ -65,7 +65,7 @@ model : $(OBJ_MODEL)
 # use pattern rule to create rules for all object files
 
 %.o: %.F90
-	$(FC) $(OPT) $(CPP_DEFS) -I$(BASEDIR)/include  -c $*.F90
+	$(FC) $(OPT) $(CPP_DEFS) -I$(PDAFDIR)/include  -c $*.F90
 
 ######################################################
 # Cleans

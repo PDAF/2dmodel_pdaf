@@ -17,14 +17,14 @@ subroutine init_pdaf_parse()
        only: parse
   use assimilation_pdaf_mod, & ! Variables for assimilation
        only: screen, filtertype, subtype, dim_ens, delt_obs, &
+       step_offline, &
        model_error, model_err_amp, type_forget, forget, &
        type_iau, steps_iau, rank_ana_enkf, &
        locweight, cradius, sradius, &
        type_trans, type_sqrt, dim_lag, type_hyb, &
        hyb_gamma, hyb_kappa, type_winf, limit_winf, &
        pf_res_type, pf_noise_type, pf_noise_amp, &
-       observe_ens, type_obs_init, do_omi_obsstats, &
-       ensgroup
+       observe_ens, type_obs_init, do_omi_obsstats
   use obs_A_pdafomi, &         ! Variables for observation type A
        only: assim_A, rms_obs_A
   use obs_B_pdafomi, &         ! Variables for observation type B
@@ -50,10 +50,6 @@ subroutine init_pdaf_parse()
   handle = 'rms_obs_B'               ! Assumed uniform RMS error of the observations type B
   call parse(handle, rms_obs_B)
 
-  ! Setting for initial ensemble     ! (1) Use ensemble sampled around true state
-  handle = 'ensgroup'                ! (2) ensemble rotated by 90 deg 
-  call parse(handle, ensgroup)       ! (2 gives bad results with global filter)
-
 !------------------------------------------------------------------------------
 ! The remaining parse commands should be generic; usually no change necessary
 
@@ -66,6 +62,10 @@ subroutine init_pdaf_parse()
   call parse(handle, type_obs_init)
   handle = 'do_omi_obsstats'         ! Whether to let PDAF-OMI compute observation statistics
   call parse(handle, do_omi_obsstats)
+
+  ! Model step to process in offline mode
+  handle = 'step'                    ! Time step interval between filter analyses
+  call parse(handle, step_offline)
 
   ! Settings for model and time stepping
   handle = 'model_error'             ! Control application of model error

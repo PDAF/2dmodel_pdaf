@@ -22,8 +22,6 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny, nx_p
-  use assimilation_pdaf_mod, &    ! Assimilation variables
-       only: ensgroup
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: mype_filter, mype_model
   use statevector_pdaf_mod, &     ! State vector variables

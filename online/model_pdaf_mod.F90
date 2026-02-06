@@ -15,8 +15,6 @@ module model_pdaf_mod
   use model_mod, &                ! Model variables
        ONLY: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p, &
        total_steps, fieldA_p, fieldB_p
-  USE model_parallel_mod, &       ! Model parallelization variables
-       ONLY: mype_2Dmodel, npes_2Dmodel, COMM_2Dmodel
 
   implicit none
 

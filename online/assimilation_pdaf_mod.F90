@@ -20,10 +20,6 @@ module assimilation_pdaf_mod
   implicit none
   save
 
-! *** Variables specific for online tutorial example ***
-
-  integer :: ensgroup=1    !< Type of initial ensemble
-
 ! *** Variables specific for model setup ***
 
   real :: coords_l(2)                   !< Coordinates of local analysis domain
@@ -42,6 +38,7 @@ module assimilation_pdaf_mod
 ! Settings for time stepping - available as command line options
   logical :: model_error       !< Control application of model error
   real    :: model_err_amp     !< Amplitude for model error
+  integer :: step_offline      !< Model step to process in offline mode
 
 ! Settings for observations - available as command line options
   integer :: delt_obs          !< time step interval between assimilation steps

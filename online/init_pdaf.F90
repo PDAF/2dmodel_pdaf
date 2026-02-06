@@ -25,7 +25,7 @@ subroutine init_pdaf()
   use assimilation_pdaf_mod, &    ! Variables for assimilation
        only: dim_state_p, dim_state, dim_ens, &
        screen, filtertype, subtype, &
-       delt_obs, type_iau, steps_iau, &
+       delt_obs, step_offline, type_iau, steps_iau, &
        type_forget, forget, &
        locweight, cradius, sradius, coords_p, &
        type_trans, type_sqrt, &

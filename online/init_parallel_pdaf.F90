@@ -67,8 +67,12 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
   logical :: iniflag                  ! Flag whether MPI is initialized
   integer :: flag                     ! Status flag
   integer :: dim_ens                  ! Ensemble size / number of model tasks
-  character(len=32) :: handle         ! handle for command line parser
+  character(len=32) :: handle         ! Handle for command line parser
+  logical :: online_coupling          ! Whether to ru nonline coupled DA
 
+
+  ! Specify online of offline coupling
+  online_coupling = .true.
 
   ! *** Parse number of model tasks ***
   ! *** The module variable is N_MODELTASKS. Since it has to be equal
@@ -86,6 +90,9 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
 
 ! --- The following is generic apart from the very end of the routine ---
 
+  ! *** Fix number or model tasks for offline DA ***
+  if (.not. online_coupling) n_modeltasks = 1
+
   ! *** Get rank and size of COMM_ensemble ***
 
   call MPI_Comm_Size(COMM_ensemble, npes_ens, MPIerr)
@@ -97,21 +104,24 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
 
 
   ! *** Check consistency of number of parallel ensemble tasks ***
-  consist1: if (n_modeltasks > npes_ens) then
-     ! *** # parallel tasks is set larger than available Processs ***
-     n_modeltasks = npes_ens
-     if (mype_ens == 0) write (*, '(a, 3x, a)') &
-          'model-PDAF', '!!! Resetting number of parallel ensemble tasks to total number of Processs!'
-  end if consist1
-  if (dim_ens > 0) then
-     ! Check consistency with ensemble size
-     consist2: if (n_modeltasks > dim_ens) then
-        ! # parallel ensemble tasks is set larger than ensemble size
-        n_modeltasks = dim_ens
-        if (mype_ens == 0) write (*, '(a, 5x, a)') &
-             'model-PDAF', '!!! Resetting number of parallel ensemble tasks to number of ensemble states!'
-     end if consist2
+  if (online_coupling) then
+     consist1: if (n_modeltasks > npes_ens) then
+        ! *** # parallel tasks is set larger than available Processs ***
+        n_modeltasks = npes_ens
+        if (mype_ens == 0) write (*, '(a, 3x, a)') &
+             'model-PDAF', '!!! Resetting number of parallel ensemble tasks to total number of Processs!'
+     end if consist1
+     if (dim_ens > 0) then
+        ! Check consistency with ensemble size
+        consist2: if (n_modeltasks > dim_ens) then
+           ! # parallel ensemble tasks is set larger than ensemble size
+           n_modeltasks = dim_ens
+           if (mype_ens == 0) write (*, '(a, 5x, a)') &
+                'model-PDAF', '!!! Resetting number of parallel ensemble tasks to number of ensemble states!'
+        end if consist2
+     end if
   end if
+
 
   ! *** Store # Processs per ensemble                 ***
   ! *** used for info on Process 0 and for generation ***
@@ -170,7 +180,7 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
      my_color = MPI_UNDEFINED
   endif
 
-  call MPI_Comm_split(COMM_2DModel, my_color, mype_ens, &
+  call MPI_Comm_split(COMM_ensemble, my_color, mype_ens, &
        COMM_filter, MPIerr)
 
   ! *** Initialize Process informations         ***
@@ -188,7 +198,7 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
 
   color_couple = mype_model + 1
 
-  call MPI_Comm_split(COMM_2DModel, color_couple, mype_ens, &
+  call MPI_Comm_split(COMM_ensemble, color_couple, mype_ens, &
        COMM_couple, MPIerr)
 
   ! *** Initialize Process informations         ***
@@ -204,7 +214,7 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
              'model-PDAF Pconf', 'rank', 'rank', 'task', 'rank', 'task', 'rank', 'T/F', &
              'model-PDAF Pconf', '----------------------------------------------------------'
      end if
-     call MPI_Barrier(COMM_2DModel, MPIerr)
+     call MPI_Barrier(COMM_ensemble, MPIerr)
      if (task_id == 1) then
         write (*, '(a, 2x, i4, 4x, i4, 4x, i3, 4x, i3, 4x, i3, 4x, i3, 5x, l3)') &
              'model-PDAF Pconf', mype_ens, mype_filter, task_id, mype_model, color_couple, &
@@ -214,7 +224,7 @@ subroutine init_parallel_pdaf(screen, COMM_2Dmodel, mype_2Dmodel, npes_2Dmodel)
         write (*,'(a, 2x, i4, 12x, i3, 4x, i3, 4x, i3, 4x, i3, 5x, l3)') &
          'model-PDAF Pconf', mype_ens, task_id, mype_model, color_couple, mype_couple, filterpe
      end if
-     call MPI_Barrier(COMM_2DModel, MPIerr)
+     call MPI_Barrier(COMM_ensemble, MPIerr)
 
      if (mype_ens == 0) write (*, '(/a)') ''
 

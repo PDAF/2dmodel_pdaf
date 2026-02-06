@@ -1,6 +1,6 @@
 !>  Initialize model
 !!
-!! Initialization routine for the simple 2D model without
+!! Initialization routine for the simple 2D model with
 !! parallelization of the model.
 !!
 !! The routine defines the size of the model grid and
