@@ -1,8 +1,9 @@
 # $Id: Makefile 714 2009-05-27 12:00:25Z lnerger $
 
 #######################################################
-# Generic Makefile for to build PDAF with dummy model #
+# Generic Makefile for to build tool program for PDAF #
 # To choose the architecture set $PDAF_ARCH           #
+# To choose PDAF's root directory set $PDAFDIR        #
 #######################################################
 
 .SUFFIXES: .F90 .o 
@@ -21,7 +22,6 @@ include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 
 ######################################################
 
-OBJ_GENOBS = generate_obs.o
 OBJ_COVAR  =	model_pdaf_mod_offline.o \
 		assimilation_pdaf_mod.o \
 		parallel_pdaf_mod.o \
@@ -33,19 +33,16 @@ OBJ_COVAR  =	model_pdaf_mod_offline.o \
 
 ### Name of Executables ##############################################
 
-EXE_GENOBS = generate_obs
 EXE_COVAR  = generate_covar
 
 ######################################################
 
 info:
-	@echo "Makefile to build tool programs for the Lorenz96 model";
+	@echo "Makefile to build program generating a covariance matrix file";
 	@echo  "-------------------------------------------------------------------------------";
 	@echo  "Use as   make TARGET   where TARGET can be:";
 	@echo  "  info           - This text";
-	@echo  "  generate_obs   - Generate an observation file by distubing a state trajectory";
 	@echo  "  generate_covar - Generate a file for the covariance matrix from a trajectory";
-	@echo  "  all            - Generate the two executables listed above";
 	@echo  "  clean          - Clean up";
 	@echo  "";
 	@echo  "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
