@@ -25,7 +25,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: mype_filter, mype_model
   use statevector_pdaf_mod, &     ! State vector variables
-       only: id, sfields
+       only: id, sfields, n_fields
 
   implicit none
 
@@ -41,7 +41,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   integer, intent(inout) :: flag                   !< PDAF status flag
 
 ! *** local variables ***
-  integer :: i, j, s, member          ! Counters
+  integer :: i, j, s, fid, member     ! Counters
   real, allocatable :: field(:,:)     ! global model field
   character(len=2) :: ensstr          ! String for ensemble member
 
@@ -68,48 +68,33 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   do member = 1, dim_ens
      write (ensstr, '(i1)') member
 
-     ! Read fieldA
-     open(11, file = '../inputs_online_2fields/ens_'//trim(ensstr)//'.txt', status='old')
+     do fid = 1, n_fields
 
-     ! Read global field
-     do i = 1, ny
-        read (11, *) field(i, :)
-     end do
+       ! Read field
+        open(11, file = '../inputs_online_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.txt', &
+             status='old')
 
-     ! +++ Note on counter s:
-     ! +++ Using the counter s looks primitive, but it
-     ! +++ makes the code fail-save because it avoids
-     ! +++ index calculations involving nx_p or ny.
-
-     ! Initialize process-local part of ensemble
-     s = sfields(id%fieldA)%off
-     do j = 1, nx_p
+        ! Read global field
         do i = 1, ny
-           s = s + 1
-           ens_p(s, member) = field(i, nx_p*mype_model + j)
+           read (11, *) field(i, :)
         end do
-     end do
 
-     close(11)
+        ! +++ Note on counter s:
+        ! +++ Using the counter s looks primitive, but it
+        ! +++ makes the code fail-save because it avoids
+        ! +++ index calculations involving nx_p or ny.
 
-     ! Read fieldB
-     open(12, file = '../inputs_online_2fields/ensB_'//trim(ensstr)//'.txt', status='old')
-
-     ! Read global field
-     do i = 1, ny
-        read (12, *) field(i, :)
-     end do
-
-     ! Initialize process-local part of ensemble
-     s = sfields(id%fieldB)%off
-     do j = 1, nx_p
-        do i = 1, ny
-           s = s + 1
-           ens_p(s, member) = field(i, nx_p*mype_model + j)
+        ! Initialize process-local part of ensemble
+        s = sfields(fid)%off
+        do j = 1, nx_p
+           do i = 1, ny
+              s = s + 1
+              ens_p(s, member) = field(i, nx_p*mype_model + j)
+           end do
         end do
-     end do
 
-     close(12)
+        close(11)
+     end do
   end do
 
 

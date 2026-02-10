@@ -213,7 +213,7 @@ contains
        write (stepstr, '(i2)') step
     end if
 
-    open (12, file='../inputs_online_2fields/obs_step'//trim(stepstr)//'.txt', status='old')
+    open (12, file='../inputs_online_2fields/obsA_step'//trim(stepstr)//'.txt', status='old')
     do i = 1, ny
        read (12, *) obs_field(i, :)
     end do

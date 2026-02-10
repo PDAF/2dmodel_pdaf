@@ -77,7 +77,7 @@ contains
     allocate(field(ny, nx))
 
     ! Read global model field A
-    open(11, file = '../inputs_online_2fields/true_initial.txt', status='old')
+    open(11, file = '../inputs_online_2fields/trueA_initial.txt', status='old')
  
     do i = 1, ny
        read (11, *) field(i, :)

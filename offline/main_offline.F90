@@ -12,7 +12,7 @@
 !! used to initialize another ensemble forecast.
 !!
 !! __Revision history:__
-!! * 2008-07 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
 program main_offline
