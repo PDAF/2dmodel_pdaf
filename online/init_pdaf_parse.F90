@@ -24,7 +24,8 @@ subroutine init_pdaf_parse()
        type_trans, type_sqrt, dim_lag, type_hyb, &
        hyb_gamma, hyb_kappa, type_winf, limit_winf, &
        pf_res_type, pf_noise_type, pf_noise_amp, &
-       observe_ens, type_obs_init, do_omi_obsstats
+       observe_ens, type_obs_init, do_omi_obsstats, &
+       type_ens_init, file_covar
   use obs_A_pdafomi, &         ! Variables for observation type A
        only: assim_A, rms_obs_A
   use obs_B_pdafomi, &         ! Variables for observation type B
@@ -49,6 +50,12 @@ subroutine init_pdaf_parse()
   call parse(handle, rms_obs_A)
   handle = 'rms_obs_B'               ! Assumed uniform RMS error of the observations type B
   call parse(handle, rms_obs_B)
+
+  ! Settings for ensemble initialization
+  handle = 'type_ens_init'           ! Type of ensemble initialization
+  call parse(handle, type_ens_init)
+  handle = 'file_covar'              ! Path and name of covariance matrix file
+  call parse(handle, file_covar)
 
 !------------------------------------------------------------------------------
 ! The remaining parse commands should be generic; usually no change necessary

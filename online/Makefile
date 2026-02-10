@@ -70,7 +70,7 @@ SRC_MISC =      init_pdaf_parse.F90 \
 		output_pdaf.F90
 
 # Full list of user-supplied routines for online modes
-SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_MISC) $(SRC_CB_LOCAL)
+SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_CB_LOCAL)
 
 #######################################################
 # object files
@@ -102,7 +102,7 @@ model : $(OBJ_MODEL)
 model_pdaf : libpdaf-d.a $(OBJ_MODEL) $(OBJ_PDAF_USER)
 	$(LD)  $(OPT_LNK)  -o $@ \
 	$(OBJ_MODEL) $(OBJ_PDAF_USER) \
-	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS)
+	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS) $(NC_LIB)
 
 ######################################################
 
@@ -116,7 +116,7 @@ libpdaf-d.a:
 # use pattern rule to create rules for all object files
 
 %.o: %.F90
-	$(FC) $(OPT) $(CPP_DEFS) -I$(PDAFDIR)/include  -c $*.F90
+	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include  -c $*.F90
 
 ######################################################
 # Cleans

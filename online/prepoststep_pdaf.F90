@@ -38,6 +38,8 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
        only: dim_state
   use statevector_pdaf_mod, &        ! Statevector variables
        only: id, sfields, n_fields
+  use output_pdaf_mod, &             ! Output file operations
+       only: write_pdaf
 
   implicit none
 
@@ -129,7 +131,7 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 ! *** File output ***
 ! *******************
 
-  call output_pdaf(step, dim_p, dim_ens, state_p, ens_p, variance_p)
+  call write_pdaf(step, dim_p, dim_ens, state_p, ens_p, variance_p)
 
 
 ! *******************

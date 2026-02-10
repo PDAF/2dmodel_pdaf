@@ -228,10 +228,7 @@ contains
     ! *** Count valid observations that lie within the process sub-domain ***
 
     ! Get offset of local domain in global domain in x-direction
-    off_nx = 0
-    do i = 1, mype_filter
-       off_nx = off_nx + nx_p
-    end do
+    off_nx = nx_p*mype_filter
 
     ! Count process-local observations
     cnt_p = 0
