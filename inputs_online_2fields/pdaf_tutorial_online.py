@@ -12,8 +12,8 @@ import numpy as np
 
 dim_x = 36         # Grid dimension in x-direction
 dim_y = 18         # Grid dimension in y-direction
-dim_ens = 9        # Maximum ensemble size
-dim_step = 18      # Number of time steps
+dim_ens = 20        # Maximum ensemble size
+dim_step = 100      # Number of time steps
 stddev_obs = 0.5   # error standard deviation for observations type A
 stddev_obsB = 0.25 # error standard deviation for observations type B
 dxobs = 5          # x-Grid spacing for observations type A
@@ -55,10 +55,10 @@ for step in range(1,dim_step+1):
    field[0,:,step] = field[-1,:,step-1]
 
 if dowrite==1:
-   np.savetxt('true_initial.txt', field[:,:,0])
+   np.savetxt('trueA_initial.txt', field[:,:,0])
 
    for step in range(1,dim_step+1):
-      np.savetxt('true_step'+str(step)+'.txt', field[:,:,step])
+      np.savetxt('trueA_step'+str(step)+'.txt', field[:,:,step])
 
 
 
@@ -72,14 +72,14 @@ for k in range(dim_ens):
 
 if dowrite==1:
    for k in range(dim_ens):
-      np.savetxt('ens_'+str(k+1)+'.txt', ens[:,:,k])
+      np.savetxt('ensA_'+str(k+1)+'.txt', ens[:,:,k])
 
 
 # Compute ensemble mean = initial state estimate
 
 state = np.mean(ens,axis=2)
 if dowrite==1:
-   np.savetxt('state_ini.txt', state[:,:])
+   np.savetxt('stateA_ini.txt', state[:,:])
 
 
 # Generate true field B
@@ -140,7 +140,7 @@ for step in range(1,dim_step+1):
 
 if dowrite==1:
    for step in range(1,dim_step+1):
-      np.savetxt('obs_step'+str(step)+'.txt', obs[:,:,step])
+      np.savetxt('obsA_step'+str(step)+'.txt', obs[:,:,step])
 
 
 # Observations B
@@ -221,4 +221,4 @@ if dowrite==1:
          iobs_full[int(np.floor(obs_interp[i,1])), int(np.floor(obs_interp[i,0])),step] = iobs[i,0,step]
 
    for step in range(1,dim_step+1):
-      np.savetxt('iobs_field_step'+str(step)+'.txt', iobs_full[:,:,step])
+      np.savetxt('iobsA_field_step'+str(step)+'.txt', iobs_full[:,:,step])
