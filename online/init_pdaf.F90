@@ -16,13 +16,15 @@
 !!
 subroutine init_pdaf()
 
-  use model_pdaf_mod, &           ! Model variables
+  use model_pdaf_mod, &                ! Model variables
        only: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p
-  use PDAF                        ! PDAF
-  use parallel_pdaf_mod, &        ! Parallelization variables
+  use PDAF, &                          ! PDAF
+       only: PDAF3_init, PDAF_init_forecast, PDAF_set_iparam, &
+       PDAFomi_set_domain_limits
+  use parallel_pdaf_mod, &             ! Parallelization variables
        only: mype_ens, mype_filter, n_modeltasks, &
        abort_parallel
-  use assimilation_pdaf_mod, &    ! Variables for assimilation
+  use assimilation_pdaf_mod, &         ! Variables for assimilation
        only: dim_state_p, dim_state, dim_ens, &
        screen, filtertype, subtype, &
        delt_obs, step_offline, type_iau, steps_iau, &
@@ -31,21 +33,21 @@ subroutine init_pdaf()
        type_trans, type_sqrt, &
        observe_ens, type_obs_init, do_omi_obsstats, &
        type_ens_init, file_covar
-  use statevector_pdaf_mod, &     ! Routine to initialize state vector
+  use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
-  use obs_A_pdafomi, &            ! Variables for observation type A
+  use obs_A_pdafomi, &                 ! Variables for observation type A
        only: assim_A, rms_obs_A
-  use obs_B_pdafomi, &            ! Variables for observation type B
+  use obs_B_pdafomi, &                 ! Variables for observation type B
        only: assim_B, rms_obs_B
 
   implicit none
 
 ! *** Local variables ***
-  integer :: i, j, k, s, off_nx   ! Counters
-  integer :: pdaf_param_i(2)      ! Integer parameter array for filter
-  real    :: pdaf_param_r(1)      ! Real parameter array for filter
-  integer :: status_pdaf          ! PDAF status flag
-  real    :: lim_coords(2,2)      ! limiting coordinates of process sub-domain
+  integer :: i, j, k, s, off_nx        ! Counters
+  integer :: pdaf_param_i(2)           ! Integer parameter array for filter
+  real    :: pdaf_param_r(1)           ! Real parameter array for filter
+  integer :: status_pdaf               ! PDAF status flag
+  real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
 
 ! *** External subroutines ***
   external :: init_ens_pdaf            ! Ensemble initialization

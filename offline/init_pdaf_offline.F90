@@ -18,7 +18,9 @@ subroutine init_pdaf_offline()
 
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p
-  use PDAF                        ! PDAF
+  use PDAF, &                          ! PDAF
+       only: PDAF3_init, PDAF_set_iparam, &
+       PDAFomi_set_domain_limits
   use parallel_pdaf_mod, &        ! Parallelization variables
        only: mype_ens, mype_filter, n_modeltasks, &
        abort_parallel
