@@ -1,4 +1,4 @@
-** generate_covar **
+# generate_covar
 
 This program is used to generate a file holding covariance matrix information
 which can be used to generate ensemble perturbations by second-order exact
