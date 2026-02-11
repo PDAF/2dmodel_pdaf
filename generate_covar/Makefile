@@ -59,7 +59,7 @@ $(EXE_COVAR) : libpdaf-d.a $(OBJ_COVAR)
 all: $(EXE_COVAR)
 
 .F90.o :
-	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(BASEDIR)/include -c $*.F90 
+	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include -c $*.F90 
 
 # For older compilers one might need to separate the
 # preprocessing from the compilation as defined below:
@@ -70,7 +70,7 @@ all: $(EXE_COVAR)
 
 libpdaf-d.a: 
 	@echo "++++++ Generate Filter library ++++++"
-	@cd $(BASEDIR); make;
+	@cd $(PDAFDIR); make;
 
 
 clean :

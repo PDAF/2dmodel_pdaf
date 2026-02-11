@@ -18,15 +18,17 @@ program generate_covar
 
 ! !USES:
   use netcdf
-  use PDAF
+  use PDAF, &                     ! PDAF
+       only: PDAF_eofcovar
   use assimilation_pdaf_mod, &    ! Dimensions
        only: dim_state, dim_state_p, screen
-  use model_pdaf_mod, &
+  use model_pdaf_mod, &           ! Model variables
        only: nx, ny
-  use parallel_pdaf_mod
+  use parallel_pdaf_mod, &        ! Parallelization variables
+       only: mype_world, npes_world, init_parallel
   use initialize_grid_mod, &
        only: initialize_grid
-  use statevector_pdaf_mod, &
+  use statevector_pdaf_mod, &     ! State vector variables and init routine
        only: setup_statevector, id, sfields, n_fields
   use parser, &                   ! Command line parser
        only: parse
@@ -41,7 +43,8 @@ program generate_covar
   character(len=150) :: attstr                  !< Attribute string for NC (NetCDF) output
   integer :: ncid_in, ncid_out                  !< NC file IDs
   integer :: id_dim, id_time, id_state          !< NC dimension and variable IDs
-  integer :: id_mean, id_sigma, id_svec         !< NC dimension and variable IDs
+  integer :: id_sigma         !< NC dimension and variable IDs
+!  integer :: id_mean, id_sigma, id_svec         !< NC dimension and variable IDs
   integer :: dimid_rank, dimid_state, dimid_one !< NC dimension and variable IDs
   integer :: steps
 !, dim_state                   ! Dimensions
@@ -107,14 +110,14 @@ program generate_covar
 
   ! Path to and name of file holding model trajectory
   inpath = '../inputs_online_2fields/'
-  infile = 'true'
+  infile = 'ens'
 
   ! Path to and name of output file holding covariance matrix
   outpath = './'
   outfile = 'covar.nc'
 
   ! Lower limit for eigenvalue
-  limit = 1.0e-12
+  limit = 1.0e-20
 
   ! Set num of time step to read
   steps = 9
@@ -204,7 +207,11 @@ program generate_covar
      do fid = 1, n_fields
 
         ! Read field
-        file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_step'//trim(stepstr)//'.txt'
+        if (trim(infile)=='ens') then
+           file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_'//trim(stepstr)//'.txt'
+        else
+           file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_step'//trim(stepstr)//'.txt'
+        end if
         write (*,*) 'read file ', trim(file_in)
         open(11, file = file_in, status='old')
 
@@ -223,13 +230,14 @@ program generate_covar
         do j = 1, nx
            do i = 1, ny
               s = s + 1
-              states(s, step) = field(i, nx*mype_model + j)
+              states(s, step) = field(i, nx*mype_world + j)
            end do
         end do
 
         close(11)
 
      end do
+     write (*,*) 'mean', sum(states(1,:))/maxtimes
 
   end do read_files
 
@@ -273,6 +281,7 @@ program generate_covar
        remove_mean, do_mv, states, stddev, svals, svdU, meanstate, 1, status)
 
 
+write (*,*) 'svals', svals
 ! *********************************************************
 ! *** Write mean state and decomposed covariance matrix ***
 ! *********************************************************
@@ -339,11 +348,11 @@ program generate_covar
      stat(s) = NF90_DEF_VAR(ncid_out, 'mean'//trim(sfields(fid)%fname), NF90_DOUBLE, dimids(1:2), id_means(fid))
   end do
 
-  dimids(1) = DimId_state
-  dimids(2) = dimid_one
-
-  s = s + 1
-  stat(s) = NF90_DEF_VAR(ncid_out, 'meanstate', NF90_DOUBLE, dimids(1:2), Id_mean)
+!   dimids(1) = DimId_state
+!   dimids(2) = dimid_one
+! 
+!   s = s + 1
+!   stat(s) = NF90_DEF_VAR(ncid_out, 'meanstate', NF90_DOUBLE, dimids(1:2), Id_mean)
 
   ! singular vectors
   dimids(1) = DimId_y
@@ -357,11 +366,11 @@ program generate_covar
   end do
 
 
-  dimids(1) = DimId_state
-  dimids(2) = dimid_rank
-
-  s = s + 1
-  stat(s) = NF90_DEF_VAR(ncid_out, 'u_svd', NF90_DOUBLE, dimids(1:2), Id_svec)
+!   dimids(1) = DimId_state
+!   dimids(2) = dimid_rank
+! 
+!   s = s + 1
+!   stat(s) = NF90_DEF_VAR(ncid_out, 'u_svd', NF90_DOUBLE, dimids(1:2), Id_svec)
 
   ! End Define mode
   s = s + 1
@@ -391,12 +400,12 @@ program generate_covar
           start=startv(1:2), count=countv(1:2))
   end do
 
-  startv(2) = 1
-  countv(2) = 1
-  startv(1) = 1
-  countv(1) = dim_state
-  s = s + 1
-  stat(s) = NF90_PUT_VAR(ncid_out, id_mean, meanstate, start=startv(1:2), count=countv(1:2))
+!   startv(2) = 1
+!   countv(2) = 1
+!   startv(1) = 1
+!   countv(1) = dim_state
+!   s = s + 1
+!   stat(s) = NF90_PUT_VAR(ncid_out, id_mean, meanstate, start=startv(1:2), count=countv(1:2))
 
   do i = 1,  s
      if (stat(i) /= NF90_NOERR) &
@@ -422,13 +431,13 @@ program generate_covar
              start=startv, count=countv)
      end do
 
-    ! Write singular vector
-     startv(2) = i
-     countv(2) = 1
-     startv(1) = 1
-     countv(1) = dim_state
-     s = 1
-     stat(s) = NF90_PUT_VAR(ncid_out, id_svec, svdU(:,i), start=startv(1:2), count=countv(1:2))
+!     ! Write singular vector
+!      startv(2) = i
+!      countv(2) = 1
+!      startv(1) = 1
+!      countv(1) = dim_state
+!      s = 1
+!      stat(s) = NF90_PUT_VAR(ncid_out, id_svec, svdU(:,i), start=startv(1:2), count=countv(1:2))
 
      do k = 1,  s
         if (stat(k) /= NF90_NOERR) &
