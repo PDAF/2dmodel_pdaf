@@ -30,8 +30,8 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
   use mpi                            ! MPI
   use model_pdaf_mod, &              ! Model variables
        only: nx, ny, nx_p
-  use PDAF, &                        ! PDAF diagnostic routine
-       only: PDAF_diag_stddev, PDAF_diag_variance
+  use PDAF, &                        ! PDAF diagnostic routines
+       only: PDAF_diag_stddev, PDAF_diag_variance, PDAFomi_diag_stats
   use parallel_pdaf_mod, &           ! Parallelization variables
        only: COMM_filter, mype_filter, npes_filter, MPIerr, MPIstatus
   use assimilation_pdaf_mod, &       ! Assimilation variables
@@ -59,11 +59,13 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
 ! *** local variables ***
   integer :: i, j                     ! Counters
+  integer :: nobs                     ! Number of observations
   integer :: istart, iend             ! stard and end index of a field in state vector
   integer :: pdaf_status              ! status flag
   real :: stddev_g                    ! Global ensemble standard deviation over all fields
   real, allocatable :: ens_stddev(:)  ! ensemble standard deviation for each field (=estimated RMS errors)
   real, allocatable :: variance_p(:)  ! Ensemble variance state vector
+  real, pointer :: obsstats_ptr(:,:)  ! Point for observation statistics
   character(len=3) :: anastr          ! String for call type (initial, forecast, analysis)
 
 
@@ -111,6 +113,10 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
   call PDAF_diag_variance(dim_p, dim_ens, state_p, ens_p, variance_p, &
      stddev_g, 0, 0, COMM_filter, pdaf_status)
+
+  ! Compute observation diagnostics
+
+  call PDAFomi_diag_stats(nobs, obsstats_ptr, 1)
 
 
 ! *****************

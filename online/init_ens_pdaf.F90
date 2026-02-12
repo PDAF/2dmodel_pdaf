@@ -59,7 +59,7 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
   integer :: id_dim                   ! ID for dimension
   integer :: countv(3), startv(3)     ! Vectors for NC operations
   integer :: off_nx                   ! Offset of local grid in global domain in x-direction
-  character(len=2) :: ensstr          ! String for ensemble member
+  character(len=4) :: ensstr          ! String for ensemble member
   real, allocatable :: field(:,:)     ! global model field
   real, allocatable :: eofs(:,:)      ! matrix of eigenvectors V 
   real, allocatable :: svals(:)       ! singular values
@@ -96,7 +96,13 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
      allocate(field(ny, nx))
 
      do member = 1, dim_ens
-        write (ensstr, '(i1)') member
+        if (member<10) then
+           write (ensstr, '(i1)') member
+        elseif (member<100) then
+           write (ensstr, '(i2)') member
+        elseif (member<1000) then
+           write (ensstr, '(i3)') member
+        end if
 
         do fid = 1, n_fields
 
