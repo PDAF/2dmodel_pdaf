@@ -3,4 +3,8 @@
 */*.mod
 online/model_pdaf
 online/model
+offline/offline_pdaf
+online/*.txt
+offline/*.txt
 2dmodel/model
+generate_covar/generate_covar
