@@ -17,7 +17,7 @@ contains
   subroutine initialize()
 
     use model_mod, &                ! Model variables
-         only: nx, ny, nx_p, fieldA_p, fieldB_p, &
+         only: nx, ny, nx_p, n_dim, fieldA_p, fieldB_p, &
          coords_x_p, coords_y_p, total_steps
     use model_parallel_mod, &       ! Model parallelzation variables
          only: mype_world, npes_world, mype_2Dmodel, npes_2Dmodel, abort_parallel
@@ -39,6 +39,7 @@ contains
 ! *** Model specifications ***
     nx = 36          ! Extent of grid in x-direction
     ny = 18          ! Extent of grid in y-direction
+    n_dim = 2        ! Number of model dimensions
     total_steps = 18 ! Number of time steps to perform
 
 ! *** Screen output ***
@@ -76,10 +77,10 @@ contains
 ! *** Read initial fields from file ***
 ! *************************************
 
-    filename = '../inputs_online_2fields.nc/trueA_ini.nc'
+    filename = '../inputs_online_2fields/trueA_ini.nc'
     call io_read_sngl(filename, fieldA_p)
 
-    filename = '../inputs_online_2fields.nc/trueB_ini.nc'
+    filename = '../inputs_online_2fields/trueB_ini.nc'
     call io_read_sngl(filename, fieldB_p)
 
 

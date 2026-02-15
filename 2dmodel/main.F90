@@ -11,7 +11,7 @@
 !! lower one. 
 !!
 !! __Revision history:__
-!! * 2013-09 - Lars Nerger - Initial code based on dummy model example
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
 program main
@@ -22,6 +22,8 @@ program main
        only: initialize
   use model_step_mod, &              ! Model integration
        only: stepping
+  use model_post_mod, &              ! Model post-processing
+       only: postprocess
 
   implicit none
 
@@ -34,8 +36,8 @@ program main
 
   ! *** Initial Screen output ***
   if (mype_world==0) then
-     write (*, '(/17x, a/)') '+++++ PDAF tutorial - online mode +++++'
-     write (*, '(17x, a)') 'Tutorial: 2D model with parallelization'
+     write (*, '(/10x, a/)') '+++++ PDAF tutorial - online mode +++++'
+     write (*, '(10x, a)')   '   Decomposed 2D model with 2 fields'
      write (*, '(/)')
   end if
 
@@ -55,6 +57,10 @@ program main
 ! ***      Clean up      ***
 ! **************************
 
+  ! Clean up model fields
+  call postprocess()
+
+  ! End parallelization
   call finalize_parallel()
 
 end program main
