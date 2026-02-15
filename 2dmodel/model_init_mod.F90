@@ -101,11 +101,6 @@ contains
        coords_y_p(j) = real(j)
     end do
 
-
-! *************************************
-! *** Initialize output file        ***
-! *************************************
-
   end subroutine initialize
 
 end module model_init_mod
