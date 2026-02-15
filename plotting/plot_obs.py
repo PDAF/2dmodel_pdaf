@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 
-# A script to plot the 2D field of observations from the online_2D_serialmodel tutorial.
-# Requires Python 3, Matplotlib and Numpy.
-# The script is identical to plot_field.py except for a color range limit.
+# A script to plot the 2D field from the netcdf output
+# of the advanced tutorial code
+#
+# Requires Python 3, netCDF4, Matplotlib and Numpy.
 
-# Usage: ./plot_obs.py <filename>
+# Usage: ./plot_ncfield.py <filename> <step> <field>
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 import argparse as ap
+import netCDF4 as nc
 
 def read_and_plot(filename):
-    field = np.loadtxt(filename)
-    field = field.reshape(18,36)
-    field_m = ma.masked_outside(field,-10.0,10.0)
-    plt.imshow(field_m, origin='lower',interpolation='none')
+    ncfile = nc.Dataset(filename)
+    var = ncfile['obs'][0,:,:]
+    var = var.reshape(36,18)
+    var_m = ma.masked_outside(var,-10.0,10.0)
+    plt.imshow(np.transpose(var_m), origin='lower',interpolation='none')
     plt.title(filename)
     plt.colorbar(shrink=0.6)
     plt.show()

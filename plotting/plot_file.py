@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 
-# A script to plot the 2D field from the online_2D_serialmodel tutorial.
-# Requires Python 3, Matplotlib and Numpy.
+# A script to plot the 2D field from the netcdf output
+# of the advanced tutorial code
+#
+# Requires Python 3, netCDF4, Matplotlib and Numpy.
 
-# Usage: ./plot_field.py <filename>
+# Usage: ./plot_ncfield.py <filename> <step> <field>
 
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse as ap
+import netCDF4 as nc
 
 def read_and_plot(filename):
-    field = np.loadtxt(filename)
-    field = field.reshape(18,36)
-    plt.imshow(field, origin='lower',interpolation='none')
+    ncfile = nc.Dataset(filename)
+    var = ncfile['field'][0,:,:]
+    var = var.reshape(36,18)
+    plt.imshow(np.transpose(var), origin='lower',interpolation='none')
     plt.title(filename)
     plt.colorbar(shrink=0.6)
     plt.show()
