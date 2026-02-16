@@ -16,17 +16,20 @@ contains
 
   subroutine initialize()
 
-    use model_mod, &              ! Model variables
+    use model_mod, &                ! Model variables
          only: nx, ny, nx_p, n_dim, fieldA_p, fieldB_p, &
          coords_x_p, coords_y_p, total_steps
-    use model_parallel_mod, &     ! Model parallelzation variables
+    use model_parallel_mod, &       ! Model parallelzation variables
          only: mype_world, npes_world, mype_2Dmodel, npes_2Dmodel, abort_parallel
+    use model_io_mod, &             ! File operations
+         only: io_read_sngl
 
     implicit none
 
 ! *** local variables ***
     integer :: i, j                 ! Counters
-    real, allocatable :: field(:,:) ! Global model field
+    character(len=2) :: stepstr     ! String for time step
+    character(len=100) :: filename  ! Name of output file
 
 
 ! **********************
@@ -74,41 +77,11 @@ contains
 ! *** Read initial fields from file ***
 ! *************************************
 
-    allocate(field(ny, nx))
+    filename = '../inputs_online_2fields/trueA_ini.nc'
+    call io_read_sngl(filename, fieldA_p)
 
-    ! Read global model field A
-    open(11, file = '../inputs_online_2fields.ascii/trueA_initial.txt', status='old')
- 
-    do i = 1, ny
-       read (11, *) field(i, :)
-    end do
-
-    close(11)
-
-    ! Initialize local part of model field A
-    do j = 1, nx_p
-       do i = 1, ny
-          fieldA_p(i,j) = field(i, nx_p*mype_2Dmodel + j)
-       end do
-    end do
-
-    ! Read global model field B
-    open(11, file = '../inputs_online_2fields.ascii/trueB_initial.txt', status='old')
- 
-    do i = 1, ny
-       read (11, *) field(i, :)
-    end do
-
-    close(11)
-
-    ! Initialize local part of model field B
-    do j = 1, nx_p
-       do i = 1, ny
-          fieldB_p(i,j) = field(i, nx_p*mype_2Dmodel + j)
-       end do
-    end do
-
-    deallocate(field)
+    filename = '../inputs_online_2fields/trueB_ini.nc'
+    call io_read_sngl(filename, fieldB_p)
 
 
 ! *************************************

@@ -26,10 +26,12 @@ subroutine init_pdaf_parse()
        pf_res_type, pf_noise_type, pf_noise_amp, &
        observe_ens, type_obs_init, do_omi_obsstats, &
        type_ens_init, file_covar
+  use io_pdaf_mod, &           ! File input/output control
+       only: write_state, write_ens, write_var
   use obs_A_pdafomi, &         ! Variables for observation type A
-       only: assim_A, rms_obs_A
+       only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &         ! Variables for observation type B
-       only: assim_B, rms_obs_B
+       only: assim_B, rms_obs_B, file_obs_B
 
   implicit none
 
@@ -50,12 +52,24 @@ subroutine init_pdaf_parse()
   call parse(handle, rms_obs_A)
   handle = 'rms_obs_B'               ! Assumed uniform RMS error of the observations type B
   call parse(handle, rms_obs_B)
+  handle = 'file_obs_A'              ! Path and name of observation file type A
+  call parse(handle, file_obs_A)
+  handle = 'file_obs_B'              ! Path and name of observation file type B
+  call parse(handle, file_obs_B)
 
   ! Settings for ensemble initialization
   handle = 'type_ens_init'           ! Type of ensemble initialization
   call parse(handle, type_ens_init)
   handle = 'file_covar'              ! Path and name of covariance matrix file
   call parse(handle, file_covar)
+
+  handle = 'write_state'             ! Whether to write ensemble mean fields
+  call parse(handle, write_state)
+  handle = 'write_ens'              ! Whether to write ensemble files
+  call parse(handle, write_ens)
+  handle = 'write_var'              ! Whether to write ensemble variance files
+  call parse(handle, write_var)
+
 
 !------------------------------------------------------------------------------
 ! The remaining parse commands should be generic; usually no change necessary

@@ -22,7 +22,7 @@ program main
        only: initialize
   use model_step_mod, &              ! Model integration
        only: stepping
-  use model_post_mod, &          ! Model integration
+  use model_post_mod, &              ! Model post-processing
        only: postprocess
 
   implicit none

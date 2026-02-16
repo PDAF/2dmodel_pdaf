@@ -16,19 +16,21 @@ contains
 
   subroutine stepping()
 
-    use mpi                     ! MPI
-    use model_mod, &            ! Model variables
+    use mpi                         ! MPI
+    use model_mod, &                ! Model variables
          only: nx, ny, nx_p, fieldA_p, fieldB_p, total_steps
-    use model_parallel_mod, &   ! Model parallelization
-         only: mype_world, MPIErr, COMM_2Dmodel
+    use model_parallel_mod, &       ! Model parallelization
+         only: mype_world
+    use model_io_mod, &             ! File operations
+         only: io_write_sngl
 
     implicit none
 
 ! *** local variables ***
-    integer :: step, i, j        ! Counters
-    character(len=2) :: stepstr  ! String for time step
-    real :: store                ! Store single field element
-    real, allocatable :: field(:,:) ! Global model field
+    integer :: step, i, j           ! Counters
+    character(len=2) :: stepstr     ! String for time step
+    real :: store                   ! Store single field element
+    character(len=100) :: filename  !< Name of output file
 
 
 ! ****************
@@ -41,7 +43,8 @@ contains
 
        if (mype_world==0) write (*,*) 'step', step
 
-! *** Time step: Shift fields vertically ***
+       ! *** Time step: Shift fields vertically ***
+       
        do j = 1, nx_p
           ! Field A
           store = fieldA_p(ny, j)
@@ -63,46 +66,19 @@ contains
        end do
 
 #ifndef USE_PDAF     
-! *** Write new fields into files ***
+       ! *** Write current fields into files ***
 
-       ! Gather global field on process 0
-       allocate(field(ny, nx))
+       write (stepstr, '(i2.2)') step
 
-       call MPI_Gather(fieldA_p, nx_p*ny, MPI_DOUBLE_PRECISION, field, nx_p*ny, &
-            MPI_DOUBLE_PRECISION, 0, COMM_2Dmodel, MPIerr)
+       filename = 'fieldA_step'//trim(stepstr)//'.nc'
+       call io_write_sngl(step, filename, fieldA_p)
 
-       ! Write file from process 0
-       if (mype_world==0) then
-          write (stepstr, '(i2.2)') step
-          open(11, file = 'trueA_step'//trim(stepstr)//'.txt', status = 'replace')
-
-          do i = 1, ny
-             write (11, *) field(i, :)
-          end do
-
-          close(11)     
-       end if
-
-       call MPI_Gather(fieldB_p, nx_p*ny, MPI_DOUBLE_PRECISION, field, nx_p*ny, &
-            MPI_DOUBLE_PRECISION, 0, COMM_2Dmodel, MPIerr)
-
-       ! Write file from process 0
-       if (mype_world==0) then
-          write (stepstr, '(i2.2)') step
-          open(11, file = 'trueB_step'//trim(stepstr)//'.txt', status = 'replace')
-
-          do i = 1, ny
-             write (11, *) field(i, :)
-          end do
-
-          close(11)     
-       end if
-
-       deallocate(field)
+       filename = 'fieldB_step'//trim(stepstr)//'.nc'
+       call io_write_sngl(step, filename, fieldB_p)
 #endif
 
 #ifdef USE_PDAF
-     CALL assimilate_pdaf()
+       call assimilate_pdaf()
 #endif
 
     end do steps

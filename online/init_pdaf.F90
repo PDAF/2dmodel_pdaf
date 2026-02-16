@@ -35,10 +35,12 @@ subroutine init_pdaf()
        type_ens_init, file_covar
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
+  use io_pdaf_mod, &                   ! File input/output control
+       only: write_state, write_ens, write_var
   use obs_A_pdafomi, &                 ! Variables for observation type A
-       only: assim_A, rms_obs_A
+       only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &                 ! Variables for observation type B
-       only: assim_B, rms_obs_B
+       only: assim_B, rms_obs_B, file_obs_B
 
   implicit none
 
@@ -71,6 +73,10 @@ subroutine init_pdaf()
 
 ! *** IO options ***
   screen = 2              ! Write screen output (1) for output, (2) add timings
+  write_state = .true.    ! Write ensemble mean fields
+  write_ens = .true.      ! Write all ensemble states
+  write_var = .false.     ! Write ensemble variance fields
+
 
 ! *** Ensemble settings ***
   dim_ens = n_modeltasks  ! Size of ensemble
@@ -112,6 +118,10 @@ subroutine init_pdaf()
 ! *** specifications for observations ***
   rms_obs_A = 0.5    ! Observation error standard deviation for observation A
   rms_obs_B = 0.25   ! Observation error standard deviation for observation B
+
+  file_obs_A = '../inputs_online_2fields/obsA.nc'  ! Observation file A
+  file_obs_B = '../inputs_online_2fields/obsB.nc'  ! Observation file B
+
 
 ! *** Localization settings
   locweight = 2      ! Type of localizating weighting
