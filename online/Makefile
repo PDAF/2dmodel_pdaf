@@ -31,6 +31,7 @@ include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 # Modules used for the model part
 SRC_MODEL =  	model_parallel_mod.F90 \
 		model_mod.F90 \
+		model_io_mod.F90 \
 		model_init_mod.F90 \
 		model_step_mod.F90 \
 		model_post_mod.F90 \
@@ -41,6 +42,7 @@ MOD_ASSIM = 	model_pdaf_mod.F90 \
 		parallel_pdaf_mod.F90 \
 		assimilation_pdaf_mod.F90 \
 		statevector_pdaf_mod.F90 \
+		io_pdaf_mod.F90 \
 		parser_mpi.F90
 
 # Interface to PDAF - model sided
@@ -67,7 +69,6 @@ SRC_CB_OMI = 	obs_A_pdafomi.F90 \
 
 # Additional routines call by other routines
 SRC_MISC =      init_pdaf_parse.F90 \
-		output_pdaf.F90
 
 # Full list of user-supplied routines for online modes
 SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_CB_LOCAL)
@@ -131,7 +132,7 @@ cleanpdaf:
 	cd $(PDAFDIR); make clean
 
 cleandata:
-	rm -f ens*.txt state*.txt true*.txt variance*txt
+	rm -f *.nc
 
 cleandataq:
 	@rm -f ens*.txt state*.txt true*.txt variance*txt
