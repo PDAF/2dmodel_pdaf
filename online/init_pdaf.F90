@@ -119,9 +119,8 @@ subroutine init_pdaf()
   rms_obs_A = 0.5    ! Observation error standard deviation for observation A
   rms_obs_B = 0.25   ! Observation error standard deviation for observation B
 
-  file_obs_A = '../inputs_online_2fields/obsA.nc'  ! Observation file A
-  file_obs_B = '../inputs_online_2fields/obsB.nc'  ! Observation file B
-
+  file_obs_A = '../inputs_2fields/obsA.nc'  ! Observation file A
+  file_obs_B = '../inputs_2fields/obsB.nc'  ! Observation file B
 
 ! *** Localization settings
   locweight = 2      ! Type of localizating weighting

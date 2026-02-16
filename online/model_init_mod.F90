@@ -77,10 +77,10 @@ contains
 ! *** Read initial fields from file ***
 ! *************************************
 
-    filename = '../inputs_online_2fields/trueA_ini.nc'
+    filename = '../inputs_2fields/trueA_ini.nc'
     call io_read_sngl(filename, fieldA_p)
 
-    filename = '../inputs_online_2fields/trueB_ini.nc'
+    filename = '../inputs_2fields/trueB_ini.nc'
     call io_read_sngl(filename, fieldB_p)
 
 

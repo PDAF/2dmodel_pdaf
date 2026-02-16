@@ -211,6 +211,9 @@ contains
 ! **********************************
 
     ! Read observation field from file
+    if (mype_filter==0) &
+         write (*,'(a,5x,a, i6)') 'model-PDAF','--- read observation at step', step
+
     allocate(obs_field(ny, nx))
 
     if (step<10) then

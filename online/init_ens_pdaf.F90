@@ -103,7 +103,7 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
         do fid = 1, n_fields
 
            ! Read ensemble files
-           filename = '../inputs_online_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
+           filename = '../inputs_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
            call read_pdaf(filename, field_p)
 
            ! +++ Note on counter s:

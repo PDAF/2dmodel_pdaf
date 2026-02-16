@@ -16,12 +16,6 @@ module model_io_mod
   save
   private
 
-! *** Variables specific for 2D tutorial model ***
-
-  integer :: ncid                       !< ID of output file
-  integer :: id_fieldA, id_fieldB       !< file IDs for both fields
-  integer :: dimid_x, dimid_y, dimid_t  !< dimension IDs
-
   public io_write_sngl, io_read_sngl
 
 contains
@@ -48,12 +42,14 @@ contains
     real, intent(in) :: field_p(:,:)            !< Decomposed model field
 
     ! Local variables
-    integer :: id_field             !< Netcdf field if
-    integer :: id_t                 !< Netcdf timestep id
-    integer :: dimids(3)            !< Array for netcdf operation
-    integer :: countv(3), startv(3) !< Vectors for NC operations
-    character(len=6) :: fieldstr    !< String for field name
-    real, allocatable :: field(:,:) !< Array for global model field
+    integer :: ncid                       !< ID of output file
+    integer :: id_field                   !< Netcdf field if
+    integer :: id_t                       !< Netcdf timestep id
+    integer :: dimid_x, dimid_y, dimid_t  !< dimension IDs
+    integer :: dimids(3)                  !< Array for netcdf operation
+    integer :: countv(3), startv(3)       !< Vectors for NC operations
+    character(len=6) :: fieldstr          !< String for field name
+    real, allocatable :: field(:,:)       !< Array for global model field
 
 
     ! *** Gather global field on process 0
@@ -116,9 +112,8 @@ contains
 !!
   subroutine io_read_sngl(filename, field_p)
 
-    use mpi
     use model_parallel_mod, &
-         only: mype_world, MPIErr, COMM_2Dmodel
+         only: mype_2Dmodel, MPIErr, COMM_2Dmodel
     use model_mod, &
          only: nx_p, nx, ny, total_steps
 
@@ -129,6 +124,7 @@ contains
     real, intent(inout) :: field_p(:,:)         !< Decomposed model field
 
     ! Local variables
+    integer :: ncid                 !< ID of output file
     integer :: id_field             ! Netcdf field id
     integer :: countv(3), startv(3) ! Vectors for NC operations
     integer :: off_nx               ! Offset of local grid in global domain in x-direction
@@ -136,7 +132,7 @@ contains
     ! *** Read field
 
      ! offset in x-direction due to domain-decomposition
-     off_nx = nx_p*mype_world
+     off_nx = nx_p*mype_2Dmodel
 
     ! Open file and get field ID
 
