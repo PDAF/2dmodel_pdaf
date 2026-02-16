@@ -107,7 +107,7 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
         do fid = 1, n_fields
 
            ! Read field
-           open(11, file = '../inputs_online_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.txt', &
+           open(11, file = '../inputs_online_2fields.ascii/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.txt', &
                 status='old')
 
            ! Read global field

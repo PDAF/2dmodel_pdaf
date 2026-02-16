@@ -77,7 +77,7 @@ contains
     allocate(field(ny, nx))
 
     ! Read global model field A
-    open(11, file = '../inputs_online_2fields/trueA_initial.txt', status='old')
+    open(11, file = '../inputs_online_2fields.ascii/trueA_initial.txt', status='old')
  
     do i = 1, ny
        read (11, *) field(i, :)
@@ -93,7 +93,7 @@ contains
     end do
 
     ! Read global model field B
-    open(11, file = '../inputs_online_2fields/trueB_initial.txt', status='old')
+    open(11, file = '../inputs_online_2fields.ascii/trueB_initial.txt', status='old')
  
     do i = 1, ny
        read (11, *) field(i, :)
