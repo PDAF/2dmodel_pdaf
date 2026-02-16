@@ -212,16 +212,27 @@ for step in range(1,dim_step+1):
          obs[i,j,step] = full_obs[i,j,step]
 
 if dowrite==1:
+# Option to write each observation time in a separate file
+#    for step in range(1,dim_step+1):
+#       ncfile = nc.Dataset('obsA_step'+str(step)+'.nc',mode='w')
+#       xdim = ncfile.createDimension('dim_x', dim_x)
+#       ydim = ncfile.createDimension('dim_y', dim_y)
+#       timedim = ncfile.createDimension('step', 1)
+#       true = ncfile.createVariable('obs',np.float64, ('step', 'dim_x', 'dim_y',))
+
+#       true[0,:,:] = np.transpose(obs[:,:,step])
+#    ncfile.close()
+
+   # Write all observations into one file
+   ncfile = nc.Dataset('obsA.nc',mode='w')
+   xdim = ncfile.createDimension('dim_x', dim_x)
+   ydim = ncfile.createDimension('dim_y', dim_y)
+   timedim = ncfile.createDimension('step', dim_step)
+   true = ncfile.createVariable('obs',np.float64, ('step', 'dim_x', 'dim_y',))
+
    for step in range(1,dim_step+1):
-      ncfile = nc.Dataset('obsA_step'+str(step)+'.nc',mode='w')
-      xdim = ncfile.createDimension('dim_x', dim_x)
-      ydim = ncfile.createDimension('dim_y', dim_y)
-      timedim = ncfile.createDimension('step', 1)
-      true = ncfile.createVariable('obs',np.float64, ('step', 'dim_x', 'dim_y',))
-
-      true[0,:,:] = np.transpose(obs[:,:,step])
+      true[step-1,:,:] = np.transpose(obs[:,:,step])
    ncfile.close()
-
 
 # Observations B
 
@@ -241,13 +252,25 @@ for step in range(1,dim_step+1):
          obsB[i,j,step] = full_obsB[i,j,step]
 
 if dowrite==1:
-   for step in range(1,dim_step+1):
-      ncfile = nc.Dataset('obsB_step'+str(step)+'.nc',mode='w')
-      xdim = ncfile.createDimension('dim_x', dim_x)
-      ydim = ncfile.createDimension('dim_y', dim_y)
-      timedim = ncfile.createDimension('step', 1)
-      true = ncfile.createVariable('obs',np.float64, ('step', 'dim_x', 'dim_y',))
+# Option to write each observation time in a separate file
+#    for step in range(1,dim_step+1):
+#       ncfile = nc.Dataset('obsB_step'+str(step)+'.nc',mode='w')
+#       xdim = ncfile.createDimension('dim_x', dim_x)
+#       ydim = ncfile.createDimension('dim_y', dim_y)
+#       timedim = ncfile.createDimension('step', 1)
+#       true = ncfile.createVariable('obs',np.float64, ('step', 'dim_x', 'dim_y',))
 
-      true[0,:,:] = np.transpose(obsB[:,:,step])
+#       true[0,:,:] = np.transpose(obsB[:,:,step])
+#    ncfile.close()
+
+   # Write all observations into one file
+   ncfile = nc.Dataset('obsB.nc',mode='w')
+   xdim = ncfile.createDimension('dim_x', dim_x)
+   ydim = ncfile.createDimension('dim_y', dim_y)
+   timedim = ncfile.createDimension('step', dim_step)
+   true = ncfile.createVariable('obs',np.float64, ('step', 'dim_x', 'dim_y',))
+
+   for step in range(1,dim_step+1):
+      true[step-1,:,:] = np.transpose(obsB[:,:,step])
    ncfile.close()
 
