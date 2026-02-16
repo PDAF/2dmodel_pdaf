@@ -56,19 +56,21 @@ SRC_CB  =       init_ens_pdaf.F90 \
 		prepoststep_pdaf.F90 \
 		next_observation_pdaf.F90 \
 		distribute_state_pdaf.F90 \
-		collect_state_pdaf.F90
+		collect_state_pdaf.F90 \
+		get_obs_pdaf.F90
 
 # User-supplied call-back routines for localization
 SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
 		init_dim_l_pdaf.F90
 
 # Routines for PDAF-OMI observation handling
-SRC_CB_OMI = 	obs_A_pdafomi.F90 \
+SRC_CB_OMI = 	synobs_pdaf_mod.F90 \
+		obs_A_pdafomi.F90 \
 		obs_B_pdafomi.F90 \
 		callback_obs_pdafomi.F90
 
 # Additional routines call by other routines
-SRC_MISC =      init_pdaf_parse.F90 \
+SRC_MISC =      init_pdaf_parse.F90
 
 # Full list of user-supplied routines for online modes
 SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_CB_LOCAL)

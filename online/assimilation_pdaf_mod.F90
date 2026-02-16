@@ -46,9 +46,10 @@ module assimilation_pdaf_mod
 
 ! Settings for observations - available as command line options
   integer :: delt_obs          !< time step interval between assimilation steps
-  logical :: twin_experiment   !< Whether to run an twin experiment with synthetic observations
   integer :: observe_ens=0     !< (0) apply H also to ensemble mean; (1) apply H only to ensemble states
   integer :: type_obs_init=1   !< init obs. (0) before or (1) after call to prepostsstep
+  logical :: twin_experiment=.false. !< Whether to run an twin experiment with synthetic observations
+  character(len=100) :: file_synobs='none.nc'  !< Full name of file for synthetic observations
   logical :: do_omi_obsstats=.false. !< Whether to let OMI compute observation statistics
 
 ! General control of PDAF - available as command line options
