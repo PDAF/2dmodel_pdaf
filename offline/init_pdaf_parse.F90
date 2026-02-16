@@ -17,7 +17,7 @@ subroutine init_pdaf_parse()
        only: parse
   use assimilation_pdaf_mod, & ! Variables for assimilation
        only: screen, filtertype, subtype, dim_ens, delt_obs, &
-       step_offline, &
+       step_offline, twin_experiment, &
        model_error, model_err_amp, type_forget, forget, &
        type_iau, steps_iau, rank_ana_enkf, &
        locweight, cradius, sradius, &
@@ -83,6 +83,9 @@ subroutine init_pdaf_parse()
   call parse(handle, type_obs_init)
   handle = 'do_omi_obsstats'         ! Whether to let PDAF-OMI compute observation statistics
   call parse(handle, do_omi_obsstats)
+  handle = 'twin_experiment'         ! T: perform twin experiment with synthetic observations
+  call parse(handle, twin_experiment)
+
 
   ! Model step to process in offline mode
   handle = 'step'                    ! Time step interval between filter analyses

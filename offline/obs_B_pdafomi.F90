@@ -60,6 +60,7 @@ module obs_B_pdafomi
   logical :: assim_B               !< Whether to assimilate this data type
   real    :: rms_obs_B             !< Observation error standard deviation (for constant errors)
   character(len=100) :: file_obs_B !< Name of observation file
+  character(len=100) :: stub_synobs_B='obsB_syn_'  !< Name stub of file for synthetic observations
 
   ! One can declare further variables, e.g. for file names which can
   ! be use-included in init_pdaf() and initialized there.
@@ -144,18 +145,21 @@ contains
 
     use netcdf
     use PDAF, &                          ! PDAF
-         only: PDAFomi_gather_obs, PDAF_local_type, PDAFomi_set_localize_covar
+         only: PDAFomi_gather_obs, PDAF_local_type, PDAFomi_set_localize_covar, &
+         PDAF_DA_GENOBS
     use parallel_pdaf_mod, &             ! Parallelization variables
          only: mype_filter
     use assimilation_pdaf_mod, &         ! Variables for assimilation
          only: filtertype, cradius, coords_p, dim_state_p, &
-         locweight, cradius, sradius
+         locweight, cradius, sradius, twin_experiment, file_synobs
     use statevector_pdaf_mod, &          ! Statevector variables
          only: id, sfields
     use model_pdaf_mod, &                ! Model variables
          only: nx, ny, nx_p, n_dim
     use io_pdaf_mod, &                   ! IO operations
          only: nfcheck
+    use synobs_pdaf_mod, &               ! Routines for synthetic observations
+         only: init_file_syn_obs, read_syn_obs
 
     implicit none
 
@@ -175,6 +179,8 @@ contains
     character(len=2) :: stepstr          ! String for time step
     integer :: ncid, id_obs              ! variables for netcdf file reading
     integer :: countv(3), startv(3)      ! Vectors for NC operations
+    character(len=4) :: procstr          ! 4-digit string for process rank
+    logical, save :: firsttime=.true.    ! Flag for first call
 
 
 ! *********************************************
@@ -296,6 +302,22 @@ contains
     end if haveobs
 
 
+! *********************************************************
+! *** For twin experiment: Read synthetic observations  ***
+! *** and overwrite real observation values.            ***
+! *********************************************************
+
+    IF (twin_experiment .AND. filtertype/=PDAF_DA_GENOBS) THEN
+
+       ! Set file name (separate files for each process)
+       write (procstr, '(i4.4)') mype_filter
+       file_synobs = trim(stub_synobs_B)//procstr//'.nc'
+
+       ! Read synthetic observations
+       CALL read_syn_obs(file_synobs, dim_obs_p, obs_p, step, 1-mype_filter)
+    END IF
+
+
 ! ****************************************
 ! *** Gather global observation arrays ***
 ! ****************************************
@@ -314,13 +336,21 @@ contains
     END IF
 
 
-! *********************************************************
-! *** For twin experiment: Read synthetic observations  ***
-! *********************************************************
+! ***************************************************************
+! *** When generating synthetic observations: Initialize file ***
+! ***************************************************************
 
-!     IF (twin_experiment .AND. filtertype/=100) THEN
-!        CALL read_syn_obs(file_syntobs_OBSTYPE, dim_obs, thisobs%obs_f, 0, 1-mype_filter)
-!     END IF
+    if (filtertype==PDAF_DA_GENOBS .and. firsttime) then
+
+       ! Set file name (separate files for each process)
+       write (procstr, '(i4.4)') mype_filter
+       file_synobs = trim(stub_synobs_B)//procstr//'.nc'
+
+       ! Initialize file
+       call init_file_syn_obs(nx_p*ny, file_synobs, 1)
+
+       firsttime = .false.
+    end if
 
 
 ! ********************

@@ -58,7 +58,8 @@ SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
 		init_dim_l_pdaf.F90
 
 # Routines for PDAF-OMI observation handling
-SRC_CB_OMI = 	obs_A_pdafomi.F90 \
+SRC_CB_OMI = 	synobs_pdaf_mod.F90 \
+		obs_A_pdafomi.F90 \
 		obs_B_pdafomi.F90 \
 		callback_obs_pdafomi.F90
 
