@@ -16,15 +16,15 @@
 !!
 subroutine init_pdaf_offline()
 
-  use model_pdaf_mod, &           ! Model variables
+  use model_pdaf_mod, &                ! Model variables
        only: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p
   use PDAF, &                          ! PDAF
        only: PDAF3_init, PDAF_set_iparam, &
        PDAFomi_set_domain_limits
-  use parallel_pdaf_mod, &        ! Parallelization variables
+  use parallel_pdaf_mod, &             ! Parallelization variables
        only: mype_ens, mype_filter, n_modeltasks, &
        abort_parallel
-  use assimilation_pdaf_mod, &    ! Variables for assimilation
+  use assimilation_pdaf_mod, &         ! Variables for assimilation
        only: dim_state_p, dim_state, dim_ens, &
        screen, filtertype, subtype, &
        delt_obs, step_offline, type_iau, steps_iau, &
@@ -33,12 +33,14 @@ subroutine init_pdaf_offline()
        type_trans, type_sqrt, &
        observe_ens, type_obs_init, do_omi_obsstats, &
        type_ens_init, file_covar
-  use statevector_pdaf_mod, &     ! Routine to initialize state vector
+  use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
-  use obs_A_pdafomi, &            ! Variables for observation type A
-       only: assim_A, rms_obs_A
-  use obs_B_pdafomi, &            ! Variables for observation type B
-       only: assim_B, rms_obs_B
+  use io_pdaf_mod, &                   ! File input/output control
+       only: write_state, write_ens, write_var
+  use obs_A_pdafomi, &                 ! Variables for observation type A
+       only: assim_A, rms_obs_A, file_obs_A
+  use obs_B_pdafomi, &                 ! Variables for observation type B
+       only: assim_B, rms_obs_B, file_obs_B
 
   implicit none
 
@@ -70,7 +72,10 @@ subroutine init_pdaf_offline()
 ! **********************************************************
 
 ! *** IO options ***
-  screen = 2         ! Write screen output (1) for output, (2) add timings
+  screen = 2              ! Write screen output (1) for output, (2) add timings
+  write_state = .true.    ! Write ensemble mean fields
+  write_ens = .true.      ! Write all ensemble states
+  write_var = .false.     ! Write ensemble variance fields
 
 ! *** Ensemble size ***
   dim_ens = n_modeltasks  ! Size of ensemble for all ensemble filters
@@ -112,6 +117,9 @@ subroutine init_pdaf_offline()
 ! *** specifications for observations ***
   rms_obs_A = 0.5    ! Observation error standard deviation for observation A
   rms_obs_B = 0.25   ! Observation error standard deviation for observation B
+
+  file_obs_A = '../inputs_online_2fields/obsA.nc'  ! Observation file A
+  file_obs_B = '../inputs_online_2fields/obsB.nc'  ! Observation file B
 
 ! *** Localization settings
   locweight = 2      ! Type of localizating weighting

@@ -57,8 +57,9 @@ module obs_A_pdafomi
   save
 
   ! Variables which are inputs to the module (usually set in init_pdaf)
-  logical :: assim_A        !< Whether to assimilate this data type
-  real    :: rms_obs_A      !< Observation error standard deviation (for constant errors)
+  logical :: assim_A               !< Whether to assimilate this data type
+  real    :: rms_obs_A             !< Observation error standard deviation (for constant errors)
+  character(len=100) :: file_obs_A !< Name of observation file
 
   ! One can declare further variables, e.g. for file names which can
   ! be use-included in init_pdaf() and initialized there.
@@ -141,6 +142,7 @@ contains
 !!
   subroutine init_dim_obs_A(step, dim_obs)
 
+    use netcdf
     use PDAF, &                          ! PDAF
          only: PDAFomi_gather_obs, PDAF_local_type, PDAFomi_set_localize_covar
     use parallel_pdaf_mod, &             ! Parallelization variables
@@ -152,6 +154,8 @@ contains
          only: id, sfields
     use model_pdaf_mod, &                ! Model variables
          only: nx, ny, nx_p, n_dim
+    use io_pdaf_mod, &                   ! IO operations
+         only: nfcheck
 
     implicit none
 
@@ -169,6 +173,8 @@ contains
     real, allocatable :: ivar_obs_p(:)   ! Process-local inverse observation error variance
     real, allocatable :: ocoord_p(:,:)   ! Process-local observation coordinates 
     character(len=2) :: stepstr          ! String for time step
+    integer :: ncid, id_obs              ! variables for netcdf file reading
+    integer :: countv(3), startv(3)      ! Vectors for NC operations
 
 
 ! *********************************************
@@ -205,6 +211,9 @@ contains
 ! **********************************
 
     ! Read observation field from file
+    if (mype_filter==0) &
+         write (*,'(a,5x,a, i6)') 'model-PDAF','--- read observation at step', step
+
     allocate(obs_field(ny, nx))
 
     if (step<10) then
@@ -213,11 +222,16 @@ contains
        write (stepstr, '(i2)') step
     end if
 
-    open (12, file='../inputs_online_2fields/obsA_step'//trim(stepstr)//'.txt', status='old')
-    do i = 1, ny
-       read (12, *) obs_field(i, :)
-    end do
-    close (12)
+    call nfcheck( NF90_OPEN(trim(file_obs_A), NF90_NOWRITE, ncid))
+    call nfcheck( NF90_INQ_VARID(ncid, 'obs', id_obs))
+    startv(3) = step
+    countv(3) = 1
+    startv(2) = 1
+    countv(2) = nx
+    startv(1) = 1
+    countv(1) = ny
+    call nfcheck( NF90_GET_VAR(ncid, id_obs, obs_field, start=startv(1:3), count=countv(1:3)))
+    call nfcheck( NF90_CLOSE(ncid))
 
 
 ! ***********************************************************

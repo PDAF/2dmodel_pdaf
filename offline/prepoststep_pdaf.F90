@@ -27,18 +27,18 @@
 subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
      state_p, Uinv, ens_p, flag)
 
-  use mpi                            ! MPI
-  use model_pdaf_mod, &              ! Model variables
+  use mpi                             ! MPI
+  use model_pdaf_mod, &               ! Model variables
        only: nx, ny, nx_p
-  use PDAF, &                        ! PDAF diagnostic routines
+  use PDAF, &                         ! PDAF diagnostic routines
        only: PDAF_diag_stddev, PDAF_diag_variance, PDAFomi_diag_stats
-  use parallel_pdaf_mod, &           ! Parallelization variables
+  use parallel_pdaf_mod, &            ! Parallelization variables
        only: COMM_filter, mype_filter, npes_filter, MPIerr, MPIstatus
-  use assimilation_pdaf_mod, &       ! Assimilation variables
+  use assimilation_pdaf_mod, &        ! Assimilation variables
        only: dim_state
-  use statevector_pdaf_mod, &        ! Statevector variables
+  use statevector_pdaf_mod, &         ! Statevector variables
        only: id, sfields, n_fields
-  use output_pdaf_mod, &             ! Output file operations
+  use io_pdaf_mod, &                  ! Output file operations
        only: write_pdaf
 
   implicit none
@@ -60,6 +60,7 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 ! *** local variables ***
   integer :: i, j                     ! Counters
   integer :: nobs                     ! Number of observations
+  integer :: verbose                  ! Flag for screen output
   integer :: istart, iend             ! stard and end index of a field in state vector
   integer :: pdaf_status              ! status flag
   real :: stddev_g                    ! Global ensemble standard deviation over all fields
@@ -116,7 +117,9 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
   ! Compute observation diagnostics
 
-  call PDAFomi_diag_stats(nobs, obsstats_ptr, 1)
+  verbose = 0
+  if (mype_filter==0) verbose = 1
+  call PDAFomi_diag_stats(nobs, obsstats_ptr, verbose)
 
 
 ! *****************

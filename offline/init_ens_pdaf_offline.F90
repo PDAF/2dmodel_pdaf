@@ -23,18 +23,18 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ens_p, flag)
 
   use netcdf
-  use pdaf, &
+  use PDAF, &                     ! PDAF
        only: PDAF_sampleens
-  use assimilation_pdaf_mod, &
+  use assimilation_pdaf_mod, &    ! Assimilation varibles
        only: type_ens_init, file_covar
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny, nx_p
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
-       only: mype_filter, mype_model, abort_parallel
+       only: mype_filter
   use statevector_pdaf_mod, &     ! State vector variables
        only: id, sfields, n_fields
-  use output_pdaf_mod, &          ! File operations
-       only: nfcheck
+  use io_pdaf_mod, &              ! File operations
+       only: read_pdaf, read_covar_pdaf
 
   implicit none
 
@@ -51,16 +51,9 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
 ! *** local variables ***
   integer :: i, j, s, fid, member     ! Counters
-  integer :: rank_file                ! Number of EOFs stored in covariance file
-  integer :: stat(50)                 ! Array for status flag
-  integer :: fileid                   ! ID for NetCDF file
-  integer :: id_svals, id_eofs        ! IDs for fields
-  integer :: id_state                 ! ID for field
-  integer :: id_dim                   ! ID for dimension
-  integer :: countv(3), startv(3)     ! Vectors for NC operations
-  integer :: off_nx                   ! Offset of local grid in global domain in x-direction
   character(len=4) :: ensstr          ! String for ensemble member
-  real, allocatable :: field(:,:)     ! global model field
+  character(len=100) :: filename      ! Name of input file
+  real, allocatable :: field_p(:,:)   ! process-local model field
   real, allocatable :: eofs(:,:)      ! matrix of eigenvectors V 
   real, allocatable :: svals(:)       ! singular values
 
@@ -93,7 +86,10 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ! *************************************************
 
      ! allocate memory for temporary fields
-     allocate(field(ny, nx))
+     allocate(field_p(ny, nx_p))
+
+     if (mype_filter==0) &
+          write (*,'(a, 5x, a)') 'model-PDAF', '--- read ensemble files'
 
      do member = 1, dim_ens
         if (member<10) then
@@ -106,14 +102,9 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
         do fid = 1, n_fields
 
-           ! Read field
-           open(11, file = '../inputs_online_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.txt', &
-                status='old')
-
-           ! Read global field
-           do i = 1, ny
-              read (11, *) field(i, :)
-           end do
+           ! Read ensemble files
+           filename = '../inputs_online_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
+           call read_pdaf(filename, field_p)
 
            ! +++ Note on counter s:
            ! +++ Using the counter s looks primitive, but it
@@ -125,15 +116,13 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
            do j = 1, nx_p
               do i = 1, ny
                  s = s + 1
-                 ens_p(s, member) = field(i, nx_p*mype_model + j)
+                 ens_p(s, member) = field_p(i, j)
               end do
            end do
-           
-           close(11)
         end do
      end do
 
-     deallocate(field)
+     deallocate(field_p)
 
   else inittype
 
@@ -145,92 +134,21 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
      allocate(eofs(dim_p, dim_ens-1))
      allocate(svals(dim_ens-1))
 
-     ! offset in x-direction due to domain-decomposition
-     off_nx = nx_p*mype_filter
+     ! *** Read initial state and covar matrix ***
+
+     if (mype_filter==0) &
+          write(*,'(a,5x,a,a)') 'model-PDAF', '--- Read covariance information from ', trim(file_covar)
+
+     call read_covar_pdaf(file_covar, dim_ens, eofs, svals, state_p)
 
 
-! *************************************************
-! *** Initialize initial state and covar matrix ***
-! *************************************************
+     ! *** Generate ensemble of model states ***
 
-     write(*,'(a,5x,a,a)') 'model-PDAF', '--- Read covariance information from ', trim(file_covar)
-
-     call nfcheck( NF90_OPEN(file_covar, NF90_NOWRITE, fileid))
-
-     ! Read rank stored in file
-     call nfcheck( NF90_INQ_DIMID(fileid, 'rank', id_dim))
-     call nfcheck( NF90_Inquire_dimension(fileid, id_dim, len=rank_file))
-
-     do i = 1,  s
-        if (stat(i) /= NF90_NOERR) &
-             write(*, *) 'NetCDF error in reading dimensions from init file, no.', i
-     end do
-
-     ! Check consistency of dimensions
-     checkdim: if (rank_file >= dim_ens-1) then
-
-        ! Inquire IDs for mean state, singular vectors and values
-        call nfcheck( NF90_INQ_VARID(fileid, 'sigma', id_svals))
-
-        ! Read singular values
-        startv(1) = 1
-        countv(1) = dim_ens-1
-
-        call nfcheck( NF90_GET_VAR(fileid, id_svals, svals, start=startv(1:1), count=countv(1:1)))
-
-        ! Read mean state
-        do fid = 1, n_fields
-           call nfcheck( NF90_INQ_VARID(fileid, 'mean'//trim(sfields(fid)%fname), id_state))
-
-           startv(2) = 1+off_nx
-           countv(2) = nx_p
-           startv(1) = 1
-           countv(1) = ny
-
-           call nfcheck( NF90_GET_VAR(fileid, id_state, &
-                state_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
-                start=startv(1:2), count=countv(1:2)))
-        end do
-
-        ! Read eofs
-        do j = 1, dim_ens-1
-           do fid = 1, n_fields
-              call nfcheck( NF90_INQ_VARID(fileid, 'u_svd'//trim(sfields(fid)%fname), id_eofs))
-
-              startv(3) = j
-              countv(3) = 1
-              startv(2) = 1+off_nx
-              countv(2) = nx_p
-              startv(1) = 1
-              countv(1) = ny
-
-              call nfcheck( NF90_GET_VAR(fileid, id_eofs, &
-                   eofs(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim, j), &
-                   start=startv(1:3), count=countv(1:3)))
-           end do
-        end do
-
-        call nfcheck( NF90_CLOSE(fileid))
-
-
-! *****************************************
-! *** Generate ensemble of model states ***
-! *****************************************
-
-        write (*,'(a, 5x, a)') 'model-PDAF', '--- generate state ensemble'
+     if (mype_filter==0) &
+          write (*,'(a, 5x, a)') 'model-PDAF', '--- generate state ensemble'
      
-        ! Use PDAF routine to generate ensemble from covariance matrix
-        call PDAF_SampleEns(dim_p, dim_ens, eofs, svals, state_p, ens_p, 1, flag)
-     
-     else
-
-        ! *** Rank stored in file is smaller than requested EOF rank ***
-        write(*,*) 'Rank stored in file is smaller than requested EOF rank'
-
-        call nfcheck( NF90_CLOSE(fileid))
-        call abort_parallel()
-
-     end if checkdim
+     ! Use PDAF routine for second-order exact sampling
+     call PDAF_SampleEns(dim_p, dim_ens, eofs, svals, state_p, ens_p, 1, flag)
 
      deallocate(eofs, svals)
 

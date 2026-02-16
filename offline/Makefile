@@ -38,6 +38,7 @@ MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		assimilation_pdaf_mod.F90 \
 		statevector_pdaf_mod.F90 \
 		initialize_grid_mod.F90 \
+		io_pdaf_mod.F90 \
 		main_offline.F90 \
 		parser_mpi.F90 
 
@@ -62,8 +63,7 @@ SRC_CB_OMI = 	obs_A_pdafomi.F90 \
 		callback_obs_pdafomi.F90
 
 # Additional routines call by other routines
-SRC_MISC =      init_pdaf_parse.F90 \
-		output_pdaf.F90
+SRC_MISC =      init_pdaf_parse.F90
 
 # Full list of user-supplied routines for online modes
 SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_CB_LOCAL)
@@ -124,10 +124,10 @@ cleanpdaf:
 	cd $(PDAFDIR); make clean
 
 cleandata:
-	rm -f ens*.txt state*.txt true*.txt variance*txt
+	rm -f *.nc
 
 cleandataq:
-	@rm -f ens*.txt state*.txt true*.txt variance*txt
+	@rm -f *.nc
 
 ######################################################
 # List arch files
