@@ -33,10 +33,10 @@ contains
     call finalize_pdaf()
 #endif
 
-  if (mype_world==0) then
-     write (*, '(/10x, a)') '+++++ PDAF tutorial model completed +++++'
-  end if
+    if (mype_world==0) then
+       write (*, '(/10x, a)') '+++++ PDAF tutorial model completed +++++'
+    end if
 
-end subroutine postprocess
+  end subroutine postprocess
 
 end module model_post_mod
