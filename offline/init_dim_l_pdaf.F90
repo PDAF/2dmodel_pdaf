@@ -20,13 +20,11 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   use PDAF, &                       ! Routine to provide local indices to PDAF
        only: PDAFlocal_set_indices
   use model_pdaf_mod, &             ! Model variables
-       only: ny, nx_p, coords_x_p, coords_y_p
+       only: ny, coords_x_p, coords_y_p
   use assimilation_pdaf_mod, &      ! Variables for assimilation
        only: coords_l
-  use parallel_pdaf_mod, &          ! assimilation parallelization variables
-       only: mype_filter
   use statevector_pdaf_mod, &       ! State vector variables
-       only: n_fields, id, sfields
+       only: n_fields, sfields
 
   implicit none
 
@@ -53,8 +51,8 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 ! **********************************************
 
   ! Determine grid point indices from domain_p
-  idx(1) = real(ceiling(real(domain_p)/real(ny)))
-  idx(2) = real(domain_p) - (idx(1)-1)*real(ny)
+  idx(1) = ceiling(real(domain_p)/real(ny))
+  idx(2) = domain_p - (idx(1)-1)*ny
 
   ! Initialize local coordinate array
   coords_l(1) = coords_x_p(idx(1))

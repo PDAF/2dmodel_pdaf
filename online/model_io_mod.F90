@@ -32,7 +32,7 @@ contains
     use model_parallel_mod, &
          only: mype_world, MPIErr, COMM_2Dmodel
     use model_mod, &
-         only: nx_p, nx, ny, total_steps
+         only: nx_p, nx, ny
 
     implicit none
 
@@ -48,7 +48,6 @@ contains
     integer :: dimid_x, dimid_y, dimid_t  !< dimension IDs
     integer :: dimids(3)                  !< Array for netcdf operation
     integer :: countv(3), startv(3)       !< Vectors for NC operations
-    character(len=6) :: fieldstr          !< String for field name
     real, allocatable :: field(:,:)       !< Array for global model field
 
 
@@ -113,9 +112,9 @@ contains
   subroutine io_read_sngl(filename, field_p)
 
     use model_parallel_mod, &
-         only: mype_2Dmodel, MPIErr, COMM_2Dmodel
+         only: mype_2Dmodel
     use model_mod, &
-         only: nx_p, nx, ny, total_steps
+         only: nx_p, ny
 
     implicit none
 

@@ -28,10 +28,10 @@ contains
     deallocate(fieldA_p, fieldB_p)
     deallocate(coords_x_p, coords_y_p)
 
-  if (mype_world==0) then
-     write (*, '(/10x, a)') '+++++ PDAF tutorial model completed +++++'
-  end if
+    if (mype_world==0) then
+       write (*, '(/10x, a)') '+++++ PDAF tutorial model completed +++++'
+    end if
 
-end subroutine postprocess
+  end subroutine postprocess
 
 end module model_post_mod

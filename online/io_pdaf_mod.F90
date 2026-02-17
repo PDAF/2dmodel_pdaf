@@ -32,7 +32,7 @@ contains
     use parallel_pdaf_mod, &
          only: mype_model
     use model_pdaf_mod, &
-         only: nx_p, nx, ny
+         only: nx_p, ny
 
     implicit none
 
@@ -81,11 +81,11 @@ contains
 
     use netcdf
     use parallel_pdaf_mod, &
-         only: mype_model, MPIErr, abort_parallel
+         only: mype_model, abort_parallel
     use model_pdaf_mod, &
-         only: nx_p, nx, ny
+         only: nx_p, ny
     use statevector_pdaf_mod, &     ! State vector variables
-         only: id, sfields, n_fields
+         only: sfields, n_fields
 
     implicit none
 
@@ -187,10 +187,8 @@ contains
   subroutine write_pdaf(step, dim_p, dim_ens, state_p, ens_p, variance_p)
 
     use mpi                             ! MPI
-    use parallel_pdaf_mod, &            ! Parallelization variables
-          only: mype_filter
     use statevector_pdaf_mod, &         ! Statevector variables
-         only: id, sfields, n_fields
+         only: sfields, n_fields
 
     implicit none
 
@@ -301,7 +299,7 @@ contains
     use mpi
     use netcdf
     use parallel_pdaf_mod, &             ! Parallelization variables
-         only: COMM_filter, mype_filter, npes_filter, MPIerr, MPIstatus
+         only: COMM_filter, mype_filter, MPIerr
     use model_pdaf_mod, &                ! Model variables
          only: nx, ny, nx_p
 

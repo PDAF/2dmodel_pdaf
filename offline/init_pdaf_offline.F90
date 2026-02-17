@@ -17,7 +17,7 @@
 subroutine init_pdaf_offline()
 
   use model_pdaf_mod, &                ! Model variables
-       only: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p
+       only: nx_p, ny, n_dim, coords_x_p, coords_y_p
   use PDAF, &                          ! PDAF
        only: PDAF3_init, PDAF_set_iparam, &
        PDAFomi_set_domain_limits
@@ -31,7 +31,7 @@ subroutine init_pdaf_offline()
        type_forget, forget, &
        locweight, cradius, sradius, coords_p, &
        type_trans, type_sqrt, &
-       observe_ens, type_obs_init, do_omi_obsstats, &
+       observe_ens, type_obs_init, &
        type_ens_init, file_covar
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
@@ -45,11 +45,11 @@ subroutine init_pdaf_offline()
   implicit none
 
 ! *** Local variables ***
-  integer :: i, j, k, s, off_nx   ! Counters
-  integer :: pdaf_param_i(2)      ! Integer parameter array for filter
-  real    :: pdaf_param_r(1)      ! Real parameter array for filter
-  integer :: status_pdaf          ! PDAF status flag
-  real    :: lim_coords(2,2)      ! limiting coordinates of process sub-domain
+  integer :: i, j, k, s, off_nx        ! Counters
+  integer :: pdaf_param_i(2)           ! Integer parameter array for filter
+  real    :: pdaf_param_r(1)           ! Real parameter array for filter
+  integer :: status_pdaf               ! PDAF status flag
+  real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
 
 ! *** External subroutines ***
   external :: init_ens_pdaf_offline    ! Ensemble initialization
@@ -77,8 +77,8 @@ subroutine init_pdaf_offline()
   write_ens = .true.      ! Write all ensemble states
   write_var = .false.     ! Write ensemble variance fields
 
-! *** Ensemble size ***
-  dim_ens = n_modeltasks  ! Size of ensemble for all ensemble filters
+! *** Ensemble settings ***
+  dim_ens = n_modeltasks  ! Size of ensemble
                           !   We use n_modeltasks here, initialized in init_parallel_pdaf
   type_ens_init = 1       ! Init (1) from model files, (2) from covariance matrix
   file_covar = '../generate_covar/covar.nc'  ! Path and name of covairance matrix file
@@ -109,6 +109,9 @@ subroutine init_pdaf_offline()
 
 ! *** Forecast length (time interval between analysis steps) ***
   delt_obs = 2       ! This should be set according to the data availability
+
+! *** Whether to initialize observation before prepoststep
+  type_obs_init = 0  ! (0) before, (1) after
 
 ! *** Which observation type to assimilate
   assim_A = .true.
@@ -185,29 +188,27 @@ subroutine init_pdaf_offline()
   end if
 
 
-
-
 ! ***************************************************
 ! *** Set coordinates of elements in state vector ***
 ! *** (used for localization in EnKF/ENSRF)       ***
 ! ***************************************************
 
-  ALLOCATE(coords_p(n_dim, dim_state_p))
+  allocate(coords_p(n_dim, dim_state_p))
 
   ! For localization in EnKF and EnSRF/EAKF, PDAFomi_set_localize_covar
   ! is called in the observation modules. This routine requires a 
   ! coordinate array corresponding to the state vector.
 
   s = 0
-  DO k = 1, n_fields
-     DO i = 1, nx_p
-        DO j = 1, ny
+  do k = 1, n_fields
+     do i = 1, nx_p
+        do j = 1, ny
            s = s + 1
            coords_p(1, s) = coords_x_p(i)
            coords_p(2, s) = coords_y_p(j)
-        END DO
-     END DO
-  END DO
+        end do
+     end do
+  end do
 
 
 ! ************************************************************************

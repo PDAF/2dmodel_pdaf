@@ -20,7 +20,7 @@ contains
          only: nx, ny, nx_p, n_dim, fieldA_p, fieldB_p, &
          coords_x_p, coords_y_p, total_steps
     use model_parallel_mod, &       ! Model parallelzation variables
-         only: mype_world, npes_world, mype_2Dmodel, npes_2Dmodel, abort_parallel
+         only: mype_world, mype_2Dmodel, npes_2Dmodel, abort_parallel
     use model_io_mod, &             ! File operations
          only: io_read_sngl
 
@@ -28,7 +28,6 @@ contains
 
 ! *** local variables ***
     integer :: i, j                 ! Counters
-    character(len=2) :: stepstr     ! String for time step
     character(len=100) :: filename  ! Name of output file
 
 

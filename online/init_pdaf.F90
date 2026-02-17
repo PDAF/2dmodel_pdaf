@@ -17,13 +17,12 @@
 subroutine init_pdaf()
 
   use model_pdaf_mod, &                ! Model variables
-       only: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p
+       only: nx_p, ny, n_dim, coords_x_p, coords_y_p
   use PDAF, &                          ! PDAF
-       only: PDAF3_init, PDAF_init_forecast, PDAF_set_iparam, &
+       only: PDAF3_init, PDAF_set_iparam, PDAF_init_forecast, &
        PDAFomi_set_domain_limits, PDAF_DA_GENOBS
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: mype_ens, mype_filter, filterpe, n_modeltasks, &
-       abort_parallel
+       only: mype_ens, mype_filter, n_modeltasks, abort_parallel
   use assimilation_pdaf_mod, &         ! Variables for assimilation
        only: dim_state_p, dim_state, dim_ens, &
        screen, filtertype, subtype, &
@@ -31,14 +30,12 @@ subroutine init_pdaf()
        type_forget, forget, &
        locweight, cradius, sradius, coords_p, &
        type_trans, type_sqrt, &
-       observe_ens, type_obs_init, do_omi_obsstats, &
+       observe_ens, type_obs_init, &
        type_ens_init, file_covar
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
   use io_pdaf_mod, &                   ! File input/output control
        only: write_state, write_ens, write_var
-  use synobs_pdaf_mod, &
-       only: init_file_syn_obs
   use obs_A_pdafomi, &                 ! Variables for observation type A
        only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &                 ! Variables for observation type B
@@ -52,8 +49,6 @@ subroutine init_pdaf()
   real    :: pdaf_param_r(1)           ! Real parameter array for filter
   integer :: status_pdaf               ! PDAF status flag
   real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
-  character(len=100) :: file_syntobs
-  character(len=4) :: procstr
 
 ! *** External subroutines ***
   external :: init_ens_pdaf            ! Ensemble initialization
@@ -80,7 +75,6 @@ subroutine init_pdaf()
   write_state = .true.    ! Write ensemble mean fields
   write_ens = .true.      ! Write all ensemble states
   write_var = .false.     ! Write ensemble variance fields
-
 
 ! *** Ensemble settings ***
   dim_ens = n_modeltasks  ! Size of ensemble
@@ -174,13 +168,12 @@ subroutine init_pdaf()
   ! *** -- These are all optional --        ***
 
   ! Generic settings
-  if (filtertype/=100) then
-     call PDAF_set_iparam(5, type_forget, status_pdaf)      ! Type of forgetting factor
-     call PDAF_set_iparam(6, type_trans, status_pdaf)       ! Type of ensemble transformation
-     call PDAF_set_iparam(7, type_sqrt, status_pdaf)        ! Type of transform square-root (SEIK-sub4/ESTKF)
-     call PDAF_set_iparam(8, observe_ens, status_pdaf)      ! Whether to apply observation operator to ensemble mean
-     call PDAF_set_iparam(9, type_obs_init, status_pdaf)    ! Initialize observation before or after call to prepoststep
-  end if
+  call PDAF_set_iparam(5, type_forget, status_pdaf)      ! Type of forgetting factor
+  call PDAF_set_iparam(6, type_trans, status_pdaf)       ! Type of ensemble transformation
+  call PDAF_set_iparam(7, type_sqrt, status_pdaf)        ! Type of transform square-root (SEIK-sub4/ESTKF)
+  call PDAF_set_iparam(8, observe_ens, status_pdaf)      ! Whether to apply observation operator to ensemble mean
+  call PDAF_set_iparam(9, type_obs_init, status_pdaf)    ! Initialize observation before or after call to prepoststep
+
 
 ! *** Check whether initialization of PDAF was successful ***
   if (status_pdaf /= 0) then

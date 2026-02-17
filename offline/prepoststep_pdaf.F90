@@ -28,16 +28,12 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
      state_p, Uinv, ens_p, flag)
 
   use mpi                             ! MPI
-  use model_pdaf_mod, &               ! Model variables
-       only: nx, ny, nx_p
   use PDAF, &                         ! PDAF diagnostic routines
        only: PDAF_diag_stddev, PDAF_diag_variance, PDAFomi_diag_stats
   use parallel_pdaf_mod, &            ! Parallelization variables
-       only: COMM_filter, mype_filter, npes_filter, MPIerr, MPIstatus
-  use assimilation_pdaf_mod, &        ! Assimilation variables
-       only: dim_state
+       only: COMM_filter, mype_filter
   use statevector_pdaf_mod, &         ! Statevector variables
-       only: id, sfields, n_fields
+       only: sfields, n_fields
   use io_pdaf_mod, &                  ! Output file operations
        only: write_pdaf
 

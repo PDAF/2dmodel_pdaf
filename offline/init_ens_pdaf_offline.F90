@@ -28,11 +28,11 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use assimilation_pdaf_mod, &    ! Assimilation varibles
        only: type_ens_init, file_covar
   use model_pdaf_mod, &           ! Model variables
-       only: nx, ny, nx_p
+       only: nx_p, ny
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: mype_filter
   use statevector_pdaf_mod, &     ! State vector variables
-       only: id, sfields, n_fields
+       only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
        only: read_pdaf, read_covar_pdaf
 

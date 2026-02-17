@@ -34,11 +34,9 @@ contains
 
 
 ! *** Local variables ***
-    integer :: i, s                               ! Counters
     integer :: dimid_iter, dimid_one, dimid_obs   ! IDs for dimensions
     integer :: id_time, id_obs, id_var            ! IDs for variables
     integer :: dimids(2)                          ! Array of IDs
-    integer :: stat(100)                          ! Status array
     integer :: fileid                             ! netcdf file id
     character(len=150) :: attstr                  ! String for attribute
 
@@ -104,12 +102,10 @@ subroutine write_syn_obs(step, file_obs, dim_obs_f, observation_f, screen)
   integer, intent(in) :: screen      !< Whether to print output
 
 ! *** Local variables ***
-  integer :: i                            ! Counters
   integer, save :: iter=0                 ! file iteration counter
   integer :: fileid                       ! netcdf-ID of file
   integer :: id_time, id_obs, id_dimobsf  ! IDs for dimensions
   integer :: id_dimobsmax                 ! ID for dimension variable
-  integer :: stat(100)                    ! status flag
   integer :: countv(2), startv(2)         ! index arrays for writing
 
   integer :: dim_obs_max   ! maximum observation dimension in file
@@ -203,12 +199,9 @@ subroutine read_syn_obs(file_obs, dim_obs_f, observation_f, step, screen)
   integer, intent(in) :: screen      !< Whether to print output
 
 ! *** Local variables ***
-  integer :: i, s                         ! Counters
-  integer, save :: iter=0                 ! file iteration counter
   integer :: fileid                       ! netcdf-ID of file
   integer :: id_obs                       ! IDs for dimensions
   integer :: id_dimobsmax                 ! ID for dimension variable
-  integer :: stat(100)                    ! status flag
   integer :: countv(2), startv(2)         ! index arrays for writing
 
   integer :: dim_obs_max   ! maximum observation dimension in file

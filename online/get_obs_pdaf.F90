@@ -18,8 +18,6 @@ subroutine get_obs_pdaf(step, dim_obs, observation)
        only: write_syn_obs
   use assimilation_pdaf_mod, &
        only: file_synobs
-  use parallel_pdaf_mod, &
-       only: mype_filter
 
   implicit none
 
@@ -27,10 +25,6 @@ subroutine get_obs_pdaf(step, dim_obs, observation)
   integer, intent(in) :: step                 !< Current time step
   integer, intent(in) :: dim_obs              !< Dimension of obs. vector
   real, intent(in)    :: observation(dim_obs) !< Observation vector
-
-  ! Local variables
-  character(len=100) :: file_syntobs          ! Full name of file for synthetic observations
-  character(len=4) :: procstr                 ! 4-digit string for process rank
 
 
 ! *************************

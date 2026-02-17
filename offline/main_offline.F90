@@ -20,7 +20,7 @@ program main_offline
   use mpi                    ! MPI
   use parallel_pdaf_mod, &   ! Parallelization
        only: MPIerr, npes_world, mype_world, &
-       init_parallel, finalize_parallel, COMM_ensemble
+       init_parallel, finalize_parallel
   use initialize_grid_mod, &
        only: initialize_grid
 

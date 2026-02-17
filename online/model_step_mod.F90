@@ -18,7 +18,7 @@ contains
 
     use mpi                         ! MPI
     use model_mod, &                ! Model variables
-         only: nx, ny, nx_p, fieldA_p, fieldB_p, total_steps
+         only: ny, nx_p, fieldA_p, fieldB_p, total_steps
     use model_parallel_mod, &       ! Model parallelization
          only: mype_world
     use model_io_mod, &             ! File operations
@@ -28,9 +28,7 @@ contains
 
 ! *** local variables ***
     integer :: step, i, j           ! Counters
-    character(len=2) :: stepstr     ! String for time step
     real :: store                   ! Store single field element
-    character(len=100) :: filename  !< Name of output file
 
 
 ! ****************
