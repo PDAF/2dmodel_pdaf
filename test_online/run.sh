@@ -23,7 +23,7 @@ OPTIONS="-dim_ens $NENS -filtertype $FILTERTYPE -cradius $CRADIUS"
 #################################################################
 # Link input directory
 
-ln -s ../inputs_online_2fields .
+ln -s ../inputs_2fields .
 
 #################################################################
 # Create and prepare run directories
