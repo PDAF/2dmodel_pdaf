@@ -29,30 +29,30 @@ program generate_covar
   use initialize_grid_mod, &
        only: initialize_grid
   use statevector_pdaf_mod, &     ! State vector variables and init routine
-       only: setup_statevector, id, sfields, n_fields
+       only: setup_statevector, sfields, n_fields
   use parser, &                   ! Command line parser
        only: parse
 
   implicit none
   
 ! *** Local variables ***
-  integer :: i, j, k, s, step, iter, member, maxtimes, rank      !< Counters
+  integer :: i, j, s, step, rank      !< Counters
+  integer :: fid
   character(len=120) :: inpath, outpath         !< File paths
   character(len=120) :: infile, outfile         !< File names
-  character(len=150) :: file_in, ncfile_out   !< File name including path
+  character(len=150) :: file_in, ncfile_out     !< File name including path
   character(len=150) :: attstr                  !< Attribute string for NC (NetCDF) output
-  integer :: ncid_in, ncid_out                  !< NC file IDs
-  integer :: id_dim, id_time, id_state          !< NC dimension and variable IDs
-  integer :: id_sigma         !< NC dimension and variable IDs
-!  integer :: id_mean, id_sigma, id_svec         !< NC dimension and variable IDs
-  integer :: dimid_rank, dimid_state, dimid_one !< NC dimension and variable IDs
-  integer :: steps
-!, dim_state                   ! Dimensions
-  integer :: stat(100)                          !< Status for NC operations
+  integer :: ncid_in, ncid_out                  !< Netcdf file IDs
+!  integer :: id_dim, id_time, id_state          !< Netcdf dimension and variable IDs
+  integer :: id_sigma                           !< Netcdf dimension and variable IDs
+  integer :: dimid_rank, dimid_state, dimid_one !< Netcdf dimension and variable IDs
+  integer :: steps                              !< Number of time steps
+!  integer :: stat(100)                          !< Status for NC operations
+  integer :: id_field             ! Netcdf field id
   integer :: countv(3), startv(3)               !< Vectors for NC operations
   integer :: dimids(3)                          !< Vector for NC operations
   real :: limit                                 !< Lower limit for singular values
-  real, allocatable :: times(:)                 !< Array of times from NC file
+!  real, allocatable :: times(:)                 !< Array of times from NC file
   real, allocatable :: field(:, :)              !< array to hold a single mdoel field
   real, allocatable :: states(:, :)             !< State trajectory
   real, allocatable :: meanstate(:)             !< Mean state of trajectory
@@ -61,7 +61,6 @@ program generate_covar
   real,allocatable,dimension(:,:) :: svdU       !< left singular vectors
   character(len=32) :: handle         ! Handle for command line parser
   character(len=32) :: stepstr         ! String for time step
-  integer :: fid
   integer, allocatable :: id_means(:)
   integer, allocatable :: ids_svec(:)
   integer :: dimid_x, dimid_y
@@ -106,11 +105,11 @@ program generate_covar
 ! ************************************************
 
   ! Maximum number if time slices to consider
-  maxtimes = 1000000
+  steps = 1000000
 
   ! Path to and name of file holding model trajectory
-  inpath = '../inputs_online_2fields/'
-  infile = 'ens'
+  inpath = '../inputs_2fields/'
+  infile = 'ens'  ! Usually 'ens' or 'true'
 
   ! Path to and name of output file holding covariance matrix
   outpath = './'
@@ -119,9 +118,10 @@ program generate_covar
   ! Lower limit for eigenvalue
   limit = 1.0e-20
 
-  ! Set num of time step to read
+  ! Set num of time steps to read
   steps = 9
 
+  ! Parse command line arguments
   handle = 'steps'
   call parse(handle, steps)
 
@@ -172,16 +172,9 @@ program generate_covar
 ! *** Open trajectory file and read dimensions ***
 ! ************************************************
 
-
   write (*,'(/1x,a)') 'Dimensions of experiment:'
   write (*,'(5x,1x,a,i10)') 'state dimension', dim_state
   write (*,'(11x,a,i10)')   'time steps', steps
-
-  if (steps < maxtimes) then
-     write (*,'(1x,a)') '!! Number of available time slices is smaller than maxtimes - resetting!'
-     maxtimes = steps
-  end if
-  write (*,'(13x,a8,i10)') 'maxtimes', maxtimes
 
 
 ! ****************************
@@ -191,10 +184,10 @@ program generate_covar
   write (*,'(/1x,a)') '------- Read trajectory -------------'
 
   allocate(field(ny, nx))
-  allocate(states(dim_state, maxtimes))
+  allocate(states(dim_state, steps))
   allocate(meanstate(dim_state))
 
-  read_files: do step = 1, maxtimes
+  read_files: do step = 1, steps
 
      IF (step<10) then
         write (stepstr, '(i1)') step
@@ -208,17 +201,16 @@ program generate_covar
 
         ! Read field
         if (trim(infile)=='ens') then
-           file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_'//trim(stepstr)//'.txt'
+           file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_'//trim(stepstr)//'.nc'
         else
-           file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_step'//trim(stepstr)//'.txt'
+           file_in = trim(inpath)//trim(infile)//trim(sfields(fid)%fname)//'_step'//trim(stepstr)//'.nc'
         end if
         write (*,*) 'read file ', trim(file_in)
-        open(11, file = file_in, status='old')
 
-       ! Read global field
-        do i = 1, ny
-           read (11, *) field(i, :)
-        end do
+        call nfcheck( NF90_OPEN(trim(file_in), NF90_NOWRITE, ncid_in))
+        call nfcheck( NF90_INQ_VARID(ncid_in, 'field', id_field))
+        call nfcheck( NF90_GET_VAR(ncid_in, id_field, field))
+        call nfcheck( NF90_CLOSE(ncid_in))
 
        ! +++ Note on counter s:
        ! +++ Using the counter s looks primitive, but it
@@ -237,7 +229,6 @@ program generate_covar
         close(11)
 
      end do
-     write (*,*) 'mean', sum(states(1,:))/maxtimes
 
   end do read_files
 
@@ -273,34 +264,33 @@ program generate_covar
   !       with difference variances. Here, we only have one field
 
   ! Allocate arrays for singular values and vectors
-  allocate(svals(maxtimes))
-  allocate(svdU(dim_state, maxtimes))
+  allocate(svals(steps))
+  allocate(svdU(dim_state, steps))
 
   ! Call routine generating matrix decomposition
-  call PDAF_eofcovar(dim_state, maxtimes, nfields, dim_fields, offsets, &
+  call PDAF_eofcovar(dim_state, steps, nfields, dim_fields, offsets, &
        remove_mean, do_mv, states, stddev, svals, svdU, meanstate, 1, status)
 
 
-write (*,*) 'svals', svals
 ! *********************************************************
 ! *** Write mean state and decomposed covariance matrix ***
 ! *********************************************************
 
 ! *** Determine rank to write ***
 
-  getlimit: do i = 1, maxtimes
+  getlimit: do i = 1, steps
      if (svals(i) >= limit) then
         rank = i
      else
         exit getlimit
      end if
   end do getlimit
-  if (rank < maxtimes) then
+  if (rank < steps) then
      write (*,'(1x,a,i6,a,es10.2)') &
           'Use maximum of ', rank, ' eigenvectors due to eigenvalue-limit of ',limit
   end if
-  if (rank == maxtimes) then
-     rank = maxtimes - 1
+  if (rank == steps) then
+     rank = steps - 1
      write (*,'(5x,a,i4)') '++ reset rank to ',rank
   end if
 
@@ -313,28 +303,20 @@ write (*,*) 'svals', svals
   write (*,'(/1x,a)') '------- Write decomposed covariance matrix and mean state -------------'
 
   ! *** Initialize file
-  s = 1
-  stat(s) = NF90_CREATE(ncfile_out, 0, ncid_out) 
+  call nfcheck( NF90_CREATE(ncfile_out, 0, ncid_out))
 
   attstr = 'Mean state, singular vectors and values of decomposed covariance matrix for Lorenz96'
-  s = s + 1
-  stat(s) = NF90_PUT_ATT(ncid_out, NF90_GLOBAL, 'title', trim(attstr)) 
+  call nfcheck( NF90_PUT_ATT(ncid_out, NF90_GLOBAL, 'title', trim(attstr)))
 
   ! Define dimensions
-  s = s + 1
-  stat(s) = NF90_DEF_DIM(ncid_out, 'rank',  rank, dimid_rank)
-  s = s + 1
-  stat(s) = NF90_DEF_DIM(ncid_out, 'dim_state', dim_state, dimid_state)
-  s = s + 1
-  stat(s) = NF90_DEF_DIM(ncid_out, 'one',  1, dimid_one)
-  s = s + 1
-  stat(s) = NF90_DEF_DIM(ncid_out, 'dim_x', nx, dimid_x)
-  s = s + 1
-  stat(s) = NF90_DEF_DIM(ncid_out, 'dim_y', ny, dimid_y)
+  call nfcheck( NF90_DEF_DIM(ncid_out, 'rank',  rank, dimid_rank))
+  call nfcheck( NF90_DEF_DIM(ncid_out, 'dim_state', dim_state, dimid_state))
+  call nfcheck( NF90_DEF_DIM(ncid_out, 'one',  1, dimid_one))
+  call nfcheck( NF90_DEF_DIM(ncid_out, 'dim_x', nx, dimid_x))
+  call nfcheck( NF90_DEF_DIM(ncid_out, 'dim_y', ny, dimid_y))
 
   ! Define variables
-  s = s + 1
-  stat(s) = NF90_DEF_VAR(ncid_out, 'sigma', NF90_DOUBLE, dimid_rank, Id_sigma)
+  call nfcheck( NF90_DEF_VAR(ncid_out, 'sigma', NF90_DOUBLE, dimid_rank, Id_sigma))
 
   ! mean state
 
@@ -344,15 +326,8 @@ write (*,*) 'svals', svals
 
   allocate(id_means(n_fields))
   do fid = 1, n_fields
-     s = s + 1
-     stat(s) = NF90_DEF_VAR(ncid_out, 'mean'//trim(sfields(fid)%fname), NF90_DOUBLE, dimids(1:2), id_means(fid))
+     call nfcheck( NF90_DEF_VAR(ncid_out, 'mean'//trim(sfields(fid)%fname), NF90_DOUBLE, dimids(1:2), id_means(fid)))
   end do
-
-!   dimids(1) = DimId_state
-!   dimids(2) = dimid_one
-! 
-!   s = s + 1
-!   stat(s) = NF90_DEF_VAR(ncid_out, 'meanstate', NF90_DOUBLE, dimids(1:2), Id_mean)
 
   ! singular vectors
   dimids(1) = DimId_y
@@ -361,29 +336,14 @@ write (*,*) 'svals', svals
 
   allocate(ids_svec(n_fields))
   do fid = 1, n_fields
-     s = s + 1
-     stat(s) = NF90_DEF_VAR(ncid_out, 'u_svd'//trim(sfields(fid)%fname), NF90_DOUBLE, dimids(1:3), ids_svec(fid))
+     call nfcheck( NF90_DEF_VAR(ncid_out, 'u_svd'//trim(sfields(fid)%fname), NF90_DOUBLE, dimids(1:3), ids_svec(fid)))
   end do
-
-
-!   dimids(1) = DimId_state
-!   dimids(2) = dimid_rank
-! 
-!   s = s + 1
-!   stat(s) = NF90_DEF_VAR(ncid_out, 'u_svd', NF90_DOUBLE, dimids(1:2), Id_svec)
 
   ! End Define mode
-  s = s + 1
-  stat(s) = NF90_ENDDEF(ncid_out) 
-
-  do i = 1,  s
-     if (stat(i) /= NF90_NOERR) &
-          write(*, *) 'NetCDF error in init of output file, no.', i
-  end do
+  call nfcheck( NF90_ENDDEF(ncid_out))
 
   ! Write singular values
-  s = s + 1
-  stat(s) = NF90_PUT_VAR(ncid_out, id_sigma, svals(1:rank))
+  call nfcheck( NF90_PUT_VAR(ncid_out, id_sigma, svals(1:rank)))
 
 
   ! Write mean state
@@ -394,22 +354,9 @@ write (*,*) 'svals', svals
      countv(2) = nx
      startv(1) = 1
      countv(1) = ny
-     s = s + 1
-     stat(s) = NF90_PUT_VAR(ncid_out, id_means(fid), &
+     call nfcheck( NF90_PUT_VAR(ncid_out, id_means(fid), &
           meanstate(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
-          start=startv(1:2), count=countv(1:2))
-  end do
-
-!   startv(2) = 1
-!   countv(2) = 1
-!   startv(1) = 1
-!   countv(1) = dim_state
-!   s = s + 1
-!   stat(s) = NF90_PUT_VAR(ncid_out, id_mean, meanstate, start=startv(1:2), count=countv(1:2))
-
-  do i = 1,  s
-     if (stat(i) /= NF90_NOERR) &
-          write(*, *) 'NetCDF error in writing state to output file, no.', i
+          start=startv(1:2), count=countv(1:2)))
   end do
 
 
@@ -425,35 +372,15 @@ write (*,*) 'svals', svals
         countv(2) = nx
         startv(1) = 1
         countv(1) = ny
-        s = s + 1
-        stat(s) = NF90_PUT_VAR(ncid_out, ids_svec(fid), &
+        call nfcheck( NF90_PUT_VAR(ncid_out, ids_svec(fid), &
              svdU(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim, i), &
-             start=startv, count=countv)
-     end do
-
-!     ! Write singular vector
-!      startv(2) = i
-!      countv(2) = 1
-!      startv(1) = 1
-!      countv(1) = dim_state
-!      s = 1
-!      stat(s) = NF90_PUT_VAR(ncid_out, id_svec, svdU(:,i), start=startv(1:2), count=countv(1:2))
-
-     do k = 1,  s
-        if (stat(k) /= NF90_NOERR) &
-             write(*, *) 'NetCDF error in writing singular vectors, no.', i,' rank',i
+             start=startv, count=countv))
      end do
 
   end do writevectors
 
   ! Close file
-  s = 1
-  stat(s) = NF90_CLOSE(ncid_out)
-
-  do i = 1,  s
-     if (stat(i) /= NF90_NOERR) &
-          write(*, *) 'NetCDF error in singular vectors to output file, no.', i
-  end do
+  call nfcheck( NF90_CLOSE(ncid_out))
 
 
 
@@ -468,3 +395,23 @@ write (*,*) 'svals', svals
 
 end program generate_covar
 
+
+
+!-------------------------------------------------------------------------------
+!> Check status of netcdf operation
+!!
+subroutine nfcheck(status)
+
+  use netcdf
+  use parallel_pdaf_mod, &
+       only: abort_parallel
+
+! *** Arguments ***
+  integer, intent ( in) :: status   ! Reading status
+
+  if(status /= nf90_noerr) then
+     print *, trim(nf90_strerror(status))
+     call abort_parallel()
+  end if
+
+end subroutine nfcheck

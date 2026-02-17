@@ -59,7 +59,6 @@ subroutine init_parallel_pdaf(screen)
   integer :: i, j                     ! Counters
   integer :: pe_index                 ! Index of Process
   integer :: my_color, color_couple   ! Variables for communicator-splitting 
-  logical :: iniflag                  ! Flag whether MPI is initialized
   integer :: flag                     ! Status flag
   integer :: dim_ens                  ! Ensemble size / number of model tasks
   character(len=32) :: handle         ! Handle for command line parser
@@ -69,12 +68,6 @@ subroutine init_parallel_pdaf(screen)
   ! Specify online of offline coupling
   online_coupling = .false.
 
-  ! *** The module variable is N_MODELTASKS. Since it has to be equal
-  ! *** to the ensemble size we parse dim_ens from the command line.
-
-  handle = 'dim_ens'
-  call parse(handle, dim_ens)
-
   ! *** Define ensemble communicator.                   ***
   ! *** This is the communicator in which PDAF operates ***
 
@@ -82,6 +75,14 @@ subroutine init_parallel_pdaf(screen)
 
 
 ! --- The following is generic apart from the very end of the routine ---
+
+  ! *** Parse number of model tasks ***
+  ! *** The module variable is N_MODELTASKS. Since it has to be equal
+  ! *** to the ensemble size we parse dim_ens from the command line.
+
+  handle = 'dim_ens'
+  call parse(handle, dim_ens)
+  if (online_coupling) n_modeltasks = dim_ens
 
   ! *** Fix number or model tasks for offline DA ***
   if (.not. online_coupling) n_modeltasks = 1

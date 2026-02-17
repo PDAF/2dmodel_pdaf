@@ -26,7 +26,6 @@ contains
 
 ! *** local variables ***
     integer :: i, j                 ! Counters
-    real, allocatable :: field(:,:) ! Global model field
 
 
 ! **********************
