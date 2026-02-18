@@ -9,7 +9,7 @@ In particular, this variant uses an advanced scheme to handle the fields in the 
 
 Notes on the model: 
 * The tutorial model is very simple and without real dynamics. Even though the model uses a 2-dimensional domain, it is practically a 1-dimensional case (which is just rotated by 45 degrees). This model allows to perform DA with very small ensembles with a minimum of 3 states. This is far lower than we would use in real cases, but it is useful to perform some experiments on a notebook computer. For real cases one would rather use an ensemble of at least 20 states.
-* Because the model is practically 1-dimensional, using the localized ensemble filters does not improve the state estimate. However, using a localize filter shows the effects on the space of the resulting state estimate.
+* The ensemble is generated in a systemtic way (by rotating the field for the first model field and shifting for the second), which is artificial but help todemonstrated some effects e.g. of the localization. 
 * The model does not read restart files. Thus, one cannot perform a realistic sequence of offline analysis steps. Only a single offline analysis step is done for demonstration.
   
 
@@ -22,7 +22,7 @@ The directories containing the model and coupled model-PDAF codes are the follow
 
 Additional directories are
 * generate_covar/ - contains the code for a program generating a covariance matrix file from model outputs. This can be used to initialize an ensemble using second-order exact sampling (activated using '-type_ens_init 2' when running the DA cases.
-* inputs_online_2fields/ - contains the input files, e.g. observation files and files to provide ensemble states. It also contains the script 'pdaf_tutorial_online.py' used to generate the input files.
+* inputs_2fields/ - contains the input files, e.g. observation files and files to provide ensemble states. It also contains the script 'pdaf_tutorial_online.py' used to generate the input files.
 * plotting/ - contains plot scripts
 * test_online/ - contains the script 'run.sh' which shows an example of how to run the online-coupled case in separate directories
 
