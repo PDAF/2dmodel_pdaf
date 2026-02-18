@@ -119,7 +119,7 @@ program generate_covar
   limit = 1.0e-20
 
   ! Set num of time steps to read
-  steps = 9
+  steps = 20
 
   ! Parse command line arguments
   handle = 'steps'
