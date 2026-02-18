@@ -24,6 +24,7 @@ dxobsB = 6         # x-Grid spacing for observations type B
 dyobsB = 5         # y-Grid spacing for observations type B
 obsB_offsetx = -2  # x-offset in position of observations type B
 obsB_offsety = -1  # y-offset in position of observations type B
+rotate = 1         # 1 to rotate ensemble states, 0 to shift them
 
 dowrite = 1        # 1 to write files
 
@@ -78,7 +79,12 @@ ens = np.zeros((dim_y, dim_x, dim_ens))
 for k in range(dim_ens):
    for j in range(dim_x):
       for i in range(dim_y):
-         ens[i,j,k] = np.sin(2*np.pi*((i+1)/dim_y + (j+1)/dim_x) + 2*0.5*np.pi*(k+1+5)/dim_ens)
+         if rotate==1:
+            # rotating ensemble states
+            ens[i,j,k] = np.sin(2*np.pi*((i+1)/dim_y + (j+1)/dim_x*(0.2*(k-dim_ens/2))))
+         else:
+            # shifting ensemble states
+            ens[i,j,k] = np.sin(2*np.pi*((i+1)/dim_y + (j+1)/dim_x + 0.25*k*np.pi/dim_y))
 
 # Write ensemble files for fieldA
 if dowrite==1:
