@@ -4,7 +4,7 @@
 online/model_pdaf
 online/model
 offline/offline_pdaf
-online/*.txt
-offline/*.txt
+online/*.nc
+offline/*.nc
 2dmodel/model
 generate_covar/generate_covar

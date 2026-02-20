@@ -175,6 +175,59 @@ contains
 
   end subroutine read_covar_pdaf
 
+!-------------------------------------------------------------------------------
+!> Read read mean state from covariance matrix file
+!!
+!! Routine to read the mean state variable from the 
+!! file holding the covariance matrix.
+!!
+  subroutine read_mean_covar_pdaf(filename, state_p)
+
+    use netcdf
+    use parallel_pdaf_mod, &
+         only: mype_model
+    use model_pdaf_mod, &
+         only: nx_p, ny
+    use statevector_pdaf_mod, &     ! State vector variables
+         only: sfields, n_fields
+
+    implicit none
+
+    ! Arguments
+    character(len=100), intent(in) :: filename  !< Name of output file
+    real, intent(out) :: state_p(:)             !< Process local mean state
+
+    ! Local variables
+    integer :: fid                      ! Counters
+    integer :: ncid                     ! ID of output file
+    integer :: id_state                 ! ID for field
+    integer :: countv(2), startv(2)     ! Vectors for NC operations
+    integer :: off_nx                   ! Offset of local grid in global domain in x-direction
+
+
+    ! offset in x-direction due to domain-decomposition
+    off_nx = nx_p*mype_model
+
+    call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
+
+    ! Read mean state
+    do fid = 1, n_fields
+       call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
+
+       startv(2) = 1+off_nx
+       countv(2) = nx_p
+       startv(1) = 1
+       countv(1) = ny
+
+       call nfcheck( NF90_GET_VAR(ncid, id_state, &
+            state_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
+            start=startv(1:2), count=countv(1:2)))
+    end do
+
+    call nfcheck( NF90_CLOSE(ncid))
+
+  end subroutine read_mean_covar_pdaf
+
 
 
 !-------------------------------------------------------------------------------

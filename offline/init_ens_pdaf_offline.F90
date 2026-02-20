@@ -24,7 +24,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
   use netcdf
   use PDAF, &                     ! PDAF
-       only: PDAF_sampleens
+       only: PDAF_sampleens, PDAF_diag_ensmean
   use assimilation_pdaf_mod, &    ! Assimilation varibles
        only: type_ens_init, file_covar
   use model_pdaf_mod, &           ! Model variables
@@ -34,7 +34,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use statevector_pdaf_mod, &     ! State vector variables
        only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
-       only: read_pdaf, read_covar_pdaf
+       only: read_pdaf, read_mean_covar_pdaf, read_covar_pdaf
 
   implicit none
 
@@ -65,8 +65,10 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   ! *** Generate full ensemble on filter-Process 0 ***
   if (mype_filter==0) then
      write (*, '(/a, 5x, a)') 'model-PDAF', 'Initialize state ensemble'
-     if (type_ens_init==1) then
+     if (type_ens_init==1 .or. type_ens_init==2) then
         write (*, '(a, 5x, a)') 'model-PDAF', '--- read ensemble from files'
+        if (type_ens_init==2) &
+             write (*, '(a, 5x, a)') 'model-PDAF', '--- read ensemble mean from covariance matrix file'
      else
         write (*, '(a, 5x, a)') 'model-PDAF', &
              '--- generate ensemble from covariance matrix with 2nd-order exact sampling'
@@ -79,7 +81,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 ! *** Initialize ensemble      ***
 ! ********************************
 
-  inittype: if (type_ens_init==1) then
+  inittype: if (type_ens_init==1 .or. type_ens_init==2) then
 
      ! *************************************************
      ! *** Initialize ensemble reading model outputs ***
@@ -87,9 +89,6 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
      ! allocate memory for temporary fields
      allocate(field_p(ny, nx_p))
-
-     if (mype_filter==0) &
-          write (*,'(a, 5x, a)') 'model-PDAF', '--- read ensemble files'
 
      do member = 1, dim_ens
         if (member<10) then
@@ -111,7 +110,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
            ! +++ makes the code fail-save because it avoids
            ! +++ index calculations involving nx_p or ny.
 
-           ! Initialize process-local part of ensemble
+           ! Initialize process-local part of ensemble from field array
            s = sfields(fid)%off
            do j = 1, nx_p
               do i = 1, ny
@@ -121,6 +120,24 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
            end do
         end do
      end do
+
+     ! Replace ensemble mean state by mean from covariance matrix file
+     if (type_ens_init==2) then
+        if (mype_filter==0) &
+             write (*,'(a, 5x, a)') 'model-PDAF', '--- set ensemble mean state'
+
+        ! Compute and substract ensemble mean
+        call PDAF_diag_ensmean(dim_p, dim_ens, state_p, ens_p, flag)
+        do member = 1, dim_ens
+           ens_p(:,member) = ens_p(:,member) - state_p
+        end do
+
+        ! Read and add new mean
+        call read_mean_covar_pdaf(file_covar, state_p)
+        do member = 1, dim_ens
+           ens_p(:,member) = ens_p(:,member) + state_p
+        end do
+     end if
 
      deallocate(field_p)
 
@@ -137,7 +154,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ! *** Read initial state and covar matrix ***
 
      if (mype_filter==0) &
-          write(*,'(a,5x,a,a)') 'model-PDAF', '--- Read covariance information from ', trim(file_covar)
+          write(*,'(a,5x,a,a)') 'model-PDAF', '--- read covariance information from ', trim(file_covar)
 
      call read_covar_pdaf(file_covar, dim_ens, eofs, svals, state_p)
 

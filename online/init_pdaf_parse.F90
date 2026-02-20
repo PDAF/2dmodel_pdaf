@@ -63,11 +63,12 @@ subroutine init_pdaf_parse()
   handle = 'file_covar'              ! Path and name of covariance matrix file
   call parse(handle, file_covar)
 
+  ! Setting controlling file output
   handle = 'write_state'             ! Whether to write ensemble mean fields
   call parse(handle, write_state)
-  handle = 'write_ens'              ! Whether to write ensemble files
+  handle = 'write_ens'               ! Whether to write ensemble files
   call parse(handle, write_ens)
-  handle = 'write_var'              ! Whether to write ensemble variance files
+  handle = 'write_var'               ! Whether to write ensemble variance files
   call parse(handle, write_var)
 
 

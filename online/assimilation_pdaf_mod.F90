@@ -20,13 +20,14 @@ module assimilation_pdaf_mod
   implicit none
   save
 
-! *** Variables specific for model setup ***
+! *** Variables specific for tutorial model ***
 
-  real :: coords_l(2)                   !< Coordinates of local analysis domain
-  integer :: type_ens_init=2          ! Type of ensemble init:
-                                      ! (1) read model files
-                                      ! (2) generate ensemble from covariance matrix
-  character(len=100) :: file_covar    ! Path and name of covariance matrix file
+  real :: coords_l(2)                 !< Coordinates of local analysis domain
+  integer :: type_ens_init=1          !< Type of ensemble init:
+                                      !< (1) read model files; use mean state from these files
+                                      !< (2) read model files; use mean state from covariance file 
+                                      !< (3) generate ensemble from covariance matrix
+  character(len=100) :: file_covar    !< Path and name of covariance matrix file
 
 !$OMP THREADPRIVATE(coords_l)
 

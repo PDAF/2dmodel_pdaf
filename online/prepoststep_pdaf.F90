@@ -56,7 +56,6 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 ! *** local variables ***
   integer :: i, j                     ! Counters
   integer :: nobs                     ! Number of observations
-  integer :: verbose                  ! Flag for screen output
   integer :: istart, iend             ! stard and end index of a field in state vector
   integer :: pdaf_status              ! status flag
   real :: stddev_g                    ! Global ensemble standard deviation over all fields
@@ -84,10 +83,12 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
   end if
 
 
-! ************************************************************
-! *** Compute ensemble mean and standard deviation         ***
-! *** (=RMS errors according to sampled covar matrix)      ***
-! ************************************************************
+! *****************************************
+! *** Compute and display diagnostics   ***
+! *****************************************
+
+! *** Compute ensemble mean and standard deviation
+! *** (=RMS errors according to sampled covar matrix)
 
   ! Allocate fields
   allocate(ens_stddev(n_fields))
@@ -104,24 +105,6 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
           ens_stddev(j), 1, COMM_filter, pdaf_status)
   end do
 
-  ! Compute ensemble variance in state vector format
-
-  allocate(variance_p(dim_p))
-
-  call PDAF_diag_variance(dim_p, dim_ens, state_p, ens_p, variance_p, &
-     stddev_g, 0, 0, COMM_filter, pdaf_status)
-
-  ! Compute observation diagnostics
-
-  verbose = 0
-  if (mype_filter==0) verbose = 1
-  call PDAFomi_diag_stats(nobs, obsstats_ptr, verbose)
-
-
-! *****************
-! *** Screen IO ***
-! *****************
-
   ! Output ensemble standard deviations
   if (mype_filter == 0) then
      write (*, '(a,6x,a)') 'model-PDAF', 'Ensemble standard deviation (estimated RMS error)'
@@ -130,6 +113,17 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
              'model-PDAF', 'stddev-'//anastr, trim(sfields(i)%name), ens_stddev(i)
      end do
   end if
+
+! *** Compute ensemble variance in state vector format
+
+  allocate(variance_p(dim_p))
+
+  call PDAF_diag_variance(dim_p, dim_ens, state_p, ens_p, variance_p, &
+     stddev_g, 0, 0, COMM_filter, pdaf_status)
+
+! *** Compute observation diagnostics
+
+  call PDAFomi_diag_stats(nobs, obsstats_ptr, 1-mype_filter)
 
 
 ! *******************
