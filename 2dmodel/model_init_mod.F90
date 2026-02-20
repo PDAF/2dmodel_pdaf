@@ -39,7 +39,7 @@ contains
     nx = 36          ! Extent of grid in x-direction
     ny = 18          ! Extent of grid in y-direction
     n_dim = 2        ! Number of model dimensions
-    total_steps = 18 ! Number of time steps to perform
+    total_steps = 20 ! Number of time steps to perform
 
 ! *** Screen output ***
     if (mype_world == 0) then

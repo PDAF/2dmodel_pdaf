@@ -29,6 +29,8 @@ contains
 ! *** local variables ***
     integer :: step, i, j           ! Counters
     real :: store                   ! Store single field element
+    character(len=100) :: filename  ! Name of output file
+    character(len=2) :: stepstr     ! String for time step
 
 
 ! ****************
