@@ -20,6 +20,8 @@ stddev_obs = 0.5   # error standard deviation for observations type A
 stddev_obsB = 0.25 # error standard deviation for observations type B
 dxobs = 5          # x-Grid spacing for observations type A
 dyobs = 4          # y-Grid spacing for observations type A
+obs_offsetx = -4   # x-offset in position of observations type A
+obs_offsety = -3   # y-offset in position of observations type A
 dxobsB = 6         # x-Grid spacing for observations type B
 dyobsB = 5         # y-Grid spacing for observations type B
 obsB_offsetx = -2  # x-offset in position of observations type B
@@ -182,7 +184,7 @@ if dowrite==1:
    trueB[0, :,:] = np.transpose(stateB[:,:])
    ncfile.close()
 
-# Write ensemble file for both fields
+# Write ensemble file for both fields and all steps
 if dowrite==2:
    ncfile = nc.Dataset('ens.nc',mode='w')
    xdim = ncfile.createDimension('dim_x', dim_x)
@@ -213,8 +215,8 @@ obs = np.zeros((dim_y, dim_x, dim_step+1))
 obs[:,:,:] = -999
 
 for step in range(1,dim_step+1):
-   for j in range(dxobs-1,dim_x,dxobs):
-      for i in range(dyobs-1,dim_y,dyobs):
+   for j in range(dxobs-1+obs_offsetx,dim_x,dxobs):
+      for i in range(dyobs-1+obs_offsety,dim_y,dyobs):
          obs[i,j,step] = full_obs[i,j,step]
 
 if dowrite==1:
