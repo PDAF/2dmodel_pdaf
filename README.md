@@ -55,7 +55,7 @@ The directory plotting/ contains Python plot scripts. They can be used like
 ```
 plot_diff.py FILE1 FILE2      # Plot the difference of two files and display their RMS difference
 plot_file.py FILE             # Plot the field in one file
-plot_obs.py OBSFILE           # Plot one observation file
+plot_obs.py OBSFILE STEP      # Plot one observation file
 ```
 
 ### Examples for online coupled DA
