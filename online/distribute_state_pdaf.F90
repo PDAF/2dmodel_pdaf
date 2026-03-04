@@ -4,14 +4,11 @@
 !!
 !! Used in all DA methods.
 !!
-!! During the forecast phase of the filter this subroutine
-!! is called from PDAF_init_forecast or PDAF3_assimilate.
-!! supplying a model state, which has to be evolved. 
-!! The routine has to initialize the fields of the 
-!! model (typically available through a module) from 
-!! the state vector of PDAF. With parallelization, 
-!! MPI communication might be required to 
-!! initialize all subdomains on the model Processs.
+!! During the forecast phase of the filter this subroutine is called from
+!! PDAF_init_forecast or PDAF3_assimilate  supplying a model state, which
+!! has to be integrated. The routine has to initialize the fields of the 
+!! model (typically available through a module) from the state vector 
+!! provided by PDAF.
 !!
 !! The routine is executed by each process that is
 !! participating in the model integrations.
@@ -22,10 +19,12 @@
 !!
 subroutine distribute_state_pdaf(dim_p, state_p)
 
-  use model_pdaf_mod, &             ! Model variables
-       only: nx_p, ny, fieldA_p, fieldB_p
-  use statevector_pdaf_mod, &       ! State vector variables
+  use statevector_pdaf_mod, &            ! State vector variables
        only: id, sfields
+
+  ! Specific for 2D tutorial model
+  use model_pdaf_mod, &                  ! Model variables
+       only: nx_p, ny, fieldA_p, fieldB_p
 
   implicit none
   

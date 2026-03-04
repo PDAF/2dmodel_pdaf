@@ -28,6 +28,8 @@ subroutine init_pdaf_parse()
        type_ens_init, file_covar
   use io_pdaf_mod, &           ! File input/output control
        only: write_state, write_ens, write_var
+
+  ! Specific for 2D tutorial model
   use obs_A_pdafomi, &         ! Variables for observation type A
        only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &         ! Variables for observation type B
@@ -42,6 +44,8 @@ subroutine init_pdaf_parse()
 ! **********************************
 ! *** Parse command line options ***
 ! **********************************
+
+!+++ Specific part for 2D tutorial model
 
   ! Observation settings - particular for the implemented observation modules
   handle = 'assim_A'                 ! Whether to assimilation observation type A
@@ -71,6 +75,7 @@ subroutine init_pdaf_parse()
   handle = 'write_var'               ! Whether to write ensemble variance files
   call parse(handle, write_var)
 
+!+++ End of specific part
 
 !------------------------------------------------------------------------------
 ! The remaining parse commands should be generic; usually no change necessary

@@ -27,14 +27,12 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
        only: PDAF_sampleens, PDAF_diag_ensmean
   use assimilation_pdaf_mod, &    ! Assimilation varibles
        only: type_ens_init, file_covar
-  use model_pdaf_mod, &           ! Model variables
-       only: nx_p, ny
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: mype_filter
   use statevector_pdaf_mod, &     ! State vector variables
        only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
-       only: read_pdaf, read_mean_covar_pdaf, read_covar_pdaf
+       only: read_state_field_pdaf, read_mean_covar_pdaf, read_covar_pdaf
 
   implicit none
 
@@ -50,10 +48,9 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
   integer, intent(inout) :: flag                   !< PDAF status flag
 
 ! *** local variables ***
-  integer :: i, j, s, fid, member     ! Counters
-  character(len=4) :: ensstr          ! String for ensemble member
+  integer :: fid, member              ! Counters
+  character(len=2) :: ensstr          ! String for ensemble member
   character(len=100) :: filename      ! Name of input file
-  real, allocatable :: field_p(:,:)   ! process-local model field
   real, allocatable :: eofs(:,:)      ! matrix of eigenvectors V 
   real, allocatable :: svals(:)       ! singular values
 
@@ -87,39 +84,20 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ! *** Initialize ensemble reading model outputs ***
      ! *************************************************
 
-     ! allocate memory for temporary fields
-     allocate(field_p(ny, nx_p))
+!+++ Specific part for 2D tutorial model
 
      do member = 1, dim_ens
-        if (member<10) then
-           write (ensstr, '(i1)') member
-        elseif (member<100) then
-           write (ensstr, '(i2)') member
-        elseif (member<1000) then
-           write (ensstr, '(i3)') member
-        end if
+        write (ensstr, '(i2.2)') member
 
+        ! Read fields from ensemble files
         do fid = 1, n_fields
-
-           ! Read ensemble files
            filename = '../inputs_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
-           call read_pdaf(filename, field_p)
 
-           ! +++ Note on counter s:
-           ! +++ Using the counter s looks primitive, but it
-           ! +++ makes the code fail-save because it avoids
-           ! +++ index calculations involving nx_p or ny.
-
-           ! Initialize process-local part of ensemble from field array
-           s = sfields(fid)%off
-           do j = 1, nx_p
-              do i = 1, ny
-                 s = s + 1
-                 ens_p(s, member) = field_p(i, j)
-              end do
-           end do
+           call read_state_field_pdaf(filename, ens_p(sfields(fid)%off+1:sfields(fid)%off+sfields(fid)%dim, member))
         end do
      end do
+
+!+++ End of specific part
 
      ! Replace ensemble mean state by mean from covariance matrix file
      if (type_ens_init==2) then
@@ -138,8 +116,6 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
            ens_p(:,member) = ens_p(:,member) + state_p
         end do
      end if
-
-     deallocate(field_p)
 
   else inittype
 

@@ -27,7 +27,7 @@
 !> Call-back routine for init_dim_obs
 !!
 !! This routine calls the observation-specific
-!! routines init_dim_obs_TYProcess.
+!! routines init_dim_obs_OBSTYPE.
 !!
 subroutine init_dim_obs_pdafomi(step, dim_obs)
 
@@ -74,7 +74,7 @@ end subroutine init_dim_obs_pdafomi
 !> Call-back routine for obs_op
 !!
 !! This routine calls the observation-specific
-!! routines obs_op_TYProcess.
+!! routines obs_op_OBSTYPE.
 !!
 subroutine obs_op_pdafomi(step, dim_p, dim_obs, state_p, ostate)
 
@@ -110,8 +110,8 @@ end subroutine obs_op_pdafomi
 !-------------------------------------------------------------------------------
 !> Call-back routine for init_dim_obs_l
 !!
-!! This routine calls the routine PDAFomi_init_dim_obs_l
-!! for each observation type.
+!! This routine calls the observation-specific
+!! routines init_dim_obs_l_OBSTYPE,.
 !!
 subroutine init_dim_obs_l_pdafomi(domain_p, step, dim_obs, dim_obs_l)
 

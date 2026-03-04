@@ -20,13 +20,12 @@ module io_pdaf_mod
 contains
 
 !-------------------------------------------------------------------------------
-!> Read field on subdomain from a netCDF output file
+!> Read field on subdomain from a netCDF output file into state vector
 !!
 !! Routine to read the subdomain-part of a specific field
 !! at one time step.
-!! This is a copy of io_read_sngl from model_io_mod.
 !!
-  subroutine read_pdaf(filename, field_p)
+  subroutine read_state_field_pdaf(filename, state_p)
 
     use netcdf
     use parallel_pdaf_mod, &
@@ -38,7 +37,7 @@ contains
 
     ! Arguments
     character(len=100), intent(in) :: filename  !< Name of output file
-    real, intent(inout) :: field_p(:,:)         !< Decomposed model field
+    real, intent(inout) :: state_p(:)           !< Part of process-local state vector
 
     ! Local variables
     integer :: ncid                 ! ID of output file
@@ -63,12 +62,12 @@ contains
     startv(3) = 1
     countv(3) = 1
 
-    call nfcheck( NF90_GET_VAR(ncid, id_field, field_p, &
+    call nfcheck( NF90_GET_VAR(ncid, id_field, state_p, &
          start=startv(1:3), count=countv(1:3)))
 
     call nfcheck( NF90_CLOSE(ncid))
 
-  end subroutine read_pdaf
+  end subroutine read_state_field_pdaf
 
 !-------------------------------------------------------------------------------
 !> Read covariance matrix information

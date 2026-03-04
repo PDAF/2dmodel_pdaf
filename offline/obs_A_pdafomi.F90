@@ -176,7 +176,6 @@ contains
     real, allocatable :: obs_p(:)        ! Process-local observation vector
     real, allocatable :: ivar_obs_p(:)   ! Process-local inverse observation error variance
     real, allocatable :: ocoord_p(:,:)   ! Process-local observation coordinates 
-    character(len=2) :: stepstr          ! String for time step
     integer :: ncid, id_obs              ! variables for netcdf file reading
     integer :: countv(3), startv(3)      ! Vectors for NC operations
     character(len=4) :: procstr          ! 4-digit string for process rank
@@ -222,12 +221,6 @@ contains
 
     allocate(obs_field(ny, nx))
 
-    if (step<10) then
-       write (stepstr, '(i1)') step
-    else
-       write (stepstr, '(i2)') step
-    end if
-
     call nfcheck( NF90_OPEN(trim(file_obs_A), NF90_NOWRITE, ncid))
     call nfcheck( NF90_INQ_VARID(ncid, 'obs', id_obs))
     startv(3) = step
@@ -270,7 +263,7 @@ contains
        ! Allocate process-local observation arrays
        allocate(obs_p(dim_obs_p))
        allocate(ivar_obs_p(dim_obs_p))
-       allocate(ocoord_p(2, dim_obs_p))
+       allocate(ocoord_p(thisobs%ncoord, dim_obs_p))
 
        ! Allocate process-local index array
        ! This array has a many rows as required for the observation operator

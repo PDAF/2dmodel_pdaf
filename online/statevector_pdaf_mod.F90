@@ -24,6 +24,8 @@ module statevector_pdaf_mod
 
 ! *** Variables to handle multiple fields in the state vector ***
 
+!+++ Specific part for 2D tutorial model
+
   !< Fortran type holding the indices of model fields in the state vector
   !< This should be adapted to the fields in the state vector - it serves to give each field a name
   type field_ids
@@ -40,6 +42,8 @@ module statevector_pdaf_mod
      character(len=20) :: name    ! Name of field variable
      character(len=20) :: fname   ! Name of field in output file (optional)     
   end type state_field
+
+!+++ End of specific part
 
   !---- The next variables usually do not need editing -----
 

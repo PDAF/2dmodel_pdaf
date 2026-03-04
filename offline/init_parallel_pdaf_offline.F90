@@ -53,7 +53,7 @@ subroutine init_parallel_pdaf(screen)
   implicit none
 
 ! *** Arguments ***
-  integer, intent(in)    :: screen        !< Whether screen information is shown
+  integer, intent(in)    :: screen           !< Whether screen information is shown
 
 ! *** Local variables ***
   integer :: i, j                     ! Counters
@@ -73,8 +73,6 @@ subroutine init_parallel_pdaf(screen)
 
   COMM_ensemble = MPI_COMM_WORLD
 
-
-! --- The following is generic apart from the very end of the routine ---
 
   ! *** Parse number of model tasks ***
   ! *** The module variable is N_MODELTASKS. Since it has to be equal
@@ -231,8 +229,6 @@ subroutine init_parallel_pdaf(screen)
 
   call PDAF3_set_parallel(COMM_ensemble, COMM_model, COMM_filter, COMM_couple, &
        task_id, n_modeltasks, filterpe, flag)
-
-! --- End of generic part ---
 
 
 ! ******************************************************************************

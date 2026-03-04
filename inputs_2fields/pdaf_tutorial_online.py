@@ -65,7 +65,14 @@ if dowrite==1:
       if step==0:
          ncfile = nc.Dataset('trueA_ini.nc',mode='w')
       else:
-         ncfile = nc.Dataset('trueA_step'+str(step)+'.nc',mode='w')
+         if step<10:
+            stepstr = '00'+str(step)
+         elif step<100:
+            stepstr = '0'+str(step)
+         else:
+            stepstr = str(step)
+
+         ncfile = nc.Dataset('trueA_step'+stepstr+'.nc',mode='w')
          
       xdim = ncfile.createDimension('dim_x', dim_x)
       ydim = ncfile.createDimension('dim_y', dim_y)
@@ -91,7 +98,12 @@ for k in range(dim_ens):
 # Write ensemble files for fieldA
 if dowrite==1:
    for k in range(dim_ens):
-      ncfile = nc.Dataset('ensA_'+str(k+1)+'.nc',mode='w')
+      if k<9:
+         ensstr = '0'+str(k+1)
+      else:
+         ensstr = str(k+1)
+         
+      ncfile = nc.Dataset('ensA_'+ensstr+'.nc',mode='w')
          
       xdim = ncfile.createDimension('dim_x', dim_x)
       ydim = ncfile.createDimension('dim_y', dim_y)
@@ -135,7 +147,14 @@ if dowrite==1:
       if step==0:
          ncfile = nc.Dataset('trueB_ini.nc',mode='w')
       else:
-         ncfile = nc.Dataset('trueB_step'+str(step)+'.nc',mode='w')
+         if step<10:
+            stepstr = '00'+str(step)
+         elif step<100:
+            stepstr = '0'+str(step)
+         else:
+            stepstr = str(step)
+
+         ncfile = nc.Dataset('trueB_step'+stepstr+'.nc',mode='w')
          
       xdim = ncfile.createDimension('dim_x', dim_x)
       ydim = ncfile.createDimension('dim_y', dim_y)
@@ -157,7 +176,12 @@ for k in range(dim_ens):
 # Write ensemble files for fieldB
 if dowrite==1:
    for k in range(dim_ens):
-      ncfile = nc.Dataset('ensB_'+str(k+1)+'.nc',mode='w')
+      if k<9:
+         ensstr = '0'+str(k+1)
+      else:
+         ensstr = str(k+1)
+
+      ncfile = nc.Dataset('ensB_'+ensstr+'.nc',mode='w')
          
       xdim = ncfile.createDimension('dim_x', dim_x)
       ydim = ncfile.createDimension('dim_y', dim_y)

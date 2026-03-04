@@ -176,7 +176,6 @@ contains
     real, allocatable :: obs_p(:)        ! Process-local observation vector
     real, allocatable :: ivar_obs_p(:)   ! Process-local inverse observation error variance
     real, allocatable :: ocoord_p(:,:)   ! Process-local observation coordinates 
-    character(len=2) :: stepstr          ! String for time step
     integer :: ncid, id_obs              ! variables for netcdf file reading
     integer :: countv(3), startv(3)      ! Vectors for NC operations
     character(len=4) :: procstr          ! 4-digit string for process rank
@@ -200,6 +199,17 @@ contains
     ! The distance compution starts from the first row
     thisobs%ncoord = 2
 
+    ! Specify the overall domain size
+    ! ONLY REQUIRED FOR THISOBS%USE_GLOBAL_OBS = 0
+    ! OR THISOBS%DISTTYPE = 1 (periodicity)
+    allocate(thisobs%domainsize(2))
+    thisobs%domainsize(1) = real(nx)
+    thisobs%domainsize(2) = real(ny)
+    
+    ! Specify whether to (1) use global observations for local filters,
+    ! or (0) restrict the full observations to those relevant for a process domain
+    thisobs%use_global_obs = 1
+
 
 ! **********************************
 ! *** Read Process-local observations ***
@@ -210,12 +220,6 @@ contains
          write (*,'(a,5x,a, i6)') 'model-PDAF','--- read observation at step', step
 
     allocate(obs_field(ny, nx))
-
-    if (step<10) then
-       write (stepstr, '(i1)') step
-    else
-       write (stepstr, '(i2)') step
-    end if
 
     call nfcheck( NF90_OPEN(trim(file_obs_B), NF90_NOWRITE, ncid))
     call nfcheck( NF90_INQ_VARID(ncid, 'obs', id_obs))

@@ -4,12 +4,10 @@
 !!
 !! Used in domain-localized filters
 !!
-!! The routine is called during analysis step in the 
-!! loop over all local analysis domains. It sets
-!! the dimension of the local model state on the
-!! current analysis domain, its coordiantes and the
-!! indices to map between the full state vector and 
-!! the local state vector.
+!! The routine is called during analysis step in the loop over all local
+!! analysis domains. It sets the dimension of the local model state on the
+!! current analysis domain, its coordiantes and the indices to map between
+!! the full state vector and the local state vector.
 !!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
@@ -19,23 +17,25 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 
   use PDAF, &                       ! Routine to provide local indices to PDAF
        only: PDAFlocal_set_indices
-  use model_pdaf_mod, &             ! Model variables
-       only: ny, coords_x_p, coords_y_p
   use assimilation_pdaf_mod, &      ! Variables for assimilation
        only: coords_l
   use statevector_pdaf_mod, &       ! State vector variables
        only: n_fields, sfields
 
+  ! Specific for 2D tutorial model
+  use model_pdaf_mod, &             ! Model variables
+       only: ny, coords_x_p, coords_y_p
+
   implicit none
 
 ! *** Arguments ***
-  integer, intent(in)  :: step     !< Current time step
-  integer, intent(in)  :: domain_p !< Current local analysis domain
-  integer, intent(out) :: dim_l    !< Local state dimension
+  integer, intent(in)  :: step      !< Current time step
+  integer, intent(in)  :: domain_p  !< Current local analysis domain
+  integer, intent(out) :: dim_l     !< Local state dimension
 
 ! *** local variables ***
-  integer :: i                     ! Counters
-  integer :: idx(2)                ! Grid point indices for index domain_p
+  integer :: i                      ! Counters
+  integer :: idx(2)                 ! Grid point indices for index domain_p
   integer, allocatable :: id_lstate_in_pstate(:) !< Indices of local state vector in Process-local global state vector
 
 
@@ -54,7 +54,7 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   idx(1) = ceiling(real(domain_p)/real(ny))
   idx(2) = domain_p - (idx(1)-1)*ny
 
-  ! Initialize local coordinate array
+  ! Initialize local coordinates
   coords_l(1) = coords_x_p(idx(1))
   coords_l(2) = coords_y_p(idx(2))
 
