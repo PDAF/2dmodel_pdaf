@@ -43,12 +43,16 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 ! *** Initialize local state dimension ***
 ! ****************************************
   
+!+++ Specific for 2D tutorial model
+
   dim_l = n_fields
 
 
 ! **********************************************
 ! *** Initialize coordinates of local domain ***
 ! **********************************************
+
+!+++ Specific part for 2D tutorial model
 
   ! Determine grid point indices from domain_p
   idx(1) = ceiling(real(domain_p)/real(ny))
@@ -58,6 +62,7 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   coords_l(1) = coords_x_p(idx(1))
   coords_l(2) = coords_y_p(idx(2))
 
+!+++ End of specific part
 
 ! ******************************************************
 ! *** Initialize array of indices of the local state ***
@@ -67,11 +72,15 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   ! Allocate array
   allocate(id_lstate_in_pstate(dim_l))
 
+!+++ Specific part for 2D tutorial model
+
   ! Here the local domain is a single grid point holding two variables
   ! The variables given by DOMAIN_P + offsets
   DO i=1, n_fields
      id_lstate_in_pstate(i) = domain_p + sfields(i)%off
   END DO
+
+!+++ End of specific part
 
   ! Provide the index vector to PDAF
   call PDAFlocal_set_indices(dim_l, id_lstate_in_pstate)

@@ -6,17 +6,16 @@
 !! 
 !! The routine is called before and after the analysis step.
 !!
-!! The routine provides full access to the state 
-!! estimate and the state ensemble to the user.
-!! Thus, user-controlled pre- and poststep 
-!! operations can be performed here. For example 
-!! the forecast and the analysis states and ensemble
-!! covariance matrix can be analyzed, e.g. by 
-!! computing the estimated variances.
+!! The routine provides full access to the state estimate and the
+!! state ensemble to the user. Thus, user-controlled pre- and
+!! poststep operations can be performed here. For example the
+!! forecast and the analysis states and ensemble covariance matrix
+!! can be analyzed, e.g. by computing the estimated variances.
+!! Further, statistics comparing the state estimate with the
+!! assmilated observation can be computed here.
 !!
-!! If a user considers to perform adjustments to the 
-!! estimates (e.g. for balances), this routine is 
-!! the right place for it.
+!! If a user considers to perform adjustments to the estimates
+!! (e.g. for balances), this routine is the right place for it.
 !!
 !! Implementation for the 2D example with domain decomposition
 !!

@@ -56,47 +56,25 @@ module obs_B_pdafomi
   implicit none
   save
 
+!+++ Specific part for the observation type
+
   ! Variables which are inputs to the module (usually set in init_pdaf)
-  logical :: assim_B               !< Whether to assimilate this data type
-  real    :: rms_obs_B             !< Observation error standard deviation (for constant errors)
-  character(len=100) :: file_obs_B !< Name of observation file
+  logical :: assim_B = .false.     !< Whether to assimilate this data type
+  real    :: rms_obs_B = 0.25      !< Observation error standard deviation (for constant errors)
+  character(len=100) :: file_obs_B = 'obsB.nc'     !< Name of observation file
   character(len=100) :: stub_synobs_B='obsB_syn_'  !< Name stub of file for synthetic observations
 
   ! One can declare further variables, e.g. for file names which can
   ! be use-included in init_pdaf() and initialized there.
 
+!+++ End of specific part
+
 
 ! *********************************************************
-! *** Data type obs_f defines the full observations by  ***
-! *** internally shared variables of the module         ***
+! *** Data type obs_f defines the full observations     ***
+! *** Data type obs_l defines the local observations    ***
+! ***  for domain-localized ensemble methods            ***
 ! *********************************************************
-
-! Relevant variables that can be modified by the user:
-!   TYPE obs_f
-!      ---- Mandatory variables to be set in INIT_DIM_OBS ----
-!      INTEGER :: doassim                    ! Whether to assimilate this observation type
-!      INTEGER :: disttype                   ! Type of distance computation to use for localization
-!                                            ! (0) Cartesian, (1) Cartesian periodic
-!                                            ! (2) simplified geographic, (3) geographic haversine function
-!      INTEGER :: ncoord                     ! Number of coordinates use for distance computation
-!      INTEGER, ALLOCATABLE :: id_obs_p(:,:) ! Indices of observed field in state vector (process-local)
-!
-!      ---- Optional variables - they can be set in INIT_DIM_OBS ----
-!      REAL, ALLOCATABLE :: icoeff_p(:,:)   ! Interpolation coefficients for obs. operator
-!      REAL, ALLOCATABLE :: domainsize(:)   ! Size of domain for periodicity (<=0 for no periodicity)
-!
-!      ---- Variables with predefined values - they can be changed in INIT_DIM_OBS  ----
-!      INTEGER :: obs_err_type=0            ! Type of observation error: (0) Gauss, (1) Laplace
-!      INTEGER :: use_global_obs=1          ! Whether to use (1) global full obs. 
-!                                           ! or (0) obs. restricted to those relevant for a process domain
-!      REAL :: inno_omit=0.0                ! Omit obs. if squared innovation larger this factor times
-!                                           !     observation variance
-!      REAL :: inno_omit_ivar=1.0e-12       ! Value of inverse variance to omit observation
-!   END TYPE obs_f
-
-! Data type obs_l defines the local observations by internally shared variables of the module
-
-! ***********************************************************************
 
 ! Declare instances of observation data types used here
 ! We use generic names here, but one could rename the variables
@@ -139,7 +117,7 @@ contains
 !! * thisobs\%inno_omit_ivar - Value of inverse variance to omit observation
 !!                          (default: 1.0e-12, change this if this value is not small compared to actual obs. error)
 !!
-!! Further variables are set when the routine PDAFomi_gather_obs is called.
+!! Further variables are set by PDAF-OMI when the routine PDAFomi_gather_obs is called.
 !!
   subroutine init_dim_obs_B(step, dim_obs)
 
@@ -151,15 +129,17 @@ contains
          only: mype_filter
     use assimilation_pdaf_mod, &         ! Variables for assimilation
          only: filtertype, cradius, coords_p, dim_state_p, &
-         locweight, cradius, sradius, twin_experiment, file_synobs
+         locweight, cradius, sradius, twin_experiment
     use statevector_pdaf_mod, &          ! Statevector variables
          only: id, sfields
-    use model_pdaf_mod, &                ! Model variables
-         only: nx, ny, nx_p, n_dim
+    use synobs_pdaf_mod, &               ! Routines for synthetic observations
+         only: file_synobs, init_file_syn_obs, read_syn_obs
     use io_pdaf_mod, &                   ! IO operations
          only: nfcheck
-    use synobs_pdaf_mod, &               ! Routines for synthetic observations
-         only: init_file_syn_obs, read_syn_obs
+
+    ! Specific for 2D tutorial model
+    use model_pdaf_mod, &                ! Model variables
+         only: nx, ny, nx_p, n_dim
 
     implicit none
 

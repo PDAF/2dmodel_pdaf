@@ -31,6 +31,8 @@ subroutine init_n_domains_pdaf(step, n_domains_p)
 ! *** Initialize number of domains ***
 ! ************************************
   
+!+++ Specific for 2D tutorial model
+
   ! Here simply the process-local state dimension
   n_domains_p = nx_p*ny
 

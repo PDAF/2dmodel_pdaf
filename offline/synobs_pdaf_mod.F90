@@ -9,6 +9,8 @@
 !!
 module synobs_pdaf_mod
 
+  character(len=100) :: file_synobs=''  !< Full name of file for synthetic observations (to be set in observation module)
+
 contains
 !-----------------------------------------------------------
 !>  Initialize observation file

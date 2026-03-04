@@ -76,7 +76,7 @@ subroutine init_pdaf_offline()
                           !   We use n_modeltasks here, initialized in init_parallel_pdaf
 
 ! *** Model time step to process
-  step_offline = 1
+  step_offline = 1        ! This determines which observation are read (can be set on command line)
 
 ! *** Options for DA method
 
@@ -84,11 +84,11 @@ subroutine init_pdaf_offline()
   ! +++ For available options see ASSIMILATION_PDAF_MOD +++
   ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  filtertype = 6     ! Type of filter
-  subtype = 0        ! Subtype of filter
+  filtertype = 6          ! Type of filter
+  subtype = 0             ! Subtype of filter
 
-  forget  = 1.0      ! Forgetting factor value for inflation
-  type_forget = 0    ! Type of forgetting factor
+  forget  = 1.0           ! Forgetting factor value for inflation
+  type_forget = 0         ! Type of forgetting factor
 
 
 ! **********************************************************
@@ -117,7 +117,7 @@ subroutine init_pdaf_offline()
   sradius = cradius       ! Support radius for 5th-order polynomial
                           ! or radius for 1/e for exponential weighting
 
-!+++ Specific variables for observations
+!+++ Specific variables for observations - see defaults in each observation module
 
 ! *** Which observation type to assimilate
   assim_A = .true.        ! Whether to assimilation obervations of type A
@@ -212,9 +212,10 @@ subroutine init_pdaf_offline()
   end do
 
 
-! ************************************************************************
-! *** Set domain coordinate limits (for use with OMI's use_global_obs) ***
-! ************************************************************************
+! *************************************************************************
+! *** Set domain coordinate limits                                      ***
+! *** used with OMI's option use_global_obs with local ensemble methods ***
+! *************************************************************************
   
 !+++ Specific initialization for 2D tutorial model
 

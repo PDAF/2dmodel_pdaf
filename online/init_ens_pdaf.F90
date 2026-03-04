@@ -86,10 +86,10 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
 !+++ Specific part for 2D tutorial model
 
+     ! Read fields from ensemble files
      do member = 1, dim_ens
         write (ensstr, '(i2.2)') member
 
-        ! Read fields from ensemble files
         do fid = 1, n_fields
            filename = '../inputs_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
 

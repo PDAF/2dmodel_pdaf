@@ -45,6 +45,8 @@ subroutine collect_state_pdaf(dim_p, state_p)
   ! +++ makes the code fail-save because it avoids
   ! +++ index calculations involving nx_p or ny.
 
+!+++ Specific part for 2D tutorial model
+
   ! FieldA
   s = sfields(id%fieldA)%off
   do j = 1, nx_p
@@ -62,5 +64,7 @@ subroutine collect_state_pdaf(dim_p, state_p)
         state_p(s) = fieldB_p(i, j)
      end do
   end do
+
+!+++ End of specific part
 
 end subroutine collect_state_pdaf

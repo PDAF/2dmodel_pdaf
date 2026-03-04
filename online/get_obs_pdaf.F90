@@ -15,9 +15,7 @@
 subroutine get_obs_pdaf(step, dim_obs, observation)
 
   use synobs_pdaf_mod, &
-       only: write_syn_obs
-  use assimilation_pdaf_mod, &
-       only: file_synobs
+       only: file_synobs, write_syn_obs
 
   implicit none
 

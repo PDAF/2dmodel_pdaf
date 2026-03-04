@@ -27,6 +27,8 @@ subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
        only: delt_obs
   use parallel_pdaf_mod, &         ! Parallelization variables
        only: mype_ens
+
+  ! Specific for 2D tutorial model
   use model_pdaf_mod, &            ! Model variables
        only: total_steps
 
@@ -45,6 +47,8 @@ subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
 
   time = 0.0          ! Not used in this implementation
   doexit = 0          ! Not used in this implementation
+
+!+++ Specific part for 2D tutorial model depending on 'total_steps'
 
   if (stepnow + nsteps <= total_steps) then
      ! *** During the assimilation process ***

@@ -36,7 +36,7 @@
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-subroutine init_parallel_pdaf(screen)
+subroutine init_parallel_pdaf_offline(screen)
 
   use mpi                         ! MPI
   use PDAF, &                     ! PDAF routines
@@ -241,5 +241,5 @@ subroutine init_parallel_pdaf(screen)
 
   ! THIS STEP IS NOT DONE WITH OFFLINE COUPLING
 
-end subroutine init_parallel_pdaf
+end subroutine init_parallel_pdaf_offline
 
