@@ -6,7 +6,9 @@
 #######################################################
 
 ######################################################
-
+# definitions for highlighting outputs
+bold := $(shell tput bold)
+sgr0 := $(shell tput sgr0)
 
 # User specifications
 # 1. Set PDAFDIR, the directory where the PDAF package resides
@@ -21,12 +23,15 @@
 # To choose a file, set PDAF_ARCH either here or by an
 # environment variable.
 include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
+$(info $(bold)use machine-specific definitions in $(PDAFDIR)/make.arch/$(PDAF_ARCH).h$(sgr0))
 
+SRCDIR:=src
+OBJDIR:=build
+INCDIR:=include
+BINDIR:=bin
 
 # End of user specifications
 ######################################################
-
-.SUFFIXES: .F90 .o 
 
 # Modules used for the model part
 SRC_MODEL =  	model_parallel_mod.F90 \
@@ -77,8 +82,8 @@ SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB)
 
 #######################################################
 # object files
-OBJ_MODEL := $(SRC_MODEL:%.F90=%.o)
-OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=%.o)
+OBJ_MODEL := $(SRC_MODEL:%.F90=$(OBJDIR)/%.o)
+OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=$(OBJDIR)/%.o)
 
 ######################################################
 
@@ -98,51 +103,95 @@ info:
 	@echo "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
 	@echo "------------------------------------------------------------------";
 
+#######################################################
+# compiler instructions
 
-model : $(OBJ_MODEL)
-	$(LD)  $(OPT_LNK)  -o $@  $(OBJ_MODEL)
+INCLUDE:= $(MPI_INC)\
+          $(NC_INC) \
+          $(MPI_INC) \
+          -I$(PDAFDIR)/include
 
-model_pdaf : libpdaf-d.a $(OBJ_MODEL) $(OBJ_PDAF_USER)
-	$(LD)  $(OPT_LNK)  -o $@ \
-	$(OBJ_MODEL) $(OBJ_PDAF_USER) \
-	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS) $(NC_LIB)
+COMPILE.f90 = $(FC) $(OPT) $(CPP_DEFS) $(INCLUDE) -c -o $@ $(MODULEOPT) $(INCDIR)
+
+#######################################################
+
+# requires compiling without -DUSE_PDAF
+.PHONY: model
+model: $(BINDIR)/model
+
+# requires compiling with -DUSE_PDAF
+.PHONY: model_pdaf
+model_pdaf: $(BINDIR)/model_pdaf
 
 ######################################################
 
-libpdaf-d.a: 
-	@echo "++++++ Generate Filter library ++++++"
-	@cd $(PDAFDIR); make;
-
+.PHONY:
+libpdaf-d.a:
+	$(info $(bold)Generate Filter library$(sgr0))
+	make all -C $(PDAFDIR)
 
 ######################################################
 
 # use pattern rule to create rules for all object files
 
-%.o: %.F90
-	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include  -c $*.F90
+$(OBJDIR)/%.o: $(SRCDIR)/%.F90
+	$(info $(bold)compile $<$(sgr0))
+	$(COMPILE.f90) $<
+
+$(BINDIR)/model: $(OBJ_MODEL) | directories
+	$(info $(bold)linking $@$(sgr0))
+	$(LD) $(OPT_LNK) -o $@ $(OBJ_MODEL) $(LINK_LIBS) $(NC_LIB) $(LDFLAGS)
+	chmod u=rwx $@
+
+PROG_DEPS = $(OBJ_MODEL) $(OBJ_PDAF_USER)
+
+$(BINDIR)/model_pdaf: $(PROG_DEPS) | libpdaf-d.a directories
+	$(info $(bold)linking $@$(sgr0))
+	$(LD) $(OPT_LNK) -o $@ $(PROG_DEPS) -L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS) $(NC_LIB) $(LDFLAGS)
+	chmod u=rwx $@
+
+#######################################################
+MISSINGDIRS:= $(INCDIR) $(OBJDIR) $(LIBDIR) $(BINDIR)
+.PHONY: directories
+directories: $(MISSINGDIRS)
+
+$(MISSINGDIRS):
+	mkdir -p $@
 
 ######################################################
 # Cleans
 
+.PHONY: cleanall
 cleanall : cleanpdaf clean cleandata
 
+.PHONY: clean
 clean :
-	rm -f *.o *.mod *.a model model_pdaf
+	$(info $(bold)clean$(sgr0))
+	rm -rf $(OBJDIR)/*.o
+	rm -rf $(INCDIR)/*.mod
+	rm -rf $(BINDIR)/model
+	rm -rf $(BINDIR)/model_pdaf
 
+.PHONY: cleanpdaf
 cleanpdaf:
-	@echo "+++ Clean up PDAF directory"
-	cd $(PDAFDIR); make clean
+	$(info $(bold)Clean up PDAF directory$(sgr0))
+	make clean -C $(PDAFDIR)
 
+.PHONY: cleandata
 cleandata:
 	rm -f *.nc
 
+.PHONY: cleandataq
 cleandataq:
 	@rm -f ens*.txt state*.txt true*.txt variance*txt
 
 ######################################################
 # List arch files
 
+.PHONY: listarch
 listarch:
 	@echo Available architecture-specific input files for PDAF_ARCH
 	@echo ---------------------------------------------------------
 	@ls -1 ../../make.arch | cut -d"." -f1
+
+include Depends
