@@ -128,7 +128,7 @@ model_pdaf: $(BINDIR)/model_pdaf
 .PHONY:
 libpdaf-d.a:
 	$(info $(bold)Generate Filter library$(sgr0))
-	make all -C $(PDAFDIR)
+	make all -j 4 -C $(PDAFDIR)
 
 ######################################################
 
@@ -151,7 +151,7 @@ $(BINDIR)/model_pdaf: $(PROG_DEPS) | libpdaf-d.a directories
 	chmod u=rwx $@
 
 #######################################################
-MISSINGDIRS:= $(INCDIR) $(OBJDIR) $(LIBDIR) $(BINDIR)
+MISSINGDIRS:= $(INCDIR) $(OBJDIR) $(BINDIR)
 .PHONY: directories
 directories: $(MISSINGDIRS)
 
@@ -179,10 +179,12 @@ cleanpdaf:
 
 .PHONY: cleandata
 cleandata:
+	$(info $(bold)Clean all nc files$(sgr0))
 	rm -f *.nc
 
 .PHONY: cleandataq
 cleandataq:
+	$(info $(bold)Clean all txt files$(sgr0))
 	@rm -f ens*.txt state*.txt true*.txt variance*txt
 
 ######################################################
