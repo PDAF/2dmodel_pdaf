@@ -15,6 +15,12 @@ sgr0 := $(shell tput sgr0)
 # 2. Set PDAF_ARCH to include compile definitions
 #    (See directory PDAFDIR/make.arch for files. PDAF_ARCH is filename without .h)
 
+# default value for WITH_PDAF, may be overwritten in command line
+ifeq ($(WITH_PDAF),)
+	WITH_PDAF=TRUE
+endif
+
+
 # Root directory of PDAF package
 #PDAFDIR = ../..
 
@@ -25,10 +31,30 @@ sgr0 := $(shell tput sgr0)
 include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 $(info $(bold)use machine-specific definitions in $(PDAFDIR)/make.arch/$(PDAF_ARCH).h$(sgr0))
 
-SRCDIR:=src
+BIND_SRCDIR:=src/binding
+MODEL_SRCDIR:=src/model
 OBJDIR:=build
 INCDIR:=include
 BINDIR:=bin
+
+EXE_NAME:=model
+
+INCLUDE:= $(MPI_INC)\
+          $(NC_INC) \
+          $(MPI_INC)
+
+LIB:= $(LINK_LIBS)\
+      $(NC_LIB)
+
+ifeq ($(WITH_PDAF),TRUE)
+	OBJDIR:=$(OBJDIR)_pdaf
+	INCDIR:=$(INCDIR)_pdaf
+	EXE_NAME:=$(EXE_NAME)_pdaf
+
+	FFLAGS := -DUSE_PDAF
+	INCLUDE+= -I$(PDAFDIR)/include
+	LIB:= -L$(PDAFDIR)/lib -lpdaf-d $(LIB)
+endif
 
 # End of user specifications
 ######################################################
@@ -87,6 +113,7 @@ OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=$(OBJDIR)/%.o)
 
 ######################################################
 
+.PHONY:
 info:
 	@echo "Makefile to build PDAF tutorial online implementation";
 	@echo "Example: 2D model with parallelization";
@@ -106,22 +133,12 @@ info:
 #######################################################
 # compiler instructions
 
-INCLUDE:= $(MPI_INC)\
-          $(NC_INC) \
-          $(MPI_INC) \
-          -I$(PDAFDIR)/include
-
-COMPILE.f90 = $(FC) $(OPT) $(CPP_DEFS) $(INCLUDE) -c -o $@ $(MODULEOPT) $(INCDIR)
+COMPILE.f90 = $(FC) $(OPT) $(FFLAGS) $(INCLUDE) -c -o $@ $(MODULEOPT) $(INCDIR)
 
 #######################################################
 
-# requires compiling without -DUSE_PDAF
-.PHONY: model
-model: $(BINDIR)/model
-
-# requires compiling with -DUSE_PDAF
-.PHONY: model_pdaf
-model_pdaf: $(BINDIR)/model_pdaf
+.PHONY: all
+all: $(BINDIR)/$(EXE_NAME)
 
 ######################################################
 
@@ -132,22 +149,22 @@ libpdaf-d.a:
 
 ######################################################
 
-# use pattern rule to create rules for all object files
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.F90
+$(OBJ_MODEL): $(OBJDIR)/%.o: $(MODEL_SRCDIR)/%.F90 | directories
 	$(info $(bold)compile $<$(sgr0))
 	$(COMPILE.f90) $<
 
-$(BINDIR)/model: $(OBJ_MODEL) | directories
-	$(info $(bold)linking $@$(sgr0))
-	$(LD) $(OPT_LNK) -o $@ $(OBJ_MODEL) $(LINK_LIBS) $(NC_LIB) $(LDFLAGS)
-	chmod u=rwx $@
+$(OBJ_PDAF_USER): $(OBJDIR)/%.o: $(BIND_SRCDIR)/%.F90 | directories
+	$(info $(bold)compile $<$(sgr0) target: $@)
+	$(COMPILE.f90) $<
 
-PROG_DEPS = $(OBJ_MODEL) $(OBJ_PDAF_USER)
+PROG_DEPS = $(OBJ_MODEL)
+ifeq ($(WITH_PDAF),TRUE)
+	PROG_DEPS += $(OBJ_PDAF_USER)
+endif
 
-$(BINDIR)/model_pdaf: $(PROG_DEPS) | libpdaf-d.a directories
+$(BINDIR)/$(EXE_NAME): $(PROG_DEPS) | libpdaf-d.a
 	$(info $(bold)linking $@$(sgr0))
-	$(LD) $(OPT_LNK) -o $@ $(PROG_DEPS) -L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS) $(NC_LIB) $(LDFLAGS)
+	$(LD) $(OPT_LNK) -o $@ $(PROG_DEPS) $(LIB) $(LDFLAGS)
 	chmod u=rwx $@
 
 #######################################################
@@ -172,6 +189,13 @@ clean :
 	rm -rf $(BINDIR)/model
 	rm -rf $(BINDIR)/model_pdaf
 
+.PHONY: veryclean
+veryclean : clean
+	$(info $(bold)very clean$(sgr0))
+	rm -rf $(OBJDIR)
+	rm -rf $(INCDIR)
+	rm -rf $(BINDIR)
+
 .PHONY: cleanpdaf
 cleanpdaf:
 	$(info $(bold)Clean up PDAF directory$(sgr0))
@@ -195,5 +219,3 @@ listarch:
 	@echo Available architecture-specific input files for PDAF_ARCH
 	@echo ---------------------------------------------------------
 	@ls -1 ../../make.arch | cut -d"." -f1
-
-include Depends
