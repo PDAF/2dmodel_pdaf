@@ -1,28 +1,24 @@
-# $Id: Makefile 746 2009-08-04 12:16:28Z lnerger $
-
-#######################################################
-# Generic Makefile for to build PDAF with dummy model #
-# To choose the architecture set $PDAF_ARCH           #
-#######################################################
-
+# Makefile for 2D Toy Model
+#
+# Set the following enviroment variables
+# 1. PDAFDIR=     ... the directory where the PDAF package resides
+# 2. PDAF_ARCH=   ... file including the compile definitions
+#                    (See directory PDAFDIR/make.arch for files.
+#		      PDAF_ARCH is filename without .h)
+# 3. WITH_PDAF=   ... TRUE or FALSE (TRUE is default)
+#
+# Example
+# make all PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../deps/PDAF/ WITH_PDAF=TRUE
 ######################################################
+
 # definitions for highlighting outputs
 bold := $(shell tput bold)
 sgr0 := $(shell tput sgr0)
 
-# User specifications
-# 1. Set PDAFDIR, the directory where the PDAF package resides
-# 2. Set PDAF_ARCH to include compile definitions
-#    (See directory PDAFDIR/make.arch for files. PDAF_ARCH is filename without .h)
-
-# default value for WITH_PDAF, may be overwritten in command line
+# default values
 ifeq ($(WITH_PDAF),)
 	WITH_PDAF=TRUE
 endif
-
-
-# Root directory of PDAF package
-#PDAFDIR = ../..
 
 # Include machine-specific definitions
 # For available include files see directory make.arch
@@ -47,15 +43,15 @@ ifeq ($(WITH_PDAF),TRUE)
 	LIB:= -L$(PDAFDIR)/lib -lpdaf-d $(LIB)
 endif
 
-BIND_SRCDIR:=src/binding
-MODEL_SRCDIR:=src/model
-
 OBJDIR:=build/$(EXE_NAME)
 INCDIR:=include/$(EXE_NAME)
 BINDIR:=bin
 
 # End of user specifications
 ######################################################
+
+BIND_SRCDIR:=src/binding
+MODEL_SRCDIR:=src/model
 
 # Modules used for the model part
 SRC_MODEL =  	model_parallel_mod.F90 \
@@ -111,41 +107,31 @@ OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=$(OBJDIR)/%.o)
 
 ######################################################
 
-.PHONY:
+.PHONY: info
 info:
-	@echo "Makefile to build PDAF tutorial online implementation";
-	@echo "Example: 2D model with parallelization";
-	@echo "------------------------------------------------------------------";
-	@echo "Use as   make TARGET   where TARGET can be:";
-	@echo "  model         - just the forward model  (use without -DUSE_PDAF)";
-	@echo "  model_pdaf    - assimilation model      (use with -DUSE_PDAF)";
-	@echo "  (if compiled without -DUSE_PDAF, both programs behave equally)"
-	@echo "";
-	@echo "Depending on whether PDAF should be active, one has to define";
-	@echo "USE_PDAF in the include file in make.arch/ file for preprocessing.";
-	@echo  "List available settings for PDAF_ARCH with 'make listarch'";
-	@echo "Path to PDAF (PDAFDIR): " $(PDAFDIR);
-	@echo "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
-	@echo "------------------------------------------------------------------";
-
-#######################################################
-# compiler instructions
-
-COMPILE.f90 = $(FC) $(OPT) $(FFLAGS) $(INCLUDE) -c -o $@ $(MODULEOPT) $(INCDIR)
+	$(info ----------------------------------------------------------------)
+	$(info Makefile to build PDAF tutorial online implementation)
+	$(info "Example: 2D model with parallelization)
+	$(info Use $(bold)make all WITH_PDAF=TRUE$(sgr0) to compile with PDAF)
+	$(info Use $(bold)make all WITH_PDAF=FALSE$(sgr0) to compile without PDAF)
+	$(info List available settings for PDAF_ARCH with 'make listarch')
+	$(info Path to PDAF (PDAFDIR):  $(PDAFDIR))
+	$(info ----------------------------------------------------------------)
 
 #######################################################
 
 .PHONY: all
 all: $(BINDIR)/$(EXE_NAME)
 
-######################################################
-
-.PHONY:
+.PHONY: libpdaf-d.a
 libpdaf-d.a:
 	$(info $(bold)Generate Filter library$(sgr0))
 	make all -j 4 -C $(PDAFDIR)
 
-######################################################
+#######################################################
+# compiler instructions
+
+COMPILE.f90 = $(FC) $(OPT) $(FFLAGS) $(INCLUDE) -c -o $@ $(MODULEOPT) $(INCDIR)
 
 $(OBJ_MODEL): $(OBJDIR)/%.o: $(MODEL_SRCDIR)/%.F90 | directories
 	$(info $(bold)compile $<$(sgr0))
@@ -216,4 +202,4 @@ cleandataq:
 listarch:
 	@echo Available architecture-specific input files for PDAF_ARCH
 	@echo ---------------------------------------------------------
-	@ls -1 ../../make.arch | cut -d"." -f1
+	@ls -1 $(PDAFDIR)/make.arch | cut -d"." -f1
