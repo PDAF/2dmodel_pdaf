@@ -31,12 +31,6 @@ endif
 include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 $(info $(bold)use machine-specific definitions in $(PDAFDIR)/make.arch/$(PDAF_ARCH).h$(sgr0))
 
-BIND_SRCDIR:=src/binding
-MODEL_SRCDIR:=src/model
-OBJDIR:=build
-INCDIR:=include
-BINDIR:=bin
-
 EXE_NAME:=model
 
 INCLUDE:= $(MPI_INC)\
@@ -47,14 +41,18 @@ LIB:= $(LINK_LIBS)\
       $(NC_LIB)
 
 ifeq ($(WITH_PDAF),TRUE)
-	OBJDIR:=$(OBJDIR)_pdaf
-	INCDIR:=$(INCDIR)_pdaf
 	EXE_NAME:=$(EXE_NAME)_pdaf
-
 	FFLAGS := -DUSE_PDAF
 	INCLUDE+= -I$(PDAFDIR)/include
 	LIB:= -L$(PDAFDIR)/lib -lpdaf-d $(LIB)
 endif
+
+BIND_SRCDIR:=src/binding
+MODEL_SRCDIR:=src/model
+
+OBJDIR:=build/$(EXE_NAME)
+INCDIR:=include/$(EXE_NAME)
+BINDIR:=bin
 
 # End of user specifications
 ######################################################
