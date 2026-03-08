@@ -1,0 +1,40 @@
+######################################################
+# Include file with machine-specific definitions     #
+# for building 2D tutorial model.                    #
+#                                                    #
+# Variant for Linux with gfortran and OpenMPI        #
+#                                                    #
+# This is a copy of the file                         #
+# make.arch/linux_gfortran_openmpi.h                 #
+# from the PDAF release where we have removed lines  #
+# that not relevant for compiling the model.         #
+######################################################
+
+# Compiler, Linker
+FC = mpif90
+LD = $(FC)
+
+# Optimization specs for compiler
+# To use OpenMP parallelization in PDAF, specify it here (-fopenmp (gfortran) or -openmp (ifort))
+# (You should explicitly define double precision for floating point variables in the compilation
+OPT = -O3 -fdefault-real-8 -fopenmp -DUSE_PDAF
+
+# Optimization specifications for Linker
+OPT_LNK = $(OPT)
+
+# Specification for directory holding modules (-module for Intel, -J for GNU)
+MODULEOPT = -J
+
+# NetCDF
+NC_LIB   = -L/usr/local/lib -lnetcdff -lnetcdf
+NC_INC   = -I/usr/local/include
+
+# PDAF
+PDAF_LIB = -L$(PDAFDIR)/lib -lpdaf-d
+PDAF_INC = -I$(PDAFDIR)/include
+
+# General include settings
+INCLUDES = $(NC_INC) $(PDAF_INC)
+
+# Linking libraries 
+LIBS = $(NC_LIB) $(PDAF_LIB) -L/usr/lib -llapack -lblas -lm
