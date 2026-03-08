@@ -1,8 +1,9 @@
 !>  Interface routine to call initialization of PDAF
 !!
 !! This routine collects the initialization of variables for PDAF.
-!! In addition, the initialization routine PDAF_init is called
-!! to perform the internal initialization of PDAF.
+!! In addition, the initialization routine PDAF3_init is called
+!! to perform the internal initialization of PDAF and 
+!! PDAF3_init_forecast is called to initialize the forecasting.
 !!
 !! This variant is for the online mode of PDAF.
 !!
@@ -17,7 +18,7 @@
 subroutine init_pdaf()
 
   use PDAF, &                          ! PDAF
-       only: PDAF3_init, PDAF_set_iparam, PDAF_init_forecast, &
+       only: PDAF3_init, PDAF_set_iparam, PDAF3_init_forecast, &
        PDAFomi_set_domain_limits, PDAF_iau_init
   use parallel_pdaf_mod, &             ! Parallelization variables
        only: mype_ens, mype_filter, n_modeltasks, abort_parallel
@@ -66,7 +67,7 @@ subroutine init_pdaf()
 
 
 ! **********************************************************
-! ***   CONTROL OF PDAF - used in call to PDAF_init      ***
+! ***   CONTROL OF PDAF - used in call to PDAF3_init      ***
 ! **********************************************************
 
 ! *** IO options ***
@@ -155,7 +156,7 @@ subroutine init_pdaf()
 ! *******************************************************
 ! *** Call PDAF initialization routine (all processes ***
 ! ***                                                 ***
-! *** For all filters, PDAF_init is first called      ***
+! *** For all filters, PDAF3_init is first called     ***
 ! *** specifying only the required parameters.        ***
 ! *** Further settings are done afterwards using      ***
 ! *** calls to PDAF_set_iparam & PDAF_set_rparam.     ***
@@ -200,7 +201,7 @@ subroutine init_pdaf()
 ! *** Prepare ensemble forecasts ***
 ! **********************************
 
-  call PDAF_init_forecast(next_observation_pdaf, distribute_state_pdaf, &
+  call PDAF3_init_forecast(next_observation_pdaf, distribute_state_pdaf, &
        prepoststep_pdaf, status_pdaf)
 
 
