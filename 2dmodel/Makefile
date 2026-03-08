@@ -38,7 +38,7 @@ model : $(OBJ_MODEL)
 ######################################################
 # use pattern rule to create rules for all object files
 
-build/%.o: src/%.F90
+$(OBJ_MODEL): build/%.o: src/%.F90
 	$(FC) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################

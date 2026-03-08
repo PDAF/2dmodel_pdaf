@@ -50,7 +50,6 @@ model_pdaf : $(OBJ_MODEL) $(OBJ_PDAF_USER)
 ######################################################
 # use pattern rule to create rules for all object files
 
-# Adapted for PDAF to separate model and user-code for PDAF
 $(OBJ_MODEL): build/%.o: src/%.F90
 	$(FC) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
