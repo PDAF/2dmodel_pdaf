@@ -5,10 +5,8 @@
 # Include machine-specific definitions
 include compile_settings.txt
 
-# End of user specifications
-
 #######################################################
-# List of sources
+# Sourcefiles
 
 SRC_MODEL =  	model_parallel_mod.F90 \
 		model_mod.F90 \
