@@ -1,3 +1,6 @@
+# This files speifies the source code files 
+# of the PDAF model binding code
+
 # Moduls used for PDAF
 MOD_ASSIM = 	model_pdaf_mod.F90 \
 		parallel_pdaf_mod.F90 \
