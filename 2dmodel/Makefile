@@ -1,35 +1,15 @@
-# $Id: Makefile 746 2009-08-04 12:16:28Z lnerger $
-
 #######################################################
-# Generic Makefile for to build PDAF with dummy model #
-# To choose the architecture set $PDAF_ARCH           #
+# Simple Makefile to build the 2D tutotrial model     #
 #######################################################
-
-######################################################
-
-
-# User specifications
-# 1. Set PDAFDIR, the directory where the PDAF package resides
-#    either in this file, in the 'make' command, or as environment variable
-# 2. Set PDAF_ARCH to include compile definitions
-#    (See directory PDAFDIR/make.arch for files. PDAF_ARCH is filename without .h)
-
-# Root directory of PDAF package
-#PDAFDIR = ../..
 
 # Include machine-specific definitions
-# For available include files see directory make.arch
-# To choose a file, set PDAF_ARCH either here or by an
-# environment variable.
-include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
-
+include compile_settings.txt
 
 # End of user specifications
-######################################################
 
-.SUFFIXES: .F90 .o 
+#######################################################
+# List of sources
 
-# Source files
 SRC_MODEL =  	model_parallel_mod.F90 \
 		model_mod.F90 \
 		model_io_mod.F90 \
@@ -39,34 +19,29 @@ SRC_MODEL =  	model_parallel_mod.F90 \
 		main.F90
 
 #######################################################
-# object files
-OBJ_MODEL := $(SRC_MODEL:%.F90=%.o)
+# Define object files - to be create in build/
+OBJ_MODEL := $(SRC_MODEL:%.F90=build/%.o)
 
 ######################################################
 
 info:
-	@echo "Makefile to build PDAF tutorial online implementation";
-	@echo "Example: 2D model with parallelization";
+	@echo "Makefile to build advanced 2d tutorial model of PDAF";
 	@echo "------------------------------------------------------------------";
 	@echo "Use as   make TARGET   where TARGET can be:";
-	@echo "  model         - just the forward model  (use without -DUSE_PDAF)";
-	@echo "";
-	@echo "Depending on whether PDAF should be active, one has to define";
-	@echo "USE_PDAF in the include file in make.arch/ file for preprocessing.";
-	@echo  "List available settings for PDAF_ARCH with 'make listarch'";
-	@echo "Path to PDAF (PDAFDIR): " $(PDAFDIR);
-	@echo "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
+	@echo "  model         - the 2D tutorial model";
+	@echo "  clean         - clean up compilation";
+	@echo "  cleandata     - remove output files";
 	@echo "------------------------------------------------------------------";
 
 
 model : $(OBJ_MODEL)
-	$(LD)  $(OPT_LNK)  -o $@  $(OBJ_MODEL) $(NC_LIB)
+	$(LD)  $(OPT_LNK)  -o $@  $(OBJ_MODEL) $(LIBS)
 
 ######################################################
 # use pattern rule to create rules for all object files
 
-%.o: %.F90
-	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include  -c $*.F90
+build/%.o: src/%.F90
+	$(FC) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################
 # Cleans
@@ -74,18 +49,20 @@ model : $(OBJ_MODEL)
 cleanall : clean cleandata
 
 clean :
-	rm -f *.o *.mod *.a model
+	rm -f build/*.o build/*.mod model
 
 cleandata:
 	rm -f field*nc
 
-cleandataq:
-	@rm -f field*nc
 
 ######################################################
-# List arch files
+# Dependencies
+# (created using 'mkdepends' in PDAF's directory external/)
 
-listarch:
-	@echo Available architecture-specific input files for PDAF_ARCH
-	@echo ---------------------------------------------------------
-	@ls -1 $(PDAFDIR)/make.arch | cut -d"." -f1
+build/main.o: ./src/main.F90 build/model_parallel_mod.o build/model_init_mod.o build/model_step_mod.o build/model_post_mod.o
+build/model_init_mod.o: ./src/model_init_mod.F90 build/model_mod.o build/model_parallel_mod.o build/model_io_mod.o
+build/model_io_mod.o: ./src/model_io_mod.F90 build/model_parallel_mod.o build/model_mod.o
+build/model_mod.o: ./src/model_mod.F90
+build/model_parallel_mod.o: ./src/model_parallel_mod.F90
+build/model_post_mod.o: ./src/model_post_mod.F90 build/model_mod.o build/model_parallel_mod.o
+build/model_step_mod.o: ./src/model_step_mod.F90 build/model_mod.o build/model_parallel_mod.o build/model_io_mod.o

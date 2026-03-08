@@ -28,10 +28,6 @@ include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 
 .SUFFIXES: .F90 .o 
 
-# Modules used for the model part
-#SRC_MODEL =  	#main_offline.F90 \
-#		model_init_offline_mod.F90
-
 # Moduls used for PDAF
 MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		parallel_pdaf_mod.F90 \
@@ -51,7 +47,7 @@ SRC_PDAF_INT =  init_parallel_pdaf_offline.F90 \
 
 # user-supplied call-back routines
 SRC_CB  =       init_ens_pdaf_offline.F90 \
-		prepoststep_pdaf.F90
+		prepoststep_pdaf_offline.F90
 
 # User-supplied call-back routines for localization
 SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
