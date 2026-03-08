@@ -5,8 +5,6 @@
 # Include machine-specific definitions
 include compile_settings.txt
 
-# End of user specifications
-
 #######################################################
 # List of sources
 
