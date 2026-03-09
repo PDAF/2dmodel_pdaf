@@ -5,6 +5,11 @@
 # Include machine-specific definitions
 include compile_settings.txt
 
+# this makefile is intendet to build the model with
+# online coupling. When compiling the model without
+# PDAF (target `model`) one has to disable -DUSE_PDAF
+FFLAGS :=-DUSE_PDAF
+
 #######################################################
 # Sourcefiles
 
@@ -28,6 +33,7 @@ OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=build/%.o)
 
 ######################################################
 
+.phony: info
 info:
 	@echo "Makefile to build advanced 2d tutorial model of PDAF";
 	@echo "------------------------------------------------------------------";
@@ -51,32 +57,27 @@ model_pdaf : $(OBJ_MODEL) $(OBJ_PDAF_USER)
 # use pattern rule to create rules for all object files
 
 $(OBJ_MODEL): build/%.o: src/%.F90
-	$(FC) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
+	$(FC) $(FFLAGS) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 # PDAF: Compile rule for user-code in src_pdaf/
 $(OBJ_PDAF_USER): build/%.o: src_pdaf/%.F90
-	$(FC) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
+	$(FC) $(FFLAGS) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################
 # Cleans
 
+.phony: cleanall
 cleanall : clean cleandata
 
+.phony: clean
 clean :
 	rm -f build/*.o build/*.mod model model_pdaf
 
+.phony: cleandata
 cleandata:
 	rm -f field*nc
-
 
 ######################################################
 # Dependencies
 # (created using 'mkdepends' in PDAF's directory external/)
-
-build/main.o: ./src/main.F90 build/model_parallel_mod.o build/model_init_mod.o build/model_step_mod.o build/model_post_mod.o
-build/model_init_mod.o: ./src/model_init_mod.F90 build/model_mod.o build/model_parallel_mod.o build/model_io_mod.o
-build/model_io_mod.o: ./src/model_io_mod.F90 build/model_parallel_mod.o build/model_mod.o
-build/model_mod.o: ./src/model_mod.F90
-build/model_parallel_mod.o: ./src/model_parallel_mod.F90
-build/model_post_mod.o: ./src/model_post_mod.F90 build/model_mod.o build/model_parallel_mod.o
-build/model_step_mod.o: ./src/model_step_mod.F90 build/model_mod.o build/model_parallel_mod.o build/model_io_mod.o
+include Depends
