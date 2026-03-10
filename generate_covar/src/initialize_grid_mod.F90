@@ -16,11 +16,13 @@ contains
 
   subroutine initialize_grid()
 
+    use parallel_pdaf_mod, &         ! Model parallelzation variables
+         only: mype_world, npes_world, abort_parallel
+
+    ! Specific for 2D tutorial model
     use model_pdaf_mod, &            ! Model grid variables
          only: nx, ny, nx_p, n_dim, &
          coords_x_p, coords_y_p
-    use parallel_pdaf_mod, &         ! Model parallelzation variables
-         only: mype_world, npes_world, abort_parallel
 
     implicit none
 
@@ -39,8 +41,8 @@ contains
 
 ! *** Screen output ***
     if (mype_world == 0) then
-     WRITE (*, '(1x, a)') 'INITIALIZE MODEL INFORMATION FOR PDAF OFFLINE MODE'
-     WRITE (*, '(22x,a)') 'MODEL: 2D-2fields tutorial model'
+     write (*, '(1x, a)') 'INITIALIZE MODEL INFORMATION FOR PDAF OFFLINE MODE'
+     write (*, '(22x,a)') 'MODEL: 2D-2fields tutorial model'
        write (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
     end if
 

@@ -24,11 +24,13 @@ module statevector_pdaf_mod
 
 ! *** Variables to handle multiple fields in the state vector ***
 
+!+++ Specific part for 2D tutorial model
+
   !< Fortran type holding the indices of model fields in the state vector
-  !< This can be extended to any number of fields - it severs to give each field a name
+  !< This should be adapted to the fields in the state vector - it serves to give each field a name
   type field_ids
      integer :: fieldA 
-     INTEGER :: fieldB
+     integer :: fieldB
   end type field_ids
 
   !< Fortran type storing size and offset of each model field in the state vector
@@ -37,9 +39,11 @@ module statevector_pdaf_mod
      integer :: dim               ! size of field in state vector
      integer :: off               ! offset of field in state vector
      integer :: ndims             ! Number of dimensions
-     character(len=10) :: name    ! Name of field variable (optional)
-     character(len=10) :: fname   ! Name in output file (optional)     
+     character(len=20) :: name    ! Name of field variable
+     character(len=20) :: fname   ! Name of field in output file (optional)     
   end type state_field
+
+!+++ End of specific part
 
   !---- The next variables usually do not need editing -----
 
@@ -57,6 +61,9 @@ contains
 
 ! -----------------------------------------------------------------
 !> This routine initializes the array `id`
+!!
+!! The initializations in this routine should be 
+!! adapted to the particular state vector.
 !!
   subroutine init_id(n_fields)
 
@@ -76,14 +83,15 @@ contains
   end subroutine init_id
 
 ! -----------------------------------------------------------------
-!> This initializes the array sfields
+!> This routine initializes the array `sfields`
 !!
 !! This routine initializes the sfields array with specifications
-!! of the fields in the state vector.
+!! of the fields in the state vector. It has to be adapted to
+!! the particular fields used in the state vector
 !!
   subroutine init_sfields()
 
-    use model_pdaf_mod, &
+    use model_pdaf_mod, &  ! Model variables
          only: nx_p, ny
 
     implicit none
@@ -114,6 +122,8 @@ contains
 ! **************************************
 ! ***   Set dimensions and offsets   ***
 ! **************************************
+
+! The following operations are generic
 
     ! Set field dimensions
     do i = 1, n_fields

@@ -86,7 +86,7 @@ program generate_covar
 ! *** Initialize MPI communicators for PDAF (model and filter) ***
 ! *** NOTE: It is always n_modeltasks=1 for offline mode       ***
 
-  call init_parallel_pdaf(screen)
+  call init_parallel_pdaf_offline(screen)
 
 
 ! ************************************************
