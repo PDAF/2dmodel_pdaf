@@ -5,10 +5,6 @@
 # Include machine-specific definitions
 include compile_settings.txt
 
-# this makefile is intendet to build the model with
-# online coupling. When compiling the model without
-# PDAF (target `model`) one has to disable -DUSE_PDAF
-FFLAGS :=-DUSE_PDAF
 
 #######################################################
 # Sourcefiles
@@ -46,22 +42,22 @@ info:
 
 
 model : $(OBJ_MODEL)
-	$(LD)  $(OPT_LNK)  -o $@  $(OBJ_MODEL) $(LIBS)
+	$(LD)  $(LNKFLAGS)  -o $@  $(OBJ_MODEL) $(LIBS)
 
 # PDAF: Target to compile assimilative model
 model_pdaf : $(OBJ_MODEL) $(OBJ_PDAF_USER)
-	$(LD)  $(OPT_LNK)  -o $@ \
+	$(LD)  $(FFLAGS)  -o $@ \
 	$(OBJ_MODEL) $(OBJ_PDAF_USER) $(LIBS)
 
 ######################################################
 # use pattern rule to create rules for all object files
 
 $(OBJ_MODEL): build/%.o: src/%.F90
-	$(FC) $(FFLAGS) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
+	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 # PDAF: Compile rule for user-code in src_pdaf/
 $(OBJ_PDAF_USER): build/%.o: src_pdaf/%.F90
-	$(FC) $(FFLAGS) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
+	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################
 # Cleans

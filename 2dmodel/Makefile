@@ -33,13 +33,13 @@ info:
 
 
 model : $(OBJ_MODEL)
-	$(LD)  $(OPT_LNK)  -o $@  $(OBJ_MODEL) $(LIBS)
+	$(LD)  $(FFLAGS)  -o $@  $(OBJ_MODEL) $(LIBS)
 
 ######################################################
 # use pattern rule to create rules for all object files
 
 $(OBJ_MODEL): build/%.o: src/%.F90
-	$(FC) $(OPT) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
+	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################
 # Cleans

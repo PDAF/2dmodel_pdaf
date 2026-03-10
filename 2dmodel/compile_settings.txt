@@ -14,13 +14,11 @@
 FC = mpif90
 LD = $(FC)
 
-# Optimization specs for compiler
+# Flags for the compiler - optimization and activating PDAF
 # To use OpenMP parallelization in PDAF, specify it here (-fopenmp (gfortran) or -openmp (ifort))
 # (You should explicitly define double precision for floating point variables in the compilation
-OPT = -O3 -fdefault-real-8 -fopenmp
+FFLAGS = -O3 -fdefault-real-8 -fopenmp
 
-# Optimization specifications for Linker
-OPT_LNK = $(OPT)
 
 # Specification for directory holding modules (-module for Intel, -J for GNU)
 MODULEOPT = -J
