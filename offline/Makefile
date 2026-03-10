@@ -12,8 +12,8 @@
 #####################################################################
 
 # Include machine-specific definitions
-# For available include files see directory make.arch
-# To choose a file, set PDAF_ARCH either here or by an
+# For available include files see PDAF directory make.arch
+# To choose a file, set PDAF_ARCH for make or by an
 # environment variable.
 include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 
