@@ -1,20 +1,15 @@
-# $Id: Makefile 746 2009-08-04 12:16:28Z lnerger $
-
-#######################################################
-# Generic Makefile for to build PDAF with dummy model #
-# To choose the architecture set $PDAF_ARCH           #
-#######################################################
-
-######################################################
-
-
-# User specifications
-# 1. Set PDAFDIR, the directory where the PDAF package resides
-# 2. Set PDAF_ARCH to include compile definitions
-#    (See directory PDAFDIR/make.arch for files. PDAF_ARCH is filename without .h)
-
-# Root directory of PDAF package
-#PDAFDIR = ../..
+#####################################################################
+# Makefile to build PDAF offline mode assimilation program
+#
+# Set the following enviroment variables
+# 1. PDAFDIR=     ... the directory where the PDAF package resides
+# 2. PDAF_ARCH=   ... file including the compile definitions
+#                    (See directory PDAFDIR/make.arch for files.
+#		      PDAF_ARCH is filename without .h)
+#
+# Example
+# make offline_pdaf PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../PDAF
+#####################################################################
 
 # Include machine-specific definitions
 # For available include files see directory make.arch
@@ -23,12 +18,9 @@
 include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 
 
-# End of user specifications
 ######################################################
 
-.SUFFIXES: .F90 .o 
-
-# Moduls used for PDAF
+# Modules used for PDAF
 MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		parallel_pdaf_mod.F90 \
 		assimilation_pdaf_mod.F90 \
@@ -37,7 +29,6 @@ MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		io_pdaf_mod.F90 \
 		main_offline.F90 \
 		parser_mpi.F90 
-
 
 # Interface to PDAF - model sided
 SRC_PDAF_INT =  init_parallel_pdaf_offline.F90 \
@@ -67,26 +58,24 @@ SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB)
 
 #######################################################
 # object files
-#OBJ_MODEL := $(SRC_MODEL:%.F90=%.o)
-OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=%.o)
+OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=build/%.o)
 
 ######################################################
 
+.phony: info
 info:
-	@echo "Makefile to build PDAF tutorial online implementation";
-	@echo "Example: 2D model with parallelization";
+	@echo "Makefile to build PDAF tutorial offline implementation";
 	@echo "------------------------------------------------------------------";
 	@echo "Use as   make TARGET   where TARGET can be:";
-	@echo "  offline_pdaf   - PDAF offline DA program";
-	@echo "  (if compiled without -DUSE_PDAF, both programs behave equally)";
+	@echo "  offline_pdaf  - PDAF offline DA program";
+	@echo "  clean         - clean up compilation";
+	@echo "  cleandata     - remove output files";
+	@echo "  cleanpdaf     - clean up PDAF library compilation";
+	@echo "  listarch      - List available choices for PDAF_ARCH";
 	@echo "";
-	@echo "Depending on whether PDAF should be active, one has to define";
-	@echo "USE_PDAF in the include file in make.arch/ file for preprocessing.";
-	@echo  "List available settings for PDAF_ARCH with 'make listarch'";
 	@echo "Path to PDAF (PDAFDIR): " $(PDAFDIR);
-	@echo "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
+	@echo "Machine-specific definitions (PDAF_ARCH): " $(PDAF_ARCH);
 	@echo "------------------------------------------------------------------";
-
 
 
 offline_pdaf : libpdaf-d.a $(OBJ_PDAF_USER)
@@ -95,6 +84,7 @@ offline_pdaf : libpdaf-d.a $(OBJ_PDAF_USER)
 	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS) $(NC_LIB)
 
 ######################################################
+# Build PDAF library
 
 libpdaf-d.a: 
 	@echo "++++++ Generate Filter library ++++++"
@@ -102,29 +92,29 @@ libpdaf-d.a:
 
 
 ######################################################
-
 # use pattern rule to create rules for all object files
 
-%.o: %.F90
-	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include  -c $*.F90
+$(OBJ_PDAF_USER): build/%.o: src/%.F90
+	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################
 # Cleans
 
+.phony: cleanall
 cleanall : cleanpdaf clean cleandata
 
+.phony: clean
 clean :
-	rm -f *.o *.mod *.a offline_pdaf
+	rm -f build/*.o build/*.mod offline_pdaf
 
+.phony: cleanpdaf
 cleanpdaf:
 	@echo "+++ Clean up PDAF directory"
 	cd $(PDAFDIR); make clean
 
+.phony: cleandata
 cleandata:
 	rm -f *.nc
-
-cleandataq:
-	@rm -f *.nc
 
 ######################################################
 # List arch files
