@@ -87,9 +87,9 @@ with <arch> and <mydir> as before.
 ### Input files
 
 the input files are in `inputs_2fields`. These are
-* `ensA_XX.nc` and `ensB_XX.nc`: Ensemble files for both fields where `XX` is the ensemble index ranging between 01 and 20.
-* `obsA.nc` and `obsB.nc`: Observation fields for both fields
-* `trueA_stepYY.nc` and `trueB_stepYY.nc`: Files holdign the true model state for both fields, where YY is the time step
+* `ensA_XX.nc` and `ensB_XX.nc`: Ensemble files for both fields where `XX` is the ensemble index ranging between 01 and 20. Used to initialize the ensemble for DA or to generate a covariacne matrix file with generate_covar.
+* `obsA.nc` and `obsB.nc`: Observation fields for both fields containing all time steps. Read during DA process
+* `trueA_stepYY.nc` and `trueB_stepYY.nc`: Files holdign the true model state for both fields, where YY is the time step. Used to compare with to access quality of state estimate (e.g. using `plot_diff.py`)
 
 ### Output files
 
@@ -98,54 +98,104 @@ Running the online or offline DA produces a number of output files. There are se
 * `ensA_XX_step*_for.txt / ensA_XX_step*_ana.txt` - files holding each single ensemble member state (with index 'XX') for the forecast ('for') or analysis ('ana').
 * `varianceA_step*_for.txt / varianceA_step*_ana.txt` - files holding the ensemble variance of field A of the model for the forecast ('for') or analysis ('ana').
 
-### Plotting
+## Plotting
 
-The directory plotting/ contains Python plot scripts. They can be used like
+The directory `plotting/` contains Python plot scripts. They can be used like
 ```
 plot_diff.py FILE1 FILE2      # Plot the difference of two files and display their RMS difference
 plot_file.py FILE             # Plot the field in one file
-plot_obs.py OBSFILE STEP      # Plot one observation file
+plot_obs.py OBSFILE STEP      # Plot one observation file with OBSFILE being the observation file and STEP the time step to plot
 ```
 
-### Examples for online coupled DA
+The script `plot_file.py` can be used for plotting the files in inputs_2fields, or output files of the model or a DA experiment. `plot_diff.py` is commonly used to plot the difference of the output of a DA experiments and the corresponding true state.
+
+## Running experiments
+
+The programs for the online and offline coupled DA use command line options to specify options. All command line options start with a dash. Thus the syntax is
+```
+-VARIABLE VALUE
+```
+
+### Running the offline coupled DA
+
+The offline coupled DA performs one single analysis step. It uses a parallelization with domain decomposition. However, one can also run it with a single process.
+
+To run the program one can, e.g., use
+```
+./offline_pdaf -dim_ens <DIMENS> -filtertype <FTYPE> -step <STEP> [further options]
+```
+with
+* <DIMENS>: Ensemble size, e.g. between 3 and 20.
+* <FTYPE>: Type of filter algorithm, e.g. 6 for ESTKF or 7 LESTKF.
+* <STEP>: The time step for which observations are assimilated
+* [further options]: there are more options one can specify. We list some possibilities later.
+
+Notes: 
+* Depending on the MPI-library you use, you might need to write 'mpirun -np 1' at the beginning of the command. With OpenMPI one usually doe snot need this.
+* The program is implemented to always read the same input files. Thus it does not support a full offline DA cycling in which one alternates the DA step and the forecast. Thus, in a more realistic case, one would change this so that one can specify at run time which files to read. Alternatively, one could add a script that copies restart files from the model to the default names.
+
+***Examples***
+
+Running the global filter ESTKF with ensemble size 10 at step 1:
+```
+./offline_pdaf -dim_ens 10 -filtertype 6 -step 1
+```
+Runing the local filter LESTKF with ensemble size 6 at step 1 with localization cut-off radius 7.0
+```
+./offline_pdaf -dim_ens 6 -filtertype 7 -step 1 -cradius 7.0
+```
+Here, the additional option `cradius` is used.
+
+Get an overview of available DA methods and the options of the selected DA method (<FTYPE>):
+```
+./offline_pdaf -filtertype <FTYPE> -subtype -1
+```
+If one omits setting 'filtertype' the filter ESTKF is used.
+
+
+### Running the online coupled DA
 
 The online coupled DA is implemented with PDAF's fully parallel mode. Thus, the number of processes has to be a multiple of the ensemble size.
 
-To run the global ESTKF filter with ensemble size 4 over 18 time steps, with an analysis step at each second step, use
 ```
-mpirun -np 4 ./model_pdaf -dim_ens 4 -filtertype 6
+mpirun -np <NUMPROCS> ./model_pdaf -dim_ens <DIMENS> -filtertype <FTYPE> [further options]
 ```
-To plot the difference of the final state estimate of this experiments with the true model state use
-```
-python ../plotting/plot_diff.py stateA_step18_ana.txt ../inputs_online_2fields/trueA_step18.txt
-```
+with
+* <DIMENS>: Ensemble size, e.g. between 3 and 20.
+* <FTYPE>: Type of filter algorithm, e.g. 6 for ESTKF or 7 LESTKF.
+* [further options]: there are more options one can specify. We list some possibilities later.
 
-To run the same experiment as before but using domain-decomposition with 2 processes per model use
+
+***Examples***
+
+Running the local filter LESTKF using 6 processes with ensemble size 6:
 ```
-mpirun -np 8 ./model_pdaf -dim_ens 4 -filtertype 6
+mpirun -np 6./model_pdaf -dim_ens 6 -filtertype 6
 ```
-The outputs of this run should be the same as before.
+Runing the local filter LESTKF with parallelization using 12 processes with ensemble size 6
+```
+mpirun -np 12 ./model_pdaf -dim_ens 6 -filtertype 6
+```
+In this case, 2 processes per model are used such that the model domain is split into 2 subdomains. The outputs of this run should be the same as before.
 However, in the upper part of the screen output, you will see information about the domain decomposition, and the dimension of the fields in the state vector will reflect the decomposition.
 
-The domain-localized filter LESTKF can be run e.g. using
+To plot the difference of the final state estimate of this experiment with the true model state use
 ```
-mpirun -np 4 ./model_pdaf -dim_ens 4 -filtertype 7 -cradius 5.0
+python ../plotting/plot_diff.py stateA_step20_ana.txt ../inputs_2fields/trueA_step20.txt
 ```
-Here, 'cradius' (’c’ for cutoff)is used to set the localization radius to 5 grid points.
-Plotting the state estimate as before shows that localization changes the shape of the state estimate and leads to a larger error (this is a particularity of this model, and the fact that the ensemble states have the same shape as the true state).
 
-### Examples for offline coupled DA
+***Run Scripts***
 
-The offline coupled DA performs one single analysis step. It is also implemented using parallel domain decomposition. However, one can run it with a single process.
+The directory `runscripts/` contains run scripts to perform a series fo experiments with the online coupled model. The scripts use some more options. the scripts are.
+* run_free.sh: Run a series of ensemble runs without assimilating observations. The type of ensembel initialization and the ensemble size are varied
+* run_global.sh: Run a series of DA experiments with the global ESTKF. The experiments vary the type of ensemble initialization, the inflation (forgetting factor) and the ensemble size
+* run_local.sh: Run a series of DA experiments with the lcoal filter LESTKF. The experiments vary the type of ensemble initialization, the inflation (forgetting factor), the ensemble size, and the localization radius.
 
-To run the global ESTKF filter with ensemble size 4 at step 1
-```
-./offline_pdaf -dim_ens 4 -filtertype 6 -step 1
-```
-(Depending on the MPI-library you use, you might need to write 'mpirun -np 1' at the beginning of the command).
-Here, setting step=1 means that the observations at time step 1 are assimilated.
-The program is implemented to always read the same input files.
-Thus, in a more realistic case, one would change this in the source code or add a script that copies restart files from the model to the default names.
+Note, that the run scripts perform a larger number number of experiments, e.g. `run_global.sh` does 378 experiments and `run_local.sh` does 4998 experiments. Both run with ensemble size up to 20 so that up to 20 processes are used. Running these experiments is possible without having physically 20 processor cores, e.g. on a notebook computer with sufficiently powerful processor. If the executation slows down significantly, the CPUr is likely not powerful enough. Further, while each output file is small, the overall output of these experiments is several giga-bytes.
+
+## Run options
+
+
 
 ## Twin experiments
 
