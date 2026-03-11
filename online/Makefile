@@ -71,7 +71,7 @@ clean :
 
 .phony: cleandata
 cleandata:
-	rm -f field*nc
+	rm -f field*nc ens*nc state*.nc var*.nc
 
 ######################################################
 # Dependencies
