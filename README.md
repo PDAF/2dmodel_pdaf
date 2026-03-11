@@ -11,8 +11,6 @@ Notes on the model:
 * The ensemble is generated in a systematic way (by rotating the field for the first model field and shifting for the second), which is artificial but helps to demonstrate some effects, e.g., of the localization.
 * The model does not read restart files. Thus, one cannot perform a realistic sequence of offline analysis steps. Only a single offline analysis step is done for demonstration.
 
-Notes on the DA implementation:
-* While generally all ensemble-based methods are supported, 
 
 ## Structure of the example codes
 
@@ -205,21 +203,23 @@ Here we list a selection of possible options that cna be set on the command line
 | filtertype | | Type of DA method; see output from running with -subtype -1| 6 |
 | subtype | | subtype of DA method; see output from running with -subtype -1| 0 |
 | delt_obs | >0 | forecast length in time steps | 2 |
-| forget | >0, <=1.0 | Inflation parameter 'forgetting factor', <1.0 inflates the ensemble | 1.0 |
+| forget | >0 | 'forgetting factor' controlling inflation: <1.0 inflates the ensemble spread; =1.0 neutral; >1.0 deflates the ensemble spread | 1.0 |
 | cradius | >=0.0 | Localization cut-off radius | 5.0 |
 | locweight | 0-4 | Type of localiztion weight function:  (0) constant weight of 1; (1) exponentially decreasing with SRADIUS; (2) use 5th-order polynomial; (3) regulated localization of R with mean error variance; (4) regulated localization of R with single-point error variance| 2 |
 | type_ens_init | 1,2,3 | Type of ensemble initialization: 1: Read ensemble files; 2: Read ensemble files and replace ensemble mean by mean state of 20 ensemble files; 3: Initialize from covariance matrix file and use by mean state of 20 ensemble files (need to run generate_covar first) | 1 | 
 | twin_experiment | [T\|F] | Wethe rto run a twin experiment, i.e. use observation values generated using PDAF functionality to generate synthetic observations | F |
-| step | 0-99 | Time step of observations assimilated in offline coupled DA | 1 |
-| type_iau | 0,1 | 0: no IAU, 1: activate IAU | 0 |
-| steps_iau | >0 | Number of time steps over which increment is distributed by IAU | 1 |
+| step | 0-99 | For offline DA: Time step of observations assimilated | 1 |
+| type_iau | 0,1 | Incremental analysis updating: 0: no IAU, 1: activate IAU | 0 |
+| steps_iau | >0 | Incremental analysis updating: Number of time steps over which increment is distributed | 1 |
 | write_state | [T\|F] | Whether to write ensemble mean state files | T | 
 | write_ens | [T\|F]  | Whether to write all ensemble states into files | T |
 | write_var | [T\|F|] Whether to write files for ensemble variance field | F |
 | assim_A | [T\|F] | Whether to assimilate observation of fieldA | T |
 | assim_B | [T\|F] | Whether to assimilate observation of fieldB | F |
-| rms_obs_A | >0 | Observation error for observations of fieldA | 0.5 |
-| rms_obs_B | >0 | Observation error for observations of fieldB | 0.25 |
+| rms_obs_A | >0.o | Observation error for observations of fieldA | 0.5 |
+| rms_obs_B | >0.o | Observation error for observations of fieldB | 0.25 |
+
+Further options, including their explanation and possible values, can be seen in the file `assimilation_pdaf_mod.F90`.
 
 ## Further functionality
 
