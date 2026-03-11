@@ -1,9 +1,10 @@
 #######################################################
 # Simple Makefile to build the 2D tutotrial model     #
+# online                                              #
 #######################################################
 
 # Include machine-specific definitions
-include compile_settings.txt
+include ../compile_settings.txt
 
 
 #######################################################

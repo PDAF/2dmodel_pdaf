@@ -3,7 +3,7 @@
 #######################################################
 
 # Include machine-specific definitions
-include compile_settings.txt
+include ../compile_settings.txt
 
 #######################################################
 # List of sources
@@ -22,6 +22,7 @@ OBJ_MODEL := $(SRC_MODEL:%.F90=build/%.o)
 
 ######################################################
 
+.phony: info
 info:
 	@echo "Makefile to build advanced 2d tutorial model of PDAF";
 	@echo "------------------------------------------------------------------";
@@ -44,11 +45,14 @@ $(OBJ_MODEL): build/%.o: src/%.F90
 ######################################################
 # Cleans
 
-cleanall : clean cleandata
+.phony: cleanall
+cleanall: clean cleandata
 
-clean :
+.phony: clean
+clean:
 	rm -f build/*.o build/*.mod model
 
+.phony: cleandata
 cleandata:
 	rm -f field*nc
 

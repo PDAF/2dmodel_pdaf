@@ -1,0 +1,38 @@
+# This files speifies the source code files 
+# of the PDAF model binding code
+
+# Modules used for PDAF
+MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
+		parallel_pdaf_mod.F90 \
+		assimilation_pdaf_mod.F90 \
+		statevector_pdaf_mod.F90 \
+		initialize_grid_mod.F90 \
+		io_pdaf_mod.F90 \
+		main_offline.F90 \
+		parser_mpi.F90
+
+# Interface to PDAF - model sided
+SRC_PDAF_INT =  init_parallel_pdaf_offline.F90 \
+		init_pdaf_offline.F90 \
+		assimilate_pdaf_offline.F90 \
+		finalize_pdaf.F90 \
+
+# user-supplied call-back routines
+SRC_CB  =       init_ens_pdaf_offline.F90 \
+		prepoststep_pdaf_offline.F90
+
+# User-supplied call-back routines for localization
+SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
+		init_dim_l_pdaf.F90
+
+# Routines for PDAF-OMI observation handling
+SRC_CB_OMI = 	synobs_pdaf_mod.F90 \
+		obs_A_pdafomi.F90 \
+		obs_B_pdafomi.F90 \
+		callback_obs_pdafomi.F90
+
+# Additional routines call by other routines
+SRC_MISC =      init_pdaf_parse.F90
+
+# Full list of user-supplied routines for online modes
+SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB) $(SRC_CB_LOCAL)

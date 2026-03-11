@@ -1,21 +1,9 @@
-#####################################################################
-# Generic Makefile for to build tool program for PDAF
-#
-# Set the following enviroment variables
-# 1. PDAFDIR=     ... the directory where the PDAF package resides
-# 2. PDAF_ARCH=   ... file including the compile definitions
-#                    (See directory PDAFDIR/make.arch for files.
-#		      PDAF_ARCH is filename without .h)
-#
-# Example
-# make offline_pdaf PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../PDAF
-#####################################################################
+#######################################################
+# Simple Makefile to build the generate_covar program #
+#######################################################
 
 # Include machine-specific definitions
-# For available include files see PDAF directory make.arch
-# To choose a file, set PDAF_ARCH for make or by an
-# environment variable.
-include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
+include ../compile_settings.txt
 
 ######################################################
 
@@ -41,30 +29,25 @@ info:
 	@echo  "-------------------------------------------------------------------------------";
 	@echo  "Use as   make TARGET   where TARGET can be:";
 	@echo  "  generate_covar - Generate a file for the covariance matrix from a trajectory";
-	@echo  "  clean          - Clean up";
-	@echo  "";
-	@echo  "Path to PDAF (PDAFDIR): " $(PDAFDIR);
-	@echo  "Use machine-specific definitions for PDAF_ARCH: " $(PDAF_ARCH);
+	@echo  "  clean          - clean up compilation";
 	@echo  "-------------------------------------------------------------------------------";
 
 generate_covar: libpdaf-d.a $(OBJ_COVAR)
 	rm -f $@
-	$(LD)  $(OPT) -o $@ $(OBJ_COVAR) $(NC_LIB) \
-	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS)
+	$(LD)  $(FFLAGS) -o $@ $(OBJ_COVAR) $(LIBS)
 
 ######################################################
 # Build PDAF library
 
 libpdaf-d.a: 
 	@echo "++++++ Generate Filter library ++++++"
-	@cd $(PDAFDIR); make;
-
+	make -C $(PDAFDIR)
 
 ######################################################
 # use pattern rule to create rules for all object files
 
 build/%.o: src/%.F90
-	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include -c -o $@ $(MODULEOPT) build/ $<
+	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################
 # Cleans
