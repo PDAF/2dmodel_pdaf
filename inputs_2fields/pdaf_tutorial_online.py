@@ -15,7 +15,7 @@ import netCDF4 as nc
 dim_x = 36         # Grid dimension in x-direction
 dim_y = 18         # Grid dimension in y-direction
 dim_ens = 20       # Maximum ensemble size
-dim_step = 100     # Number of time steps
+dim_step = 99      # Number of time steps
 stddev_obs = 0.5   # error standard deviation for observations type A
 stddev_obsB = 0.25 # error standard deviation for observations type B
 dxobs = 5          # x-Grid spacing for observations type A
@@ -66,8 +66,6 @@ if dowrite==1:
          ncfile = nc.Dataset('trueA_ini.nc',mode='w')
       else:
          if step<10:
-            stepstr = '00'+str(step)
-         elif step<100:
             stepstr = '0'+str(step)
          else:
             stepstr = str(step)
@@ -148,8 +146,6 @@ if dowrite==1:
          ncfile = nc.Dataset('trueB_ini.nc',mode='w')
       else:
          if step<10:
-            stepstr = '00'+str(step)
-         elif step<100:
             stepstr = '0'+str(step)
          else:
             stepstr = str(step)
