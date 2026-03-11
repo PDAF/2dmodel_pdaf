@@ -18,8 +18,8 @@ subroutine assimilate_pdaf()
        only: PDAF3_assimilate, PDAF3_generate_obs, PDAF_DA_GENOBS
   use parallel_pdaf_mod, &        ! Parallelization variables
        only: mype_ens, abort_parallel
-  USE assimilation_pdaf_mod, &    ! Variables for assimilation
-       ONLY: filtertype
+  use assimilation_pdaf_mod, &    ! Variables for assimilation
+       only: filtertype
 
   implicit none
 
@@ -45,7 +45,7 @@ subroutine assimilate_pdaf()
        obs_op_pdafomi, &              ! Obs. operator for full obs. vector for Process-local domain
        init_dim_obs_l_pdafomi         ! Get dimension of obs. vector for local analysis domain
   ! Subroutine used for generating observations
-  EXTERNAL :: get_obs_pdaf            ! Get vector of synthetic observations from PDAF
+  external :: get_obs_pdaf            ! Get vector of synthetic observations from PDAF
 
 
 ! *********************************
@@ -61,17 +61,17 @@ subroutine assimilate_pdaf()
 ! +++ that are never called for global filters. 
 
   ! Call universal PDAF3 ensemble assimilation routine
-  IF (filtertype /= PDAF_DA_GENOBS) THEN
+  if (filtertype /= PDAF_DA_GENOBS) then
      call PDAF3_assimilate(collect_state_pdaf, distribute_state_pdaf, &
           init_dim_obs_pdafomi, obs_op_pdafomi, &
           init_n_domains_pdaf, init_dim_l_pdaf, init_dim_obs_l_pdafomi, &
           prepoststep_pdaf, next_observation_pdaf, status_pdaf)
-  ELSE
+  else
      ! Observation generation has its own OMI interface routine
-     CALL PDAF3_generate_obs(collect_state_pdaf, distribute_state_pdaf, &
+     call PDAF3_generate_obs(collect_state_pdaf, distribute_state_pdaf, &
           init_dim_obs_pdafomi, obs_op_pdafomi, get_obs_pdaf, &
           prepoststep_pdaf, next_observation_pdaf, status_pdaf)
-  END IF
+  end if
 
 
 ! ************************

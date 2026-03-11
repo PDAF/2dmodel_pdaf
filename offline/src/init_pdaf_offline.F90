@@ -17,8 +17,9 @@
 subroutine init_pdaf_offline()
 
   use PDAF, &                          ! PDAF
-       only: PDAF3_init, PDAF_set_iparam, &
-       PDAFomi_set_domain_limits
+       only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, &
+       PDAFomi_set_domain_limits, &
+       PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
        only: mype_ens, mype_filter, n_modeltasks, abort_parallel
   use assimilation_pdaf_mod, &         ! Variables for assimilation
@@ -26,6 +27,8 @@ subroutine init_pdaf_offline()
        screen, filtertype, subtype, delt_obs, step_offline, &
        type_iau, steps_iau, type_forget, forget, &
        locweight, cradius, sradius, coords_p, &
+       type_winf, limit_winf, pf_res_type, pf_noise_type, pf_noise_amp, &
+       type_hyb, hyb_gamma, hyb_kappa, &
        type_obs_init, type_ens_init, file_covar
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
@@ -176,6 +179,30 @@ subroutine init_pdaf_offline()
   ! Generic settings
   call PDAF_set_iparam(5, type_forget, status_pdaf)      ! Type of forgetting factor
   call PDAF_set_iparam(9, type_obs_init, status_pdaf)    ! Initialize observation before or after call to prepoststep
+
+  ! Settings for NETF and LNETF
+  IF (filtertype==PDAF_DA_NETF .OR. filtertype==PDAF_DA_LNETF) THEN
+     CALL PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
+     CALL PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
+     CALL PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
+     CALL PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
+  END IF
+
+  ! Settings for particle filter PF
+  IF (filtertype==PDAF_DA_PF) THEN
+     CALL PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
+     CALL PDAF_set_iparam(6, pf_res_type, status_pdaf)   ! Resampling type
+     CALL PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
+     CALL PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
+     CALL PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
+  END IF
+
+  ! Settings for hybrid filter LKNETF
+  IF (filtertype==PDAF_DA_LKNETF) THEN
+     CALL PDAF_set_iparam(4, type_hyb, status_pdaf)      ! Choice of hybrid rule
+     CALL PDAF_set_rparam(2, hyb_gamma, status_pdaf)     ! Hybrid filter weight for state
+     CALL PDAF_set_rparam(3, hyb_kappa, status_pdaf)     ! Normalization factor for hybrid weight 
+  END IF
 
 
 ! *** Check whether initialization of PDAF was successful ***
