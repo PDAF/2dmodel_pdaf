@@ -60,7 +60,7 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
   real :: stddev_g                    ! Global ensemble standard deviation over all fields
   real, allocatable :: ens_stddev(:)  ! ensemble standard deviation for each field (=estimated RMS errors)
   real, allocatable :: variance_p(:)  ! Ensemble variance state vector
-  real, pointer :: obsstats_ptr(:,:)  ! Point for observation statistics
+  real, pointer :: obsstats_ptr(:,:)  ! Pointer for observation statistics
   character(len=3) :: anastr          ! String for call type (initial, forecast, analysis)
 
 
