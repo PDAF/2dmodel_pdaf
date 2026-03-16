@@ -1,5 +1,23 @@
 # 2dmodel_pdaf - advanced implementation of tutorial model with PDAF
 
+## too long; did not read
+
+ 1. Use  `git clone --recurse-submodules` to get the tutorial together with the PDAF library
+ 2. `export PDAF_ARCH=linux_gfortran_openmpi` (or a suitable (custom) configuration in `pdaf/make.arch/`)
+ 3. Build PDAF via `make -C pdaf -j 4`
+ 4. `export PDAFDIR=$(realpath pdaf)`
+ 5. Adapt settings in `online/compile_settings.txt` to your system
+ 6. Build the online coupled model via `make -C online model_pdaf`
+ 7. Start an experiment via `??`
+
+>[!Important]
+> All commands listed above are executed from the root directorty of this repository.
+
+>[!TIP]
+> Refer to the detailed description in this README if you run into any problems with this quick guide
+
+##
+
 This directory contains a tutorial model coupled to PDAF. The model uses a 2-dimensional rectangular domain with x- and y-directions and has two fields (`fieldA`, `fieldB`). The model is parallelized with MPI using a domain decomposition in the x-direction. The model dynamics are trivial by shifting the model fields in the positive y-direction. For the data assimilation (DA), the code supports all ensemble-based methods (ensemble Kalman filters, particle filters, hybrid Kalman-nonlinear filter). Similar, but simpler variants of this model are in the PDAF tutorials of the PDAF release (https://pdaf.awi.de/trac/wiki/PdafTutorial).
 
 With the tutorial model, we simulate a real case. The model itself is independent of PDAF and uses its own compile scheme. The online-coupled DA code extends the model. To compile the online-coupled model, its Makefile is extended to also compile the user code for the online coupling, while the PDAF library is compiled separately and just linked to the online-coupled assimilative model. In contrast, the offline-coupled DA code does not directly use the model, and the Makefile is more tightly integrated with the PDAF library. Thus, it uses the compile definitions file from the PDAF release and can also initiate the compilation of the PDAF library.
@@ -211,25 +229,25 @@ Here we list a selection of possible options that can be set on the command line
 
 | Option | values | Description | Default |
 |--------|--------|-------------|---------|
-| `-dim_ens` | $> 0$  | Ensemble size |  |
-| `-filtertype` | | Type of DA method; see output from running with `-subtype -1`| $6$ |
-| `-subtype` | | subtype of DA method; see output from running with `-subtype -1`| $0$ |
-| `-delt_obs` | $> 0$ | forecast length in time steps | $2$ |
-| `-forget` | $> 0$ | 'forgetting factor' controlling inflation: $<1.0$ inflates the ensemble spread; $=1.0$ neutral; $>1.0$ deflates the ensemble spread | $1.0$ |
-| `-cradius` | $\geq 0.0$ | Localization cut-off radius | $5.0$ |
-| `-locweight` | $0-4$ | Type of localiztion weight function:  ($0$) constant weight of $1$; ($1$) exponentially decreasing with SRADIUS; ($2$) use 5th-order polynomial; ($3$) regulated localization of $R$ with mean error variance; ($4$) regulated localization of $R$ with single-point error variance| $2$ |
-| `-type_ens_init` | $1,2,3$ | Type of ensemble initialization: $1$: Read ensemble files; $2$: Read ensemble files and replace ensemble mean by mean state of 20 ensemble files; $3$: Initialize from covariance matrix file and use by mean state of 20 ensemble files (need to run generate_covar first) | $1$ | 
+| `-dim_ens` | > 0  | Ensemble size |  |
+| `-filtertype` | | Type of DA method; see output from running with `-subtype -1`| 6 |
+| `-subtype` | | subtype of DA method; see output from running with `-subtype -1`| 0 |
+| `-delt_obs` | > 0 | forecast length in time steps | 2 |
+| `-forget` | > 0 | 'forgetting factor' controlling inflation: <1.0 inflates the ensemble spread; =1.0 neutral; >1.0 deflates the ensemble spread | 1.0 |
+| `-cradius` | $\geq$ 0.0 | Localization cut-off radius | 5.0 |
+| `-locweight` | 0-4 | Type of localiztion weight function: =0 constant weight of 1; =1 exponentially decreasing with SRADIUS; =2 use 5th-order polynomial; =3 regulated localization of $R$ with mean error variance; =4 regulated localization of $R$ with single-point error variance| 2 |
+| `-type_ens_init` | 1,2,3 | Type of ensemble initialization: =1 Read ensemble files; =2 Read ensemble files and replace ensemble mean by mean state of 20 ensemble files; =3 Initialize from covariance matrix file and use by mean state of 20 ensemble files (need to run generate_covar first) | 1 | 
 | `-twin_experiment` | [T\|F] | Whether to run a twin experiment, i.e., use observation values generated using PDAF functionality to generate synthetic observations | F |
-| `-step` | $0-99$ | For offline DA: Time step of observations assimilated | $1$ |
-| `-type_iau` | $0,1$ | Incremental analysis updating: 0: no IAU, 1: activate IAU | $0$ |
-| `-steps_iau` | $> 0$ | Incremental analysis updating: Number of time steps over which increment is distributed | $1$ |
+| `-step` | 0-99 | For offline DA: Time step of observations assimilated | 1 |
+| `-type_iau` | 0,1 | Incremental analysis updating: 0= no IAU; 1= activate IAU | 0 |
+| `-steps_iau` | > 0 | Incremental analysis updating: Number of time steps over which increment is distributed | 1 |
 | `-write_state` | [T\|F] | Whether to write ensemble mean state files | T | 
 | `-write_ens` | [T\|F]  | Whether to write all ensemble states into files | T |
 | `-write_var` | [T\|F]| Whether to write files for ensemble variance field | F |
 | `-assim_A` | [T\|F] | Whether to assimilate observation of fieldA | T |
 | `-assim_B` | [T\|F] | Whether to assimilate observation of fieldB | F |
-| `-rms_obs_A` | $> 0.0$ | Observation error for observations of fieldA | $0.5$ |
-| `-rms_obs_B` | $> 0.0$ | Observation error for observations of fieldB | $0.25$ |
+| `-rms_obs_A` | > 0.0 | Observation error for observations of fieldA | 0.5 |
+| `-rms_obs_B` | > 0.0 | Observation error for observations of fieldB | 0.25 |
 
 Further options, including their explanation and possible values, can be seen in the file `assimilation_pdaf_mod.F90`.
 
