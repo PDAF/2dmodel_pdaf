@@ -1,5 +1,20 @@
 # 2dmodel_pdaf - advanced implementation of tutorial model with PDAF
 
+## too long; did not read
+
+ 1. Use  `git clone --recurse-submodules` to get the tutorial together with the PDAF library
+ 2. `export PDAF_ARCH=linux_gfortran_openmpi` (or a suitable (custom) configuration in `pdaf/make.arch/`)
+ 3. Build PDAF via `make -C pdaf -j 4`
+ 4. `export PDAFDIR=$(realpath pdaf)`
+ 5. Adapt settings in `online/compile_settings.txt` to your system
+ 6. Build the online coupled model via `make -C online model_pdaf`
+ 7. Start an experiment via `??`
+
+>[!TIP]
+> Refer to the detailed description in this README if you run into any problems with this quick guide
+
+##
+
 This directory contains a tutorial model coupled to PDAF. The model uses a 2-dimensional rectangular domain with x- and y-directions and has two fields (`fieldA`, `fieldB`). The model is parallelized with MPI using a domain decomposition in the x-direction. The model dynamics are trivial by shifting the model fields in the positive y-direction. For the data assimilation (DA), the code supports all ensemble-based methods (ensemble Kalman filters, particle filters, hybrid Kalman-nonlinear filter). Similar, but simpler variants of this model are in the PDAF tutorials of the PDAF release (https://pdaf.awi.de/trac/wiki/PdafTutorial).
 
 With the tutorial model, we simulate a real case. The model itself is independent of PDAF and uses its own compile scheme. The online-coupled DA code extends the model. To compile the online-coupled model, its Makefile is extended to also compile the user code for the online coupling, while the PDAF library is compiled separately and just linked to the online-coupled assimilative model. In contrast, the offline-coupled DA code does not directly use the model, and the Makefile is more tightly integrated with the PDAF library. Thus, it uses the compile definitions file from the PDAF release and can also initiate the compilation of the PDAF library.
