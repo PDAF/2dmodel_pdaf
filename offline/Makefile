@@ -100,26 +100,24 @@ $(OBJ_PDAF_USER): build/%.o: src/%.F90
 ######################################################
 # Cleans
 
-.phony: cleanall
+.phony: cleanall cleanpdaf clean cleandata
 cleanall : cleanpdaf clean cleandata
 
-.phony: clean
 clean :
 	rm -f build/*.o build/*.mod offline_pdaf
 
-.phony: cleanpdaf
 cleanpdaf:
 	@echo "+++ Clean up PDAF directory"
 	cd $(PDAFDIR); make clean
 
-.phony: cleandata
 cleandata:
 	rm -f *.nc
 
 ######################################################
 # List arch files
 
+.phony: listarch
 listarch:
 	@echo Available architecture-specific input files for PDAF_ARCH
 	@echo ---------------------------------------------------------
-	@ls -1 ../../make.arch | cut -d"." -f1
+	@ls -1 $(PDAFDIR)/make.arch | cut -d"." -f1

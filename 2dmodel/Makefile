@@ -22,6 +22,7 @@ OBJ_MODEL := $(SRC_MODEL:%.F90=build/%.o)
 
 ######################################################
 
+.phony: info
 info:
 	@echo "Makefile to build advanced 2d tutorial model of PDAF";
 	@echo "------------------------------------------------------------------";
@@ -44,6 +45,7 @@ $(OBJ_MODEL): build/%.o: src/%.F90
 ######################################################
 # Cleans
 
+.phony: cleanall clean cleandata
 cleanall : clean cleandata
 
 clean :

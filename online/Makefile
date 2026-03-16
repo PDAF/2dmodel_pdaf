@@ -62,14 +62,12 @@ $(OBJ_PDAF_USER): build/%.o: src_pdaf/%.F90
 ######################################################
 # Cleans
 
-.phony: cleanall
+.phony: cleanall clean cleandata
 cleanall : clean cleandata
 
-.phony: clean
 clean :
 	rm -f build/*.o build/*.mod model model_pdaf
 
-.phony: cleandata
 cleandata:
 	rm -f field*nc ens*nc state*.nc var*.nc
 
