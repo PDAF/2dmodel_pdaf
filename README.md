@@ -16,7 +16,7 @@ To get the code, compile the online-coupled program and perform a first experime
 > PDAF needs libraries for BLAS, LAPACK and MPI; the program in `online` further needs a libraries for netCDF.
 
 >[!Important]
-> Steps 1-5 are executed from the root directory of this repository; Steps i-iii are executed in the directory `online/`
+> Steps 1-5 are executed from the root directory of this repository; Steps i-iii are executed in the directory `online/`.
 
 >[!TIP]
 > In the remainder of this README you find more details on the content of this repository, options for running experiments, and for understanding and plotting the output files.  Also refer to the detailed description in this README if you run into any problems with this quick guide
