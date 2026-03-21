@@ -1,22 +1,27 @@
 # 2dmodel_pdaf - advanced implementation of tutorial model with PDAF
 
-## too long; did not read
+### Quick start
 
- 1. Use  `git clone --recurse-submodules` to get the tutorial together with the PDAF library
- 2. `export PDAF_ARCH=linux_gfortran_openmpi` (or a suitable (custom) configuration in `pdaf/make.arch/`)
+To get the code, compile the online-coupled program and perform a first experiment:
+ 1. Use  `git clone --recurse-submodules https://github.com/PDAF/2dmodel_pdaf.git` to get the tutorial together with the PDAF library
+ 2. Set compile settings: `export PDAF_ARCH=linux_gfortran_openmpi` (or a suitable (custom) configuration in `pdaf/make.arch/`)
  3. Build PDAF via `make -C pdaf -j 4`
- 4. `export PDAFDIR=$(realpath pdaf)`
- 5. Adapt settings in `online/compile_settings.txt` to your system
- 6. Build the online coupled model via `make -C online model_pdaf`
- 7. Start an experiment via `??`
+ 4. Set path to PDAF dirctory: `export PDAFDIR=$(realpath pdaf)`
+ 5. `cd online`
+    1. Adapt settings in `online/compile_settings.txt` to your system
+    2. Build the online coupled model via `make  model_pdaf`
+    3. Start an experiment via `mpirun -np 5 ./model_pdaf -dim_ens 6`
+
+> [!NOTE]
+> PDAF needs libraries for BLAS, LAPACK and MPI; the program in `online` further needs a libraries for netCDF.
 
 >[!Important]
-> All commands listed above are executed from the root directorty of this repository.
+> Steps 1-5 are executed from the root directory of this repository; Steps i-iii are executed in the directory `online/`
 
 >[!TIP]
-> Refer to the detailed description in this README if you run into any problems with this quick guide
+> In the remainder of this README you find more details on the content of this repository, options for running experiments, and for understanding and plotting the output files.  Also refer to the detailed description in this README if you run into any problems with this quick guide
 
-##
+## The 2dmodel
 
 This directory contains a tutorial model coupled to PDAF. The model uses a 2-dimensional rectangular domain with x- and y-directions and has two fields (`fieldA`, `fieldB`). The model is parallelized with MPI using a domain decomposition in the x-direction. The model dynamics are trivial by shifting the model fields in the positive y-direction. For the data assimilation (DA), the code supports all ensemble-based methods (ensemble Kalman filters, particle filters, hybrid Kalman-nonlinear filter). Similar, but simpler variants of this model are in the PDAF tutorials of the PDAF release (https://pdaf.awi.de/trac/wiki/PdafTutorial).
 
