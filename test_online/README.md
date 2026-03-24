@@ -28,3 +28,7 @@ in a different directory.
 
 Each experiment is independent. Thus one can safely remove a directory
 with e.g. `rm -rf exp1`.
+
+>[!Important]
+> If the script does not create any `.nc`-files and ends with `All nodes which are allocated for this job are already filled.`, this is likely because your machine does not have enough physical cores (8 are required)
+> Add the `--oversubscribe` option to mpirun (Open MPI) to allow MPI to run more ranks than the number of available physical cores. This can severely degrade performance.
