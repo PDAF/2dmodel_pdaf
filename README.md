@@ -9,8 +9,8 @@ To get the code, compile the online-coupled program and perform a first experime
  4. Set path to PDAF dirctory: `export PDAFDIR=$(realpath pdaf)`
  5. `cd online`
     1. Adapt settings in `online/compile_settings.txt` to your system
-    2. Build the online coupled model via `make  model_pdaf`
-    3. Start an experiment via `mpirun -np 5 ./model_pdaf -dim_ens 6`
+    2. Build the online coupled model via `make model_pdaf`
+    3. Start an experiment via `mpirun -np 6 ./model_pdaf -dim_ens 6`
 
 > [!NOTE]
 > PDAF needs libraries for BLAS, LAPACK and MPI; the program in `online` further needs a libraries for netCDF.
@@ -19,7 +19,7 @@ To get the code, compile the online-coupled program and perform a first experime
 > Steps 1-5 are executed from the root directory of this repository; Steps i-iii are executed in the directory `online/`.
 
 >[!TIP]
-> In the remainder of this README you find more details on the content of this repository, options for running experiments, and for understanding and plotting the output files.  Also refer to the detailed description in this README if you run into any problems with this quick guide
+> In the remainder of this README you find more details on the content of this repository, options for running experiments, and for understanding and plotting the output files.  Also refer to the detailed description in this README if you run into any problems with this quick guide.
 
 ## The 2dmodel
 
