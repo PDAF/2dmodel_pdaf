@@ -1,3 +1,65 @@
+!>  Interface routine to call initialization of parallelization for PDAF
+!!
+!! This routine calls the parallelization routine for PDAF, which 
+!! initializes the communicators for handling the ensemble and 
+!! the analysis of the data assimilation.
+!!
+!! The parallelization variables returned from the PDAF initialization
+!! routines are stored in the module parallel_pdaf_mod so that they can
+!! be used in the different user-provided routines.
+!!
+!! __Revision history:__
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * Later revisions - see repository log
+!!
+subroutine init_parallel_pdaf_offline(screen)
+
+  use mpi
+  use parser, &                   ! Command line parser
+       only: parse
+  use parallel_pdaf_mod, &        ! PDAF parallelization variables
+       only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ensemble, &
+       mype_model, npes_model, COMM_model, mype_filter, npes_filter, COMM_filter
+
+  implicit none
+
+! *** Arguments ***
+  integer, intent(in)    :: screen           !< Whether screen information is shown
+
+! *** Local variables ***
+  integer :: dim_ens                         ! Ensemble size
+  character(len=32) :: handle                ! Handle for command line parser
+  integer :: type_parallel                   ! Type of parallelization
+
+
+  ! Set type of parallelization
+  type_parallel = 0
+
+  ! Parse ensemble size
+  handle = 'dim_ens'
+  call parse(handle, dim_ens)
+
+  ! Set number of model tasks for offline mode
+  n_modeltasks = 1
+
+  ! Initialize variables for calling initialization
+  COMM_model = MPI_COMM_WORLD
+  mype_model = 0
+  npes_model = 0
+
+  ! Initialize ensemble parallelization
+  call init_parallel_pdaf_doinit(screen, type_parallel, 1, n_modeltasks, dim_ens, &
+     COMM_model, mype_model, npes_model, COMM_filter, mype_filter, npes_filter, &
+     task_id)
+
+  ! Initialize variables for all processes as they are used in some routines
+  COMM_ensemble = COMM_model
+  mype_ens = mype_model
+  npes_ens = npes_model
+
+end subroutine init_parallel_pdaf_offline
+
+
 !>  Initialize communicators for PDAF
 !!
 !! Parallelization routine for a model with attached PDAF. The subroutine is
@@ -36,54 +98,56 @@
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-subroutine init_parallel_pdaf_offline(screen)
+subroutine init_parallel_pdaf_doinit(screen, type_parallel, online_coupling, n_modeltasks, dim_ens, &
+     COMM_model, mype_model, npes_model, COMM_filter, mype_filter, npes_filter, &
+     task_id)
 
   use mpi                         ! MPI
   use PDAF, &                     ! PDAF routines
        only: PDAF3_set_parallel
-  use parallel_pdaf_mod, &        ! PDAF parallelization variables
-       only: mype_ens, npes_ens, COMM_ensemble, &
-       mype_model, npes_model, COMM_model, &
-       mype_couple, npes_couple, COMM_couple, &
-       mype_filter, npes_filter, COMM_filter, filterpe, &
-       n_modeltasks, task_id, local_npes_model, MPIerr
-  use parser, &                   ! Command line parser
-       only: parse
 
   implicit none
 
 ! *** Arguments ***
   integer, intent(in)    :: screen           !< Whether screen information is shown
 
+  ! Model variables for parallelization (one can keep these generic names)
+  integer, intent(in) :: type_parallel       !< Type of parallelization
+  integer, intent(in) :: online_coupling     !< 1: online DA coupling, 0: offline DA coupling
+  integer, intent(inout) :: n_modeltasks     !< Number of model tasks
+  integer, intent(inout) :: dim_ens          !< Ensemble size / number of model tasks
+  integer, intent(out) :: COMM_model         !< Model MPI communicator for model tasks
+  integer, intent(out) :: npes_model         !< Number of Processs in COMM_model
+  integer, intent(out) :: mype_model         !< Process rank in COMM_model
+  integer, intent(out) :: COMM_filter        !< MPI communicator for filter Processs 
+  integer, intent(out) :: npes_filter        !< Number of processes in COMM_filter
+  integer, intent(out) :: mype_filter        !< Process rank in COMM_filter
+  integer, intent(out) :: task_id            !< Index of my model task (1,...,n_modeltasks)
+
 ! *** Local variables ***
   integer :: i, j                     ! Counters
   integer :: pe_index                 ! Index of Process
   integer :: my_color, color_couple   ! Variables for communicator-splitting 
   integer :: flag                     ! Status flag
-  integer :: dim_ens                  ! Ensemble size / number of model tasks
   character(len=32) :: handle         ! Handle for command line parser
-  logical :: online_coupling          ! Whether to ru nonline coupled DA
+  integer :: MPIerr                   ! Error flag for MPI
+  integer, allocatable :: local_npes_model(:) ! Number of processes per ensemble
+  integer :: COMM_couple              ! MPI communicator for coupling filter and model
+  integer :: mype_couple              ! Rank in COMM_couple
+  integer :: npes_couple              ! Size in COMM_couple
+  integer :: COMM_ensemble            ! Communicator for entire ensemble
+  integer :: mype_ens                 ! Rank in COMM_ensemble
+  integer :: npes_ens                 ! Size of COMM_ensemble
+  logical :: filterpe                 ! Whether we are on a Process in a COMM_filter
 
-
-  ! Specify online of offline coupling
-  online_coupling = .false.
 
   ! *** Define ensemble communicator.                   ***
   ! *** This is the communicator in which PDAF operates ***
 
-  COMM_ensemble = MPI_COMM_WORLD
-
-
-  ! *** Parse number of model tasks ***
-  ! *** The module variable is N_MODELTASKS. Since it has to be equal
-  ! *** to the ensemble size we parse dim_ens from the command line.
-
-  handle = 'dim_ens'
-  call parse(handle, dim_ens)
-  if (online_coupling) n_modeltasks = dim_ens
+  COMM_ensemble = COMM_model
 
   ! *** Fix number or model tasks for offline DA ***
-  if (.not. online_coupling) n_modeltasks = 1
+  if (online_coupling==0) n_modeltasks = 1
 
   ! *** Get rank and size of COMM_ensemble ***
 
@@ -92,16 +156,16 @@ subroutine init_parallel_pdaf_offline(screen)
 
   ! *** Initialize communicators for ensemble evaluations ***
   if (mype_ens == 0) &
-       write (*, '(/a, 2x, a)') 'model-PDAF', 'Initialize communicators for assimilation with PDAF'
+       write (*, '(/a, 2x, a)') 'PDAF', 'Initialize communicators for assimilation with PDAF'
 
 
   ! *** Check consistency of number of parallel ensemble tasks ***
-  if (online_coupling) then
+  if (online_coupling==1) then
      consist1: if (n_modeltasks > npes_ens) then
         ! *** # parallel tasks is set larger than available Processs ***
         n_modeltasks = npes_ens
         if (mype_ens == 0) write (*, '(a, 3x, a)') &
-             'model-PDAF', '!!! Resetting number of parallel ensemble tasks to total number of Processs!'
+             'PDAF', '!!! Resetting number of parallel ensemble tasks to total number of Processs!'
      end if consist1
      if (dim_ens > 0) then
         ! Check consistency with ensemble size
@@ -109,7 +173,7 @@ subroutine init_parallel_pdaf_offline(screen)
            ! # parallel ensemble tasks is set larger than ensemble size
            n_modeltasks = dim_ens
            if (mype_ens == 0) write (*, '(a, 5x, a)') &
-                'model-PDAF', '!!! Resetting number of parallel ensemble tasks to number of ensemble states!'
+                'PDAF', '!!! Resetting number of parallel ensemble tasks to number of ensemble states!'
         end if consist2
      end if
   end if
@@ -150,7 +214,7 @@ subroutine init_parallel_pdaf_offline(screen)
   call MPI_Comm_Rank(COMM_model, mype_model, MPIerr)
 
   if (screen > 1) then
-    write (*,*) 'model-PDAF: mype(w)= ', mype_ens, '; model task: ', task_id, &
+    write (*,*) 'PDAF: mype(w)= ', mype_ens, '; model task: ', task_id, &
          '; mype(m)= ', mype_model, '; npes(m)= ', npes_model
   end if
 
@@ -200,21 +264,21 @@ subroutine init_parallel_pdaf_offline(screen)
 
   if (screen > 0) then
      if (mype_ens == 0) then
-        write (*, '(/a, 2x, a)') 'model-PDAF Pconf', 'Process configuration:'
+        write (*, '(/a, 2x, a)') 'PDAF Pconf', 'Process configuration:'
         write (*, '(a, 2x, a6, a9, a10, a14, a13, /a, 2x, a5, a9, a7, a7, a7, a7, a7, /a, 2x, a)') &
-             'model-PDAF Pconf', 'world', 'filter', 'model', 'couple', 'filterPE', &
-             'model-PDAF Pconf', 'rank', 'rank', 'task', 'rank', 'task', 'rank', 'T/F', &
-             'model-PDAF Pconf', '----------------------------------------------------------'
+             'PDAF Pconf', 'world', 'filter', 'model', 'couple', 'filterPE', &
+             'PDAF Pconf', 'rank', 'rank', 'task', 'rank', 'task', 'rank', 'T/F', &
+             'PDAF Pconf', '----------------------------------------------------------'
      end if
      call MPI_Barrier(COMM_ensemble, MPIerr)
      if (task_id == 1) then
         write (*, '(a, 2x, i4, 4x, i4, 4x, i3, 4x, i3, 4x, i3, 4x, i3, 5x, l3)') &
-             'model-PDAF Pconf', mype_ens, mype_filter, task_id, mype_model, color_couple, &
+             'PDAF Pconf', mype_ens, mype_filter, task_id, mype_model, color_couple, &
              mype_couple, filterpe
      endif
      if (task_id > 1) then
         write (*,'(a, 2x, i4, 12x, i3, 4x, i3, 4x, i3, 4x, i3, 5x, l3)') &
-         'model-PDAF Pconf', mype_ens, task_id, mype_model, color_couple, mype_couple, filterpe
+         'PDAF Pconf', mype_ens, task_id, mype_model, color_couple, mype_couple, filterpe
      end if
      call MPI_Barrier(COMM_ensemble, MPIerr)
 
@@ -230,16 +294,5 @@ subroutine init_parallel_pdaf_offline(screen)
   call PDAF3_set_parallel(COMM_ensemble, COMM_model, COMM_filter, COMM_couple, &
        task_id, n_modeltasks, filterpe, flag)
 
-
-! ******************************************************************************
-! *** Initialize model equivalents to COMM_model, npes_model, and mype_model ***
-! ******************************************************************************
-
-  ! If the names of the variables for COMM_model, npes_model, and 
-  ! mype_model are different in the numerical model, the 
-  ! model-internal variables should be initialized at this point.
-
-  ! THIS STEP IS NOT DONE WITH OFFLINE COUPLING
-
-end subroutine init_parallel_pdaf_offline
+end subroutine init_parallel_pdaf_doinit
 

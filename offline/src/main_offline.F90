@@ -19,7 +19,7 @@ program main_offline
 
   use mpi                    ! MPI
   use parallel_pdaf_mod, &   ! Parallelization
-       only: MPIerr, npes_world, mype_world, &
+       only: MPIerr, npes_model, mype_model, &
        init_parallel, finalize_parallel
   use initialize_grid_mod, &
        only: initialize_grid
@@ -39,15 +39,15 @@ program main_offline
 ! ********************************
 
 ! *** Initial Screen output ***
-  initscreen: if (mype_world == 0) then
+  initscreen: if (mype_model == 0) then
 
      write (*, '(/8x, a/)') '+++++ PDAF offline mode +++++'
      write (*, '(9x, a)') 'Data assimilation with PDAF'
 
-     if (npes_world > 1) then
-        write (*, '(/21x, a, i3, a/)') 'Running on ', npes_world, ' PEs'
+     if (npes_model > 1) then
+        write (*, '(/10x, a, i3, a/)') 'Running on ', npes_model, ' PEs'
      else
-        write (*, '(/21x, a/)') 'Running on 1 PE'
+        write (*, '(/10x, a/)') 'Running on 1 PE'
      end if
      write (*, '(/)')
      
@@ -76,7 +76,7 @@ program main_offline
 
   ! *** Perform analysis ***
 
-  if (mype_world == 0) &
+  if (mype_model == 0) &
        write (*, '(/2x, a)') 'PDAF offline mode: START ASSIMILATION'
 
   call assimilate_pdaf_offline()
@@ -91,7 +91,7 @@ program main_offline
 ! ********************
 
 ! *** Final screen output ***
-  if (mype_world == 0) &
+  if (mype_model == 0) &
        write (*, '(/1x, a)') 'PDAF offline mode: EXITED ASSIMILATION'
 
   ! *** Finalize PDAF - print memory and timing information
