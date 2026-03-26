@@ -11,6 +11,9 @@
 !! perform the overall initialization. The initialization of the
 !! ensemble parallelization for PDAF is performed in init_parallel_pdaf.
 !!
+!! The module is generic, but has to be part of the user code
+!! to provide the freedom to adapt it.
+!!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log

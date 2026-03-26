@@ -19,6 +19,10 @@
 !!
 !! Implementation for the 2D example with domain decomposition
 !!
+!! The implementation used here is generic, but has to be part of
+!! the user codes, because of the use-included modules and because
+!! one might want to adapt it. 
+!!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log

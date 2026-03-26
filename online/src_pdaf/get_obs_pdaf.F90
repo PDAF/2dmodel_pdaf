@@ -8,6 +8,9 @@
 !!
 !! The routine is called by all filter processes.
 !!
+!! The routine is generic, but has to be part of the user code
+!! because it is a call-back routine for PDAF.
+!!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code based on template
 !! * Later revisions - see repository log

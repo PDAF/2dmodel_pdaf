@@ -4,6 +4,9 @@
 !! and memory use, to deallocate PDAF-internal arrays,
 !! and to finalize MPI of model is not parallelized.
 !!
+!! The routine is generic, but has to be part of the user code
+!! because one might to use different outputs.
+!!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
