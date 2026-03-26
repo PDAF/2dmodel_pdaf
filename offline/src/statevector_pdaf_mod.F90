@@ -150,7 +150,7 @@ contains
   subroutine setup_statevector(dim_state, dim_state_p, screen)
 
     use parallel_pdaf_mod, &
-         only: mype_ens, npes_ens, task_id, comm_ensemble, &
+         only: mype_model, npes_model, task_id, comm_ensemble, &
          comm_model, MPI_SUM, MPI_INTEGER, MPIerr
 
     implicit none
@@ -182,31 +182,34 @@ contains
 
 ! *** Write information about the state vector ***
 
-    if (mype_ens==0) then
+    if (mype_model==0 .and. task_id==1) then
        write (*,'(/a,2x,a)') 'model-PDAF', '*** Setup of state vector ***'
        write (*,'(a,5x,a,i5)') 'model-PDAF', '--- Number of fields in state vector:', n_fields
        write (*,'(a,a4,3x,a2,2x,a8,6x,a3,7x,a6)') &
             'model-PDAF','PE','ID', 'variable', 'dim', 'offset'
     end if
 
-    if ((mype_ens==0 .and. screen<=2) .or. (task_id==1 .and. screen>2)) then
-       do i = 1, n_fields
-          write (*,'(a, i4, i5,3x,a10,2x,i3,2x,i10,3x,i10,4x,l,4x,l,2x,i4)') 'model-PDAF', &
-               mype_ens, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
-       end do
+    if (task_id==1) then
+       if ((mype_model==0 .and. screen<=2) .or. screen>2) then
+          do i = 1, n_fields
+             write (*,'(a, i4, i5,3x,a10,2x,i3,2x,i10,3x,i10,4x,l,4x,l,2x,i4)') 'model-PDAF', &
+                  mype_model, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
+          end do
+       end if
     end if
 
-    if (npes_ens==1) then
-       write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Full state dimension: ',dim_state_p
+    if (npes_model==1) then
+       if (task_id==1) &
+            write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Full state dimension: ',dim_state_p
        dim_state = dim_state_p
     else
        if (task_id==1) then
-          if (screen>2 .or. mype_ens==0) &
+          if (screen>2 .or. mype_model==0) &
                write (*,'(a,2x,a,1x,i4,2x,a,1x,i10)') &
-               'model-PDAF', 'PE', mype_ens, 'process-local full state dimension: ',dim_state_p
+               'model-PDAF', 'PE', mype_model, 'process-local full state dimension: ',dim_state_p
 
           call MPI_Reduce(dim_state_p, dim_state, 1, MPI_INTEGER, MPI_SUM, 0, COMM_model, MPIerr)
-          if (mype_ens==0) then
+          if (mype_model==0) then
              write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Global state dimension: ',dim_state
           end if
        end if
