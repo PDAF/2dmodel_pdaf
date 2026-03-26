@@ -28,7 +28,7 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
 
   use mpi                             ! MPI
   use PDAF, &                         ! PDAF diagnostic routines
-       only: PDAF_diag_stddev, PDAF_diag_variance
+       only: PDAF_diag_stddev, PDAF_diag_variance, PDAFomi_diag_diffstats
   use parallel_pdaf_mod, &            ! Parallelization variables
        only: COMM_filter, mype_filter
   use statevector_pdaf_mod, &         ! Statevector variables
@@ -119,6 +119,10 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
 
   call PDAF_diag_variance(dim_p, dim_ens, state_p, ens_p, variance_p, &
      stddev_g, 0, 0, COMM_filter, pdaf_status)
+
+! *** Compute observation diagnostics
+
+  call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-mype_filter)
 
 
 ! *******************
