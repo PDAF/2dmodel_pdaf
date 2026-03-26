@@ -3,6 +3,10 @@
 !! For the files the netCDF file format is used. 
 !! Usually can can use these routines without modifications.
 !!
+!! The module is generic, but has to be part of the user code
+!! because of the use of file operations with netCDF, while
+!! PDAF itself does not do any file operations.
+!!
 !! __Revision history:__
 !! * 2019-01 - Lars Nerger - Initial code
 !! * Later revisions - see svn log

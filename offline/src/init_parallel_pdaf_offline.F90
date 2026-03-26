@@ -8,7 +8,7 @@
 !! routines are stored in the module parallel_pdaf_mod so that they can
 !! be used in the different user-provided routines.
 !!
-!! The routine is generic, but has to be compiled with the user code
+!! The routine is generic, but has to be part of the user code
 !! because it uses the module parallel_pdaf_mod.
 !!
 !! __Revision history:__

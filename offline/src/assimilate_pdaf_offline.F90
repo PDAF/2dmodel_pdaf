@@ -8,6 +8,9 @@
 !! In this routine, the real names of most of the 
 !! user-supplied routines for PDAF are specified (see below).
 !!
+!! The routine is generic, but has to be part of the user code
+!! because one might want to adapt the names of call-back routines.
+!!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
