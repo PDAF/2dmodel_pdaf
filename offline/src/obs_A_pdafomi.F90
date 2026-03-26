@@ -126,7 +126,7 @@ contains
          only: PDAFomi_gather_obs, PDAF_local_type, PDAFomi_set_localize_covar, &
          PDAF_DA_GENOBS
     use parallel_pdaf_mod, &             ! Parallelization variables
-         only: mype_filter
+         only: mype_assim
     use assimilation_pdaf_mod, &         ! Variables for assimilation
          only: filtertype, cradius, coords_p, dim_state_p, &
          locweight, cradius, sradius, twin_experiment
@@ -166,7 +166,7 @@ contains
 ! *** Initialize full observation dimension ***
 ! *********************************************
 
-    if (mype_filter==0) &
+    if (mype_assim==0) &
          write (*,'(a,5x,a)') 'model-PDAF','Assimilate observations - obs type A'
 
     ! Store whether to assimilate this observation type (used in routines below)
@@ -196,7 +196,7 @@ contains
 ! **********************************
 
     ! Read observation field from file
-    if (mype_filter==0) &
+    if (mype_assim==0) &
          write (*,'(a,5x,a, i6)') 'model-PDAF','--- read observation at step', step
 
     allocate(obs_field(ny, nx))
@@ -221,7 +221,7 @@ contains
     ! *** Count valid observations that lie within the process sub-domain ***
 
     ! Get offset of local domain in global domain in x-direction
-    off_nx = nx_p*mype_filter
+    off_nx = nx_p*mype_assim
 
     ! Count process-local observations
     cnt_p = 0
@@ -294,11 +294,11 @@ contains
     IF (twin_experiment .AND. filtertype/=PDAF_DA_GENOBS) THEN
 
        ! Set file name (separate files for each process)
-       write (procstr, '(i4.4)') mype_filter
+       write (procstr, '(i4.4)') mype_assim
        file_synobs = trim(stub_synobs_A)//procstr//'.nc'
 
        ! Read synthetic observations
-       CALL read_syn_obs(file_synobs, dim_obs_p, obs_p, step, 1-mype_filter)
+       CALL read_syn_obs(file_synobs, dim_obs_p, obs_p, step, 1-mype_assim)
     END IF
 
 
@@ -327,7 +327,7 @@ contains
     if (filtertype==PDAF_DA_GENOBS .and. firsttime) then
 
        ! Set file name (separate files for each process)
-       write (procstr, '(i4.4)') mype_filter
+       write (procstr, '(i4.4)') mype_assim
        file_synobs = trim(stub_synobs_A)//procstr//'.nc'
 
        ! Initialize file

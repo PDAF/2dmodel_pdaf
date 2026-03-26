@@ -351,7 +351,7 @@ contains
     use mpi
     use netcdf
     use parallel_pdaf_mod, &             ! Parallelization variables
-         only: COMM_filter, mype_filter, MPIerr
+         only: COMM_assim, mype_assim
     use model_pdaf_mod, &                ! Model variables
          only: nx, ny, nx_p
 
@@ -364,6 +364,7 @@ contains
 
 ! *** Local variables ***
     integer :: ncid                       ! ID of output file
+    integer :: MPIerr                     ! Error flag for MPI
     integer :: id_field                   ! Netcdf field if
     integer :: id_t                       ! Netcdf timestep id
     integer :: dimid_x, dimid_y, dimid_t  ! dimension IDs
@@ -376,7 +377,7 @@ contains
 ! *** Use MPI to obtain global field ***
 ! **************************************
 
-    if (mype_filter==0) then
+    if (mype_assim==0) then
        allocate(field(ny, nx))
     else
        allocate(field(1, 1))
@@ -385,14 +386,14 @@ contains
     ! Gather global field
     call MPI_Gather(fieldvec_p, nx_p*ny, MPI_DOUBLE_PRECISION, &
          field, nx_p*ny, MPI_DOUBLE_PRECISION, &
-         0, COMM_filter, MPIerr)             
+         0, COMM_assim, MPIerr)             
 
 
 ! *******************
 ! *** File output ***
 ! *******************
 
-    if (mype_filter==0) then
+    if (mype_assim==0) then
 
        ! *** Create file and define dimensions
 

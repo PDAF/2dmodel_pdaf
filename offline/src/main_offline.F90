@@ -19,13 +19,15 @@ program main_offline
 
   use mpi                    ! MPI
   use parallel_pdaf_mod, &   ! Parallelization
-       only: MPIerr, npes_model, mype_model, &
+       only: npes_model, mype_model, &
        init_parallel, finalize_parallel
   use initialize_grid_mod, &
        only: initialize_grid
 
   implicit none
 
+! *** Local variable
+  integer :: MPIerr          ! Error flag for MPI
 
 ! **********************
 ! *** Initialize MPI ***

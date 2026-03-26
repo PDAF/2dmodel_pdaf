@@ -17,8 +17,8 @@
 !!
 subroutine init_parallel_pdaf(screen, model_comm, model_comm_rank, model_comm_size)
 
-  use parser, &                   ! Command line parser
-       only: parse
+  use PDAF, &                     ! Command line parser
+       only: PDAF_parse
   use parallel_pdaf_mod, &        ! PDAF parallelization variables
        only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ensemble, &
        mype_model, npes_model, COMM_model, mype_filter, npes_filter, COMM_filter
@@ -40,7 +40,7 @@ subroutine init_parallel_pdaf(screen, model_comm, model_comm_rank, model_comm_si
 
   ! Parse ensemble size
   handle = 'dim_ens'
-  call parse(handle, dim_ens)
+  call PDAF_parse(handle, dim_ens)
 
   ! Set number of model tasks for fully-parallel mode
   n_modeltasks = dim_ens

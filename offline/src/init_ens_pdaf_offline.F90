@@ -28,7 +28,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use assimilation_pdaf_mod, &    ! Assimilation varibles
        only: type_ens_init, file_covar
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
-       only: mype_filter
+       only: mype_assim
   use statevector_pdaf_mod, &     ! State vector variables
        only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
@@ -60,7 +60,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 ! **********************
 
   ! *** Generate full ensemble on filter-Process 0 ***
-  if (mype_filter==0) then
+  if (mype_assim==0) then
      write (*, '(/a, 5x, a)') 'model-PDAF', 'Initialize state ensemble'
      if (type_ens_init==1 .or. type_ens_init==2) then
         write (*, '(a, 5x, a)') 'model-PDAF', '--- read ensemble from files'
@@ -101,7 +101,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
      ! Replace ensemble mean state by mean from covariance matrix file
      if (type_ens_init==2) then
-        if (mype_filter==0) &
+        if (mype_assim==0) &
              write (*,'(a, 5x, a)') 'model-PDAF', '--- set ensemble mean state'
 
         ! Compute and substract ensemble mean
@@ -129,7 +129,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
      ! *** Read initial state and covar matrix ***
 
-     if (mype_filter==0) &
+     if (mype_assim==0) &
           write(*,'(a,5x,a,a)') 'model-PDAF', '--- read covariance information from ', trim(file_covar)
 
      call read_covar_pdaf(file_covar, dim_ens, eofs, svals, state_p)
@@ -137,7 +137,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
      ! *** Generate ensemble of model states ***
 
-     if (mype_filter==0) &
+     if (mype_assim==0) &
           write (*,'(a, 5x, a)') 'model-PDAF', '--- generate state ensemble'
      
      ! Use PDAF routine for second-order exact sampling
