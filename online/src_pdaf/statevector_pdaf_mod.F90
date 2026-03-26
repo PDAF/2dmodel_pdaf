@@ -151,7 +151,7 @@ contains
 
     use parallel_pdaf_mod, &
          only: mype_ens, npes_ens, task_id, comm_ensemble, &
-         comm_model, MPI_SUM, MPI_INTEGER, MPIerr
+         comm_model, MPI_SUM, MPI_INTEGER
 
     implicit none
 
@@ -161,7 +161,8 @@ contains
     integer, intent(in)  :: screen       !< Verbosity flag
 
 ! *** Local variables ***
-    integer :: i                 ! Counters
+    integer :: i                         ! Counters
+    integer :: MPIerr                    ! Error flag for MPI
 
 
 ! ***********************************
