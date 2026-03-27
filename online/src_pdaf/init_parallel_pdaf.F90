@@ -55,13 +55,13 @@ subroutine init_parallel_pdaf(screen, model_comm, model_comm_rank, model_comm_si
 
   ! Initialize ensemble parallelization
   call PDAF3_init_parallel(screen, 0, 1, n_modeltasks, dim_ens, &
-     COMM_model, mype_model, npes_model, &
+     model_comm, model_comm_rank, model_comm_size, &
      COMM_assim, mype_assim, npes_assim, &
      task_id)
 
-  ! Update parallelization variables that are returned to model
-  model_comm = COMM_model
-  model_comm_rank = mype_model
-  model_comm_size = npes_model
+  ! Initialize parallelization variables for parallel_pdaf_mod
+  COMM_model = model_comm
+  mype_model = model_comm_rank
+  npes_model = model_comm_size
 
 end subroutine init_parallel_pdaf

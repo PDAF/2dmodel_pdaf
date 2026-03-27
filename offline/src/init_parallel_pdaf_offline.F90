@@ -41,10 +41,8 @@ subroutine init_parallel_pdaf_offline(screen)
   ! Set number of model tasks for offline mode
   n_modeltasks = 1
 
-  ! Initialize variables for calling initialization
+  ! Initialize variable for calling MPI initialization
   COMM_model = MPI_COMM_WORLD
-  mype_model = 0
-  npes_model = 0
 
   ! Initialize ensemble parallelization
   call PDAF3_init_parallel(screen, 0, 0, n_modeltasks, dim_ens, &
