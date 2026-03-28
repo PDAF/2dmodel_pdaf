@@ -21,7 +21,7 @@ subroutine init_parallel_pdaf_offline(screen)
   use PDAF, &                     ! Command line parser
        only: PDAF_parse, PDAF3_init_parallel
   use parallel_pdaf_mod, &        ! PDAF parallelization variables
-       only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ensemble, &
+       only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ens, &
        mype_model, npes_model, COMM_model, mype_assim, npes_assim, COMM_assim
 
   implicit none
@@ -41,17 +41,14 @@ subroutine init_parallel_pdaf_offline(screen)
   ! Set number of model tasks for offline mode
   n_modeltasks = 1
 
-  ! Initialize variable for calling MPI initialization
-  COMM_model = MPI_COMM_WORLD
-
   ! Initialize ensemble parallelization
-  call PDAF3_init_parallel(screen, 0, 0, n_modeltasks, dim_ens, &
+  call PDAF3_init_parallel(screen, 0, 0, dim_ens, n_modeltasks, &
      COMM_model, mype_model, npes_model, &
      COMM_assim, mype_assim, npes_assim, &
      task_id)
 
   ! Initialize variables for all processes as they are used in some routines
-  COMM_ensemble = COMM_model
+  COMM_ens = COMM_model
   mype_ens = mype_model
   npes_ens = npes_model
 

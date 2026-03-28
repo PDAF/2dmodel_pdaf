@@ -150,8 +150,8 @@ contains
   subroutine setup_statevector(dim_state, dim_state_p, screen)
 
     use parallel_pdaf_mod, &
-         only: mype_model, npes_model, task_id, comm_ensemble, &
-         comm_model, MPI_SUM, MPI_INTEGER, MPIerr
+         only: mype_model, npes_model, task_id, comm_ens, &
+         comm_model, MPI_SUM, MPI_INTEGER
 
     implicit none
 
@@ -215,7 +215,7 @@ contains
           end if
        end if
     end if
-    call MPI_Barrier(comm_ensemble, MPIerr)
+    call MPI_Barrier(comm_ens, MPIerr)
 
   end subroutine setup_statevector
 

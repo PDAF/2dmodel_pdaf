@@ -19,7 +19,7 @@ program main_offline
 
   use mpi                    ! MPI
   use parallel_pdaf_mod, &   ! Parallelization
-       only: npes_model, mype_model, &
+       only: npes_ens, mype_ens, &
        init_parallel, finalize_parallel
   use initialize_grid_mod, &
        only: initialize_grid
@@ -29,11 +29,12 @@ program main_offline
 ! *** Local variable
   integer :: MPIerr          ! Error flag for MPI
 
-! **********************
-! *** Initialize MPI ***
-! **********************
 
-  call init_parallel() ! initializes MPI
+! *************************************************
+! *** Initialize MPI and communicators for PDAF ***
+! *************************************************
+
+  call init_parallel_pdaf_offline(1)
 
 
 ! ********************************
@@ -41,13 +42,13 @@ program main_offline
 ! ********************************
 
 ! *** Initial Screen output ***
-  initscreen: if (mype_model == 0) then
+  initscreen: if (mype_ens == 0) then
 
      write (*, '(/8x, a/)') '+++++ PDAF offline mode +++++'
      write (*, '(9x, a)') 'Data assimilation with PDAF'
 
-     if (npes_model > 1) then
-        write (*, '(/8x, a, i4, a/)') 'Running on ', npes_model, ' MPI processes'
+     if (npes_ens > 1) then
+        write (*, '(/8x, a, i4, a/)') 'Running on ', npes_ens, ' MPI processes'
      else
         write (*, '(/12x, a/)') 'Running on 1 process'
      end if
@@ -55,11 +56,6 @@ program main_offline
      
   end if initscreen
 
-  
-! *** Initialize MPI communicators for PDAF (model and filter) ***
-! *** NOTE: It is always n_modeltasks=1 for offline mode       ***
-
-  call init_parallel_pdaf_offline(1)
 
 ! *** Initialize model information ***
 ! *** This should only be information on the model grid
@@ -78,7 +74,7 @@ program main_offline
 
   ! *** Perform analysis ***
 
-  if (mype_model == 0) &
+  if (mype_ens == 0) &
        write (*, '(/2x, a)') 'PDAF offline mode: START ASSIMILATION'
 
   call assimilate_pdaf_offline()
@@ -93,7 +89,7 @@ program main_offline
 ! ********************
 
 ! *** Final screen output ***
-  if (mype_model == 0) &
+  if (mype_ens == 0) &
        write (*, '(/1x, a)') 'PDAF offline mode: EXITED ASSIMILATION'
 
   ! *** Finalize PDAF - print memory and timing information
