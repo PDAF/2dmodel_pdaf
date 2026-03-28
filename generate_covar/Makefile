@@ -24,7 +24,6 @@ SRC_COVAR  =	model_pdaf_mod_offline.F90 \
 		parallel_pdaf_mod.F90 \
 		initialize_grid_mod.F90 \
 		statevector_pdaf_mod.F90 \
-		parser_mpi.F90 \
 		init_parallel_pdaf_offline.F90 \
 		generate_covar.F90
 

@@ -17,7 +17,7 @@ contains
   subroutine initialize_grid()
 
     use parallel_pdaf_mod, &         ! Model parallelzation variables
-         only: mype_world, npes_world, abort_parallel
+         only: mype_ens, npes_ens, abort_parallel
 
     ! Specific for 2D tutorial model
     use model_pdaf_mod, &            ! Model grid variables
@@ -40,25 +40,25 @@ contains
     n_dim = 2        ! Number of model dimensions
 
 ! *** Screen output ***
-    if (mype_world == 0) then
+    if (mype_ens == 0) then
      write (*, '(1x, a)') 'INITIALIZE MODEL INFORMATION FOR PDAF OFFLINE MODE'
      write (*, '(22x,a)') 'MODEL: 2D-2fields tutorial model'
        write (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
     end if
 
 ! *** Initialize size of local nx for parallelization ***
-    if (npes_world==1 .or. npes_world==2 .or. npes_world==3 .or. npes_world==4 .or. &
-         npes_world==6 .or. npes_world==9 .or. npes_world==12 .or. npes_world==18) then
+    if (npes_ens==1 .or. npes_ens==2 .or. npes_ens==3 .or. npes_ens==4 .or. &
+         npes_ens==6 .or. npes_ens==9 .or. npes_ens==12 .or. npes_ens==18) then
        ! Split x-direction in chunks of equal size
-       nx_p = nx / npes_world
+       nx_p = nx / npes_ens
     else
        write (*,*) 'ERROR: Invalid number of processes'
        call abort_parallel()
     end if
 
-    if (mype_world == 0 .and. npes_world > 1) then
+    if (mype_ens == 0 .and. npes_ens > 1) then
        write (*, '(/2x, a, i3, a)') &
-            '-- Domain decomposition over', npes_world, ' Processs'
+            '-- Domain decomposition over', npes_ens, ' Processs'
        write (*, '(2x,a,i3,a,i3)') &
             '-- local domain sizes (nx_p x ny): ', nx_p, ' x', ny
     end if
@@ -77,7 +77,7 @@ contains
 
     ! Account for decomposition in x-direction
     do i = 1, nx_p
-       coords_x_p(i) = real(i + nx_p*mype_world)
+       coords_x_p(i) = real(i + nx_p*mype_ens)
     end do
 
     ! We don't use decomposition in y-direction

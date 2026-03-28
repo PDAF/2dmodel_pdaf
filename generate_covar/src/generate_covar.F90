@@ -19,19 +19,17 @@ program generate_covar
 ! !USES:
   use netcdf
   use PDAF, &                     ! PDAF
-       only: PDAF_eofcovar
+       only: PDAF_eofcovar, PDAF_parse
   use assimilation_pdaf_mod, &    ! Dimensions
        only: dim_state, dim_state_p, screen
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny
   use parallel_pdaf_mod, &        ! Parallelization variables
-       only: mype_world, npes_world, init_parallel
+       only: mype_model, npes_model, init_parallel
   use initialize_grid_mod, &
        only: initialize_grid
   use statevector_pdaf_mod, &     ! State vector variables and init routine
        only: setup_statevector, sfields, n_fields
-  use parser, &                   ! Command line parser
-       only: parse
 
   implicit none
   
@@ -123,19 +121,19 @@ program generate_covar
 
   ! Parse command line arguments
   handle = 'steps'
-  call parse(handle, steps)
+  call PDAF_parse(handle, steps)
 
   handle = 'inpath'
-  call parse(handle, inpath)
+  call PDAF_parse(handle, inpath)
 
   handle = 'infile'
-  call parse(handle, infile)
+  call PDAF_parse(handle, infile)
 
   handle = 'outpath'
-  call parse(handle, outpath)
+  call PDAF_parse(handle, outpath)
 
   handle = 'outfile'
-  call parse(handle, outfile)
+  call PDAF_parse(handle, outfile)
 
 
 ! ************************************************
@@ -143,7 +141,7 @@ program generate_covar
 ! ************************************************
 
 ! *** Initial Screen output ***
-  initscreen: if (mype_world == 0) then
+  initscreen: if (mype_model == 0) then
      write (*,'(/10x,a)') '*******************************************'
      write (*,'(10x,a)') '*             GENERATE_COVAR              *'
      write (*,'(10x,a)') '*                                         *'
@@ -155,8 +153,8 @@ program generate_covar
      write (*,'(10x,a)') '*              NetCDF file                *'
      write (*,'(10x,a/)') '*******************************************'
 
-     if (npes_world > 1) then
-        write (*, '(16x, a, i3, a/)') 'Running on ', npes_world, ' PEs'
+     if (npes_model > 1) then
+        write (*, '(16x, a, i3, a/)') 'Running on ', npes_model, ' PEs'
      else
         write (*, '(16x, a/)') 'Running on 1 PE'
      end if
@@ -189,13 +187,7 @@ program generate_covar
 
   read_files: do step = 1, steps
 
-     IF (step<10) then
-        write (stepstr, '(i1)') step
-     elseif (step<100) then
-        write (stepstr, '(i2)') step
-     elseif (step<1000) then
-        write (stepstr, '(i3)') step
-     end IF
+     write (stepstr, '(i2.2)') step
 
      do fid = 1, n_fields
 
@@ -222,7 +214,7 @@ program generate_covar
         do j = 1, nx
            do i = 1, ny
               s = s + 1
-              states(s, step) = field(i, nx*mype_world + j)
+              states(s, step) = field(i, nx*mype_model + j)
            end do
         end do
 

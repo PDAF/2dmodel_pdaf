@@ -1,15 +1,18 @@
 !> Module for ensemble parallelization
 !!
 !! This module provides variables for the MPI parallelization
-!! to be shared between model-related routines. The are variables
-!! that are used in the model, even without PDAF and additional
-!! variables that are only used, if data assimilation with PDAF
-!! is performed.
+!! to be shared between model-related routines. these are the
+!! variables typically used in the user code, while a parallelized
+!! model has its own set of variables.
 !!
-!! In addition methods to initialize and finalize MPI are provided.
-!! The initialization routine is only for the model itself, the 
-!! more complex initialization of communicators for execution with
-!! PDAF is peformed in init_parallel_pdaf.
+!! In addition, methods to initialize and finalize MPI are provided.
+!! Then can be used, e.g. when coupling PDAF for a model this is not
+!! yet parallelized. The initialization routine (init_parallel) only
+!! perform the overall initialization. The initialization of the
+!! ensemble parallelization for PDAF is performed in init_parallel_pdaf.
+!!
+!! The module is generic, but has to be part of the user code
+!! to provide the freedom to adapt it.
 !!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
@@ -22,47 +25,35 @@ module parallel_pdaf_mod
   implicit none
   save 
 
-  ! Basic variables for model state integrations
-  integer :: COMM_model  !< MPI communicator for model tasks
-  integer :: mype_model  !< Number of Processs in COMM_model
-  integer :: npes_model  !< Process rank in COMM_model
+  ! Parallelization variables that can be used in the user code
 
-  integer :: COMM_ensemble      !< Communicator for entire ensemble
-  integer :: mype_ens           !< Rank in COMM_ensemble
-  integer :: npes_ens           !< Size of COMM_ensemble
+  ! Variables for each model task
+  integer :: COMM_model         !< MPI communicator for model tasks
+  integer :: mype_model         !< Number of Processs in COMM_model
+  integer :: npes_model         !< Process rank in COMM_model
+
+  ! Variables describing all processes involved in model integrations
+  integer :: COMM_ens           !< Jont Communicator for entire ensemble
+  integer :: mype_ens           !< Rank in COMM_ens
+  integer :: npes_ens           !< Size of COMM_ens
+
+  ! Variables describing the processes involved in the analysis step
+  integer :: COMM_assim         !< MPI communicator processes in analysis step
+  integer :: npes_assim         !< Number of processes in COMM_da
+  integer :: mype_assim         !< Process rank in COMM_da
 
   ! Additional variables for use with PDAF
   integer :: n_modeltasks = 1   !< Number of parallel model tasks
-
-  integer :: COMM_filter        !< MPI communicator for filter Processs 
-  integer :: npes_filter        !< Number of processes in COMM_filter
-  integer :: mype_filter        !< Process rank in COMM_filter
-
-  integer :: COMM_couple        !< MPI communicator for coupling filter and model
-  integer :: mype_couple        !< Rank in COMM_couple
-  integer :: npes_couple        !< Size in COMM_couple
-
-  integer :: mype_world         !< Rank in MPI_COMM_WORLD
-  integer :: npes_world         !< Size in MPI_COMM_WORLD
-
-  logical :: modelpe            !< Whether we are on a Process in a COMM_model
-  logical :: filterpe           !< Whether we are on a Process in a COMM_filter
   integer :: task_id            !< Index of my model task (1,...,n_modeltasks)
-
-  integer :: MPIerr             !< Error flag for MPI
-  integer :: MPIstatus(MPI_STATUS_SIZE)       !< Status array for MPI
-  integer, allocatable :: local_npes_model(:) !< Number of processes per ensemble
 
 contains
 !-------------------------------------------------------------------------------
 !> Initialize MPI
 !!
-!! Routine to initialize MPI, the number of Processs
-!! (npes_world) and the rank of a Process (mype_world).
+!! Routine to initialize MPI, the number of processes
+!! (npes_model) and the rank of a process (mype_model).
 !! The model is executed within the scope of the
-!! communicator Comm_model. It is also initialized
-!! here together with its size (npes_model) and 
-!! the rank of a Process (mype_model) within Comm_model.
+!! communicator Comm_model.
 !!
   subroutine init_parallel()
 
@@ -71,14 +62,12 @@ contains
     integer :: i
   
     call MPI_INIT(i);
-    call MPI_Comm_Size(MPI_COMM_WORLD,npes_world,i)
-    call MPI_Comm_Rank(MPI_COMM_WORLD,mype_world,i)
+    call MPI_Comm_Size(MPI_COMM_WORLD,npes_model,i)
+    call MPI_Comm_Rank(MPI_COMM_WORLD,mype_model,i)
 
-    ! Initialize model communicator, its size and the process rank
+    ! Initialize model communicator
     ! Here the same as for MPI_COMM_WORLD
-    Comm_model = MPI_COMM_WORLD
-    npes_model = npes_world
-    mype_model = mype_world
+    COMM_model = MPI_COMM_WORLD
    
   end subroutine init_parallel
 !-------------------------------------------------------------------------------
@@ -90,6 +79,8 @@ contains
 
     implicit none
     
+    integer :: MPIerr             !< Error flag for MPI
+
     call  MPI_Barrier(MPI_COMM_WORLD,MPIerr)
     call  MPI_Finalize(MPIerr)
 
@@ -103,6 +94,8 @@ contains
 
     implicit none
     
+    integer :: MPIerr             !< Error flag for MPI
+
     call  MPI_Abort(MPI_COMM_WORLD, 1, MPIerr)
 
   end subroutine abort_parallel
