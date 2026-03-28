@@ -161,7 +161,8 @@ contains
     integer, intent(in)  :: screen       !< Verbosity flag
 
 ! *** Local variables ***
-    integer :: i                 ! Counters
+    integer :: i                         ! Counters
+    integer :: MPIerr                    ! Error flag for MPI
 
 
 ! ***********************************

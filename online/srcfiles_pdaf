@@ -7,7 +7,6 @@ MOD_ASSIM = 	model_pdaf_mod.F90 \
 		assimilation_pdaf_mod.F90 \
 		statevector_pdaf_mod.F90 \
 		io_pdaf_mod.F90 \
-		parser_mpi.F90 \
 		synobs_pdaf_mod.F90
 
 # Interface to PDAF - model sided

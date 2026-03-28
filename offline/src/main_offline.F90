@@ -19,13 +19,15 @@ program main_offline
 
   use mpi                    ! MPI
   use parallel_pdaf_mod, &   ! Parallelization
-       only: MPIerr, npes_model, mype_model, &
+       only: npes_model, mype_model, &
        init_parallel, finalize_parallel
   use initialize_grid_mod, &
        only: initialize_grid
 
   implicit none
 
+! *** Local variable
+  integer :: MPIerr          ! Error flag for MPI
 
 ! **********************
 ! *** Initialize MPI ***
@@ -45,9 +47,9 @@ program main_offline
      write (*, '(9x, a)') 'Data assimilation with PDAF'
 
      if (npes_model > 1) then
-        write (*, '(/10x, a, i3, a/)') 'Running on ', npes_model, ' PEs'
+        write (*, '(/8x, a, i4, a/)') 'Running on ', npes_model, ' MPI processes'
      else
-        write (*, '(/10x, a/)') 'Running on 1 PE'
+        write (*, '(/12x, a/)') 'Running on 1 process'
      end if
      write (*, '(/)')
      

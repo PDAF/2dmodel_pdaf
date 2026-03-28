@@ -27,8 +27,7 @@ MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		statevector_pdaf_mod.F90 \
 		initialize_grid_mod.F90 \
 		io_pdaf_mod.F90 \
-		main_offline.F90 \
-		parser_mpi.F90 
+		main_offline.F90
 
 # Interface to PDAF - model sided
 SRC_PDAF_INT =  init_parallel_pdaf_offline.F90 \
@@ -121,3 +120,10 @@ listarch:
 	@echo Available architecture-specific input files for PDAF_ARCH
 	@echo ---------------------------------------------------------
 	@ls -1 $(PDAFDIR)/make.arch | cut -d"." -f1
+
+
+######################################################
+# Dependencies
+# created using 'mkdepends' in PDAF's directory external/
+# Run as: mkdepends ./src build
+include Depends

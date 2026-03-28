@@ -22,7 +22,7 @@ subroutine init_pdaf()
        PDAF3_init_forecast, PDAFomi_set_domain_limits, PDAF_iau_init, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: mype_ens, mype_filter, n_modeltasks, abort_parallel
+       only: mype_ens, mype_assim, n_modeltasks, abort_parallel
   use assimilation_pdaf_mod, &         ! Variables for assimilation
        only: dim_state_p, dim_state, dim_ens, &
        screen, filtertype, subtype, delt_obs, step_offline, &
@@ -264,7 +264,7 @@ subroutine init_pdaf()
 !+++ Specific initialization for 2D tutorial model
 
   ! Get offset of local domain in global domain in x-direction
-  off_nx = nx_p*mype_filter
+  off_nx = nx_p*mype_assim
 
   lim_coords(1,1) = real(off_nx + 1)     ! West
   lim_coords(1,2) = real(off_nx + nx_p)  ! East
