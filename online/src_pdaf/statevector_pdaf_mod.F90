@@ -39,8 +39,8 @@ module statevector_pdaf_mod
      integer :: dim               ! size of field in state vector
      integer :: off               ! offset of field in state vector
      integer :: ndims             ! Number of dimensions
-     character(len=20) :: name    ! Name of field variable
-     character(len=20) :: fname   ! Name of field in output file (optional)     
+     character(len=10) :: name    ! Name of field variable
+     character(len=10) :: fname   ! Name of field in output file (optional)     
   end type state_field
 
 !+++ End of specific part
@@ -72,6 +72,7 @@ contains
 ! *** Arguments ***
     integer, intent(out) :: n_fields
 
+!+++ Specific part for 2D tutorial model
 
 ! Set total number of fields
     n_fields = 2
@@ -79,6 +80,8 @@ contains
 ! Set field IDs
     id%fieldA = 1
     id%fieldB = 2
+
+!+++ End of specific part
 
   end subroutine init_id
 
@@ -108,6 +111,8 @@ contains
 ! *** Specify sfields entry for each field variable ***
 ! *****************************************************
 
+!+++ Specific part for 2D tutorial model
+
     ! fieldA
     sfields(id%fieldA)%ndims = 2
     sfields(id%fieldA)%name = 'fieldA'
@@ -118,12 +123,12 @@ contains
     sfields(id%fieldB)%name = 'fieldB'
     sfields(id%fieldB)%fname = 'B'
 
+!+++ End of specific part
+
 
 ! **************************************
 ! ***   Set dimensions and offsets   ***
 ! **************************************
-
-! The following operations are generic
 
     ! Set field dimensions
     do i = 1, n_fields
@@ -150,8 +155,8 @@ contains
   subroutine setup_statevector(dim_state, dim_state_p, screen)
 
     use parallel_pdaf_mod, &
-         only: mype_model, npes_model, task_id, comm_ensemble, &
-         comm_model, MPI_SUM, MPI_INTEGER, MPIerr
+         only: mype_model, npes_model, task_id, comm_ens, &
+         comm_model, MPI_SUM, MPI_INTEGER
 
     implicit none
 
@@ -181,41 +186,35 @@ contains
 
     dim_state_p = sum(sfields(:)%dim)
 
+
+! *** Get global state dimension ***
+    call MPI_Reduce(dim_state_p, dim_state, 1, MPI_INTEGER, MPI_SUM, 0, COMM_model, MPIerr)
+
 ! *** Write information about the state vector ***
 
-    if (mype_model==0 .and. task_id==1) then
-       write (*,'(/a,2x,a)') 'model-PDAF', '*** Setup of state vector ***'
-       write (*,'(a,5x,a,i5)') 'model-PDAF', '--- Number of fields in state vector:', n_fields
-       write (*,'(a,a4,3x,a2,2x,a8,6x,a3,7x,a6)') &
-            'model-PDAF','PE','ID', 'variable', 'dim', 'offset'
-    end if
-
     if (task_id==1) then
+       if (mype_model==0) then
+          write (*,'(/a,2x,a)') 'model-PDAF', '*** Setup of state vector ***'
+          write (*,'(a,3x,a,i5)') 'model-PDAF', '--- Number of fields in state vector:', n_fields
+          write (*,'(a,a7,3x,a2,4x,a8,5x,a9,6x,a6)') &
+               'model-PDAF','proc.','ID', 'variable', 'dimension', 'offset'
+       end if
+
        if ((mype_model==0 .and. screen<=2) .or. screen>2) then
           do i = 1, n_fields
-             write (*,'(a, i4, i5,3x,a10,2x,i3,2x,i10,3x,i10,4x,l,4x,l,2x,i4)') 'model-PDAF', &
-                  mype_model, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
+             write (*,'(a, i6,2x,i4,4x,a10,2x,i10,2x,i10)') &
+                  'model-PDAF', mype_model, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
           end do
        end if
-    end if
 
-    if (npes_model==1) then
-       if (task_id==1) &
-            write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Full state dimension: ',dim_state_p
-       dim_state = dim_state_p
-    else
-       if (task_id==1) then
-          if (screen>2 .or. mype_model==0) &
-               write (*,'(a,2x,a,1x,i4,2x,a,1x,i10)') &
+       if (npes_model>1) then
+          if (screen>2 .or. mype_model==0) write (*,'(a,2x,a,1x,i4,2x,a,1x,i10)') &
                'model-PDAF', 'PE', mype_model, 'process-local full state dimension: ',dim_state_p
-
-          call MPI_Reduce(dim_state_p, dim_state, 1, MPI_INTEGER, MPI_SUM, 0, COMM_model, MPIerr)
-          if (mype_model==0) then
-             write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Global state dimension: ',dim_state
-          end if
        end if
+       if (mype_model==0) &
+            write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Global state dimension: ',dim_state
     end if
-    call MPI_Barrier(comm_ensemble, MPIerr)
+    call MPI_Barrier(comm_ens, MPIerr)
 
   end subroutine setup_statevector
 

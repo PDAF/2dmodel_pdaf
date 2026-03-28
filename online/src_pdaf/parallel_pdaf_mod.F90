@@ -33,9 +33,9 @@ module parallel_pdaf_mod
   integer :: npes_model         !< Process rank in COMM_model
 
   ! Variables describing all processes involved in model integrations
-  integer :: COMM_ensemble      !< Communicator for entire ensemble
-  integer :: mype_ens           !< Rank in COMM_ensemble
-  integer :: npes_ens           !< Size of COMM_ensemble
+  integer :: COMM_ens           !< Jont Communicator for entire ensemble
+  integer :: mype_ens           !< Rank in COMM_ens
+  integer :: npes_ens           !< Size of COMM_ens
 
   ! Variables describing the processes involved in the analysis step
   integer :: COMM_assim         !< MPI communicator processes in analysis step

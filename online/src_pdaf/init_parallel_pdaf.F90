@@ -22,7 +22,7 @@ subroutine init_parallel_pdaf(screen, model_comm, model_comm_rank, model_comm_si
   use PDAF, &                     ! Command line parser
        only: PDAF_parse, PDAF3_init_parallel
   use parallel_pdaf_mod, &        ! PDAF parallelization variables
-       only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ensemble, &
+       only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ens, &
        mype_model, npes_model, COMM_model, mype_assim, npes_assim, COMM_assim
 
   implicit none
@@ -49,12 +49,12 @@ subroutine init_parallel_pdaf(screen, model_comm, model_comm_rank, model_comm_si
 
   ! Store the parallelization variables provided by the model
   ! At this point, they describe all processes doing model integrations
-  COMM_ensemble = model_comm
+  COMM_ens = model_comm
   mype_ens = model_comm_rank
   npes_ens = model_comm_size
 
   ! Initialize ensemble parallelization
-  call PDAF3_init_parallel(screen, 0, 1, n_modeltasks, dim_ens, &
+  call PDAF3_init_parallel(screen, 0, 1, dim_ens, n_modeltasks, &
      model_comm, model_comm_rank, model_comm_size, &
      COMM_assim, mype_assim, npes_assim, &
      task_id)
