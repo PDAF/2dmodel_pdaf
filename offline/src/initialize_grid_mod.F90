@@ -42,7 +42,7 @@ contains
 ! *** Screen output ***
     if (mype_ens == 0) then
      write (*, '(1x, a)') 'INITIALIZE MODEL INFORMATION FOR PDAF OFFLINE MODE'
-     write (*, '(22x,a)') 'MODEL: 2D-2fields tutorial model'
+     write (*, '(5x,a)') 'MODEL: 2D-2fields tutorial model'
        write (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
     end if
 
