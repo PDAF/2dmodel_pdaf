@@ -48,44 +48,6 @@ module parallel_pdaf_mod
 
 contains
 !-------------------------------------------------------------------------------
-!> Initialize MPI
-!!
-!! Routine to initialize MPI, the number of processes
-!! (npes_model) and the rank of a process (mype_model).
-!! The model is executed within the scope of the
-!! communicator Comm_model.
-!!
-  subroutine init_parallel()
-
-    implicit none
-
-    integer :: i
-  
-    call MPI_INIT(i);
-    call MPI_Comm_Size(MPI_COMM_WORLD,npes_model,i)
-    call MPI_Comm_Rank(MPI_COMM_WORLD,mype_model,i)
-
-    ! Initialize model communicator
-    ! Here the same as for MPI_COMM_WORLD
-    COMM_model = MPI_COMM_WORLD
-   
-  end subroutine init_parallel
-!-------------------------------------------------------------------------------
-!> Finalize MPI
-!!
-!! Routine to finalize MPI
-!!
-  subroutine finalize_parallel()
-
-    implicit none
-    
-    integer :: MPIerr             !< Error flag for MPI
-
-    call  MPI_Barrier(MPI_COMM_WORLD,MPIerr)
-    call  MPI_Finalize(MPIerr)
-
-  end subroutine finalize_parallel
-!-------------------------------------------------------------------------------
 !> Abort MPI
 !!
 !! Routine for abort MPI program.

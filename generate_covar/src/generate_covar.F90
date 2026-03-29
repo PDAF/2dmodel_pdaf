@@ -25,7 +25,7 @@ program generate_covar
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny
   use parallel_pdaf_mod, &        ! Parallelization variables
-       only: mype_model, npes_model, init_parallel
+       only: mype_model, npes_model
   use initialize_grid_mod, &
        only: initialize_grid
   use statevector_pdaf_mod, &     ! State vector variables and init routine
@@ -75,16 +75,11 @@ program generate_covar
   real :: stddev(1)         !< STDDEV of field (only for multivariate scaling (not used here))
 
 
-! **********************
-! *** Initialize MPI ***
-! **********************
+! *************************************************
+! *** Initialize MPI and communicators for PDAF ***
+! *************************************************
 
-  call init_parallel() ! initializes MPI
-  
-! *** Initialize MPI communicators for PDAF (model and filter) ***
-! *** NOTE: It is always n_modeltasks=1 for offline mode       ***
-
-  call init_parallel_pdaf_offline(screen)
+  call init_parallel_pdaf_offline(0)
 
 
 ! ************************************************
