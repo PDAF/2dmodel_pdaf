@@ -17,8 +17,7 @@
 program main_offline
 
   use parallel_pdaf_mod, &   ! Parallelization
-       only: npes_ens, mype_ens, &
-       init_parallel, finalize_parallel
+       only: npes_ens, mype_ens
   use initialize_grid_mod, &
        only: initialize_grid
 
