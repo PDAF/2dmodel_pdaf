@@ -1,4 +1,3 @@
-!>  Main driver for PDAF offline tutorial
 !!
 !! This is the main program for an example implementation of
 !! PDAF with domain-decomposition and offline configuration.
@@ -17,7 +16,6 @@
 !!
 program main_offline
 
-  use mpi                    ! MPI
   use parallel_pdaf_mod, &   ! Parallelization
        only: npes_ens, mype_ens, &
        init_parallel, finalize_parallel
@@ -25,9 +23,6 @@ program main_offline
        only: initialize_grid
 
   implicit none
-
-! *** Local variable
-  integer :: MPIerr          ! Error flag for MPI
 
 
 ! *************************************************
@@ -79,11 +74,6 @@ program main_offline
 
   call assimilate_pdaf_offline()
 
-
-  ! Synchronize at barrier for exit
-  call MPI_Barrier(MPI_COMM_WORLD, MPIerr) 
-
-
 ! ********************
 ! *** Finishing up ***
 ! ********************
@@ -94,8 +84,5 @@ program main_offline
 
   ! *** Finalize PDAF - print memory and timing information
   call finalize_pdaf(0)
-
-  ! End parallelization
-  call finalize_parallel()
 
 end program MAIN_OFFLINE
