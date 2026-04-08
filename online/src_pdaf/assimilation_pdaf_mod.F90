@@ -29,12 +29,13 @@ module assimilation_pdaf_mod
 
 !+++ End of specific part
 
+! Don't remove the following line, it's relevant for OpenMP parallelization
 !$OMP THREADPRIVATE(coords_l)
 
 
 ! -----------------------------------------------------------------
 ! --- Below are the generic variables used for configuring PDAF ---
-! --- Their values are set in init_pdaf                         ---
+! --- Default values are set here, and deviation in init_pdaf   ---
 
 ! Settings for state vector size
   integer :: dim_state          !< Global model state dimension

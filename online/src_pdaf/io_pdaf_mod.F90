@@ -14,8 +14,8 @@
 module io_pdaf_mod
 
   logical :: write_state = .true.
-  logical :: write_ens   = .true.
-  logical :: write_var   = .true.
+  logical :: write_ens   = .false.
+  logical :: write_var   = .false.
 
 contains
 

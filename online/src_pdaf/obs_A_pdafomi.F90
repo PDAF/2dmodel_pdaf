@@ -60,7 +60,7 @@ module obs_A_pdafomi
 
   ! Variables which are inputs to the module (usually set in init_pdaf)
   logical :: assim_A = .false.     !< Whether to assimilate this data type
-  real    :: rms_obs_A = 0.25      !< Observation error standard deviation (for constant errors)
+  real    :: rms_obs_A = 0.5       !< Observation error standard deviation (for constant errors)
   character(len=100) :: file_obs_A = 'obsA.nc'     !< Name of observation file
   character(len=100) :: stub_synobs_A='obsA_syn_'  !< Name stub of file for synthetic observations
 
