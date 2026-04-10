@@ -15,7 +15,7 @@ subroutine init_pdaf_parse()
 
   use PDAF, &                ! Parser function
        only: PDAF_parse
-  use assimilation_pdaf_mod, & ! Variables for assimilation
+  use assim_pdaf_mod, &      ! Variables for assimilation
        only: screen, filtertype, subtype, dim_ens, delt_obs, &
        step_offline, twin_experiment, &
        model_error, model_err_amp, type_forget, forget, &

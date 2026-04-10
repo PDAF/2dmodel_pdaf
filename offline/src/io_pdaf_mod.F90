@@ -30,6 +30,8 @@ contains
     use netcdf
     use statevector_pdaf_mod, &
          only: sfields, n_fields
+
+    ! Specific for model
     use model_pdaf_mod, &
          only: nx_p, ny, offset_x_p
 

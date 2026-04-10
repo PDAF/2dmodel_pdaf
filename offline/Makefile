@@ -23,7 +23,7 @@ include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 # Modules used for PDAF
 MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		parallel_pdaf_mod.F90 \
-		assimilation_pdaf_mod.F90 \
+		assim_pdaf_mod.F90 \
 		statevector_pdaf_mod.F90 \
 		initialize_grid_mod.F90 \
 		io_pdaf_mod.F90 \

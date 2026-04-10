@@ -21,7 +21,7 @@ subroutine init_pdaf_offline()
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
        only: myproc_ens, myproc_assim, abort_parallel
-  use assimilation_pdaf_mod, &         ! Variables for assimilation
+  use assim_pdaf_mod, &                ! Variables for assimilation
        only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
        step_offline, type_forget, forget, cradius, sradius, coords_p, &
        type_winf, limit_winf, pf_res_type, pf_noise_type, pf_noise_amp, &
@@ -73,9 +73,9 @@ subroutine init_pdaf_offline()
 
 ! *** Options for DA method
 
-  ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ! +++ For available options see ASSIMILATION_PDAF_MOD and INIT_PDAF_PARSE +++
-  ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! +++ For available options see ASSIM_PDAF_MOD and INIT_PDAF_PARSE +++
+  ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 ! ************************************************************
