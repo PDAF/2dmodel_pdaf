@@ -22,7 +22,7 @@ subroutine distribute_state_pdaf(dim_p, state_p)
   use statevector_pdaf_mod, &            ! State vector variables
        only: id, sfields
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &                  ! Model variables
        only: nx_p, ny, fieldA_p, fieldB_p
 

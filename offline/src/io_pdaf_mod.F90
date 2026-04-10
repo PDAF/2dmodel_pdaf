@@ -20,54 +20,60 @@ module io_pdaf_mod
 contains
 
 !-------------------------------------------------------------------------------
-!> Read field on subdomain from a netCDF output file into state vector
+!> Read statevector for ensemble on subdomain from a netCDF output file
 !!
-!! Routine to read the subdomain-part of a specific field
-!! at one time step.
+!! Routine to read the fields into a state vector from the ensemble. 
+!! The fields are read for their subdomain-part at one time step.
 !!
-  subroutine read_state_field_pdaf(filename, state_p)
+  subroutine read_ensstate_pdaf(member, state_p)
 
     use netcdf
-    use parallel_pdaf_mod, &
-         only: mype_model
+    use statevector_pdaf_mod, &
+         only: sfields, n_fields
     use model_pdaf_mod, &
-         only: nx_p, ny
+         only: nx_p, ny, offset_x_p
 
     implicit none
 
     ! Arguments
-    character(len=100), intent(in) :: filename  !< Name of output file
-    real, intent(inout) :: state_p(:)           !< Part of process-local state vector
+    integer, intent(in) :: member       !< Ensemble member index
+    real, intent(inout) :: state_p(:)   !< rocess-local state vector
 
     ! Local variables
-    integer :: ncid                 ! ID of output file
-    integer :: id_field             ! Netcdf field id
-    integer :: countv(3), startv(3) ! Vectors for NC operations
-    integer :: off_nx               ! Offset of local grid in global domain in x-direction
+    integer :: fid                      ! Counter for field index
+    integer :: ncid                     ! ID of output file
+    integer :: id_field                 ! Netcdf field id
+    integer :: countv(3), startv(3)     ! Vectors for NC operations
+    character(len=2) :: ensstr          ! String for ensemble member
+    character(len=100) :: filename      ! Name of input file
 
-    ! *** Read field
+    ! *** Set string for ensemble member
+    write (ensstr, '(i2.2)') member
 
-     ! offset in x-direction due to domain-decomposition
-     off_nx = nx_p*mype_model
+    ! *** Read fields
 
-    ! Open file and get field ID
+    do fid = 1, n_fields
+       filename = '../inputs_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
 
-    call nfcheck( NF90_OPEN(trim(filename), NF90_NOWRITE, ncid))
-    call nfcheck( NF90_INQ_VARID(ncid, 'field', id_field))
+       ! Open file, get field ID, and read field
 
-    startv(1) = 1
-    countv(1) = ny
-    startv(2) = 1+off_nx
-    countv(2) = nx_p
-    startv(3) = 1
-    countv(3) = 1
+       call nfcheck( NF90_OPEN(trim(filename), NF90_NOWRITE, ncid))
+       call nfcheck( NF90_INQ_VARID(ncid, 'field', id_field))
 
-    call nfcheck( NF90_GET_VAR(ncid, id_field, state_p, &
-         start=startv(1:3), count=countv(1:3)))
+       startv(1) = 1
+       countv(1) = ny
+       startv(2) = 1+offset_x_p
+       countv(2) = nx_p
+       startv(3) = 1
+       countv(3) = 1
+
+       call nfcheck( NF90_GET_VAR(ncid, id_field, state_p(sfields(fid)%off+1:sfields(fid)%off+sfields(fid)%dim), &
+            start=startv(1:3), count=countv(1:3)))
+    end do
 
     call nfcheck( NF90_CLOSE(ncid))
 
-  end subroutine read_state_field_pdaf
+  end subroutine read_ensstate_pdaf
 
 !-------------------------------------------------------------------------------
 !> Read covariance matrix information
@@ -80,11 +86,11 @@ contains
 
     use netcdf
     use parallel_pdaf_mod, &
-         only: mype_model, abort_parallel
-    use model_pdaf_mod, &
-         only: nx_p, ny
-    use statevector_pdaf_mod, &     ! State vector variables
+         only: abort_parallel
+    use statevector_pdaf_mod, &
          only: sfields, n_fields
+    use model_pdaf_mod, &
+         only: nx_p, ny, offset_x_p
 
     implicit none
 
@@ -103,11 +109,7 @@ contains
     integer :: id_state                 ! ID for field
     integer :: id_dim                   ! ID for dimension
     integer :: countv(3), startv(3)     ! Vectors for NC operations
-    integer :: off_nx                   ! Offset of local grid in global domain in x-direction
 
-
-    ! offset in x-direction due to domain-decomposition
-    off_nx = nx_p*mype_model
 
     call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
 
@@ -133,7 +135,7 @@ contains
        do fid = 1, n_fields
           call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
 
-          startv(2) = 1+off_nx
+          startv(2) = 1+offset_x_p
           countv(2) = nx_p
           startv(1) = 1
           countv(1) = ny
@@ -150,7 +152,7 @@ contains
 
              startv(3) = j
              countv(3) = 1
-             startv(2) = 1+off_nx
+             startv(2) = 1+offset_x_p
              countv(2) = nx_p
              startv(1) = 1
              countv(1) = ny
@@ -183,12 +185,10 @@ contains
   subroutine read_mean_covar_pdaf(filename, state_p)
 
     use netcdf
-    use parallel_pdaf_mod, &
-         only: mype_model
-    use model_pdaf_mod, &
-         only: nx_p, ny
-    use statevector_pdaf_mod, &     ! State vector variables
+    use statevector_pdaf_mod, &
          only: sfields, n_fields
+    use model_pdaf_mod, &
+         only: nx_p, ny, offset_x_p
 
     implicit none
 
@@ -201,11 +201,7 @@ contains
     integer :: ncid                     ! ID of output file
     integer :: id_state                 ! ID for field
     integer :: countv(2), startv(2)     ! Vectors for NC operations
-    integer :: off_nx                   ! Offset of local grid in global domain in x-direction
 
-
-    ! offset in x-direction due to domain-decomposition
-    off_nx = nx_p*mype_model
 
     call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
 
@@ -213,7 +209,7 @@ contains
     do fid = 1, n_fields
        call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
 
-       startv(2) = 1+off_nx
+       startv(2) = 1+offset_x_p
        countv(2) = nx_p
        startv(1) = 1
        countv(1) = ny
@@ -351,7 +347,7 @@ contains
     use mpi
     use netcdf
     use parallel_pdaf_mod, &             ! Parallelization variables
-         only: COMM_assim, mype_assim
+         only: COMM_assim, myproc_assim
     use model_pdaf_mod, &                ! Model variables
          only: nx, ny, nx_p
 
@@ -377,7 +373,7 @@ contains
 ! *** Use MPI to obtain global field ***
 ! **************************************
 
-    if (mype_assim==0) then
+    if (myproc_assim==0) then
        allocate(field(ny, nx))
     else
        allocate(field(1, 1))
@@ -393,7 +389,7 @@ contains
 ! *** File output ***
 ! *******************
 
-    if (mype_assim==0) then
+    if (myproc_assim==0) then
 
        ! *** Create file and define dimensions
 

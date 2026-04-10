@@ -16,7 +16,7 @@
 !!
 subroutine init_n_domains_pdaf(step, n_domains_p)
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &               ! Model-related variables
        only: nx_p, ny
 

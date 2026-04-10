@@ -10,11 +10,10 @@
 !!
 !! The declarations of **id** and **sfields** as well as the
 !! routines **init_id** and **init_sfields** might need to be
-!! adapted to a particular modeling case. However, for most
-!! parts also the configruation using the namelist is possible.
+!! adapted to a particular modeling case.
 !!
 !! __Revision history__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2026-02 - Lars Nerger - Initial code from restructuring
 !! * Later revisions - see repository log
 !!
 module statevector_pdaf_mod
@@ -62,8 +61,8 @@ contains
 ! -----------------------------------------------------------------
 !> This routine initializes the array `id`
 !!
-!! The initializations in this routine should be 
-!! adapted to the particular state vector.
+!! The initialization of n_fields and of the IDs id%X
+!! in this routine should be adapted to the particular state vector.
 !!
   subroutine init_id(n_fields)
 
@@ -85,15 +84,17 @@ contains
 
   end subroutine init_id
 
+
 ! -----------------------------------------------------------------
 !> This routine initializes the array `sfields`
 !!
 !! This routine initializes the sfields array with specifications
 !! of the fields in the state vector. It has to be adapted to
-!! the particular fields used in the state vector
+!! the particular fields used in the state vector.
 !!
   subroutine init_sfields()
 
+    ! Specific for model
     use model_pdaf_mod, &  ! Model variables
          only: nx_p, ny
 
@@ -123,8 +124,6 @@ contains
     sfields(id%fieldB)%name = 'fieldB'
     sfields(id%fieldB)%fname = 'B'
 
-!+++ End of specific part
-
 
 ! **************************************
 ! ***   Set dimensions and offsets   ***
@@ -136,6 +135,8 @@ contains
           sfields(i)%dim = nx_p * ny
        end if
     end do
+
+! +++ The following is generic
 
     ! Define field offsets in state vector
     sfields(1)%off = 0
@@ -150,12 +151,12 @@ contains
 !> Initialize the state vector
 !!
 !! This routine is generic. Case-specific adaptions should only
-!! by done in the routines init_id and init_sfields.
+!! be done in the routines init_id and init_sfields.
 !!
   subroutine setup_statevector(dim_state, dim_state_p, screen)
 
     use parallel_pdaf_mod, &
-         only: mype_model, npes_model, task_id, comm_ens, &
+         only: myproc_model, nproc_model, task_id, comm_ens, &
          comm_model, MPI_SUM, MPI_INTEGER
 
     implicit none
@@ -193,25 +194,25 @@ contains
 ! *** Write information about the state vector ***
 
     if (task_id==1) then
-       if (mype_model==0) then
+       if (myproc_model==0) then
           write (*,'(/a,2x,a)') 'model-PDAF', '*** Setup of state vector ***'
           write (*,'(a,3x,a,i5)') 'model-PDAF', '--- Number of fields in state vector:', n_fields
           write (*,'(a,a7,3x,a2,4x,a8,5x,a9,6x,a6)') &
                'model-PDAF','proc.','ID', 'variable', 'dimension', 'offset'
        end if
 
-       if ((mype_model==0 .and. screen<=2) .or. screen>2) then
+       if ((myproc_model==0 .and. screen<=2) .or. screen>2) then
           do i = 1, n_fields
              write (*,'(a, i6,2x,i4,4x,a10,2x,i10,2x,i10)') &
-                  'model-PDAF', mype_model, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
+                  'model-PDAF', myproc_model, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
           end do
        end if
 
-       if (npes_model>1) then
-          if (screen>2 .or. mype_model==0) write (*,'(a,2x,a,1x,i4,2x,a,1x,i10)') &
-               'model-PDAF', 'PE', mype_model, 'process-local full state dimension: ',dim_state_p
+       if (nproc_model>1) then
+          if (screen>2 .or. myproc_model==0) write (*,'(a,2x,a,1x,i4,2x,a,1x,i10)') &
+               'model-PDAF', 'PE', myproc_model, 'process-local full state dimension: ',dim_state_p
        end if
-       if (mype_model==0) &
+       if (myproc_model==0) &
             write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Global state dimension: ',dim_state
     end if
     call MPI_Barrier(comm_ens, MPIerr)

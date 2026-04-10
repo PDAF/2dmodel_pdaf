@@ -10,7 +10,7 @@
 !! Implementation for the 2D online example with two fields.
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2013-02 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
 module assimilation_pdaf_mod
@@ -29,7 +29,7 @@ module assimilation_pdaf_mod
 
 !+++ End of specific part
 
-! Don't remove the following line, it's relevant for OpenMP parallelization
+! Do not remove the following line, it is relevant for OpenMP parallelization
 !$OMP THREADPRIVATE(coords_l)
 
 

@@ -26,9 +26,9 @@ subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
   use assimilation_pdaf_mod, &     ! Assimilation variables
        only: delt_obs
   use parallel_pdaf_mod, &         ! Parallelization variables
-       only: mype_ens
+       only: myproc_ens
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &            ! Model variables
        only: total_steps
 
@@ -54,13 +54,13 @@ subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
      ! *** During the assimilation process ***
      nsteps = delt_obs   ! This assumes a constant time step interval
 
-     if (mype_ens == 0) write (*, '(a, i7, 3x, a, i7)') &
+     if (myproc_ens == 0) write (*, '(a, i7, 3x, a, i7)') &
           'model-PDAF', stepnow, 'Next observation at time step', stepnow + nsteps
   else
      ! *** End of assimilation process ***
      nsteps = 0          ! No more steps
 
-     if (mype_ens == 0) write (*, '(a, i7, 3x, a)') &
+     if (myproc_ens == 0) write (*, '(a, i7, 3x, a)') &
           'model-PDAF', stepnow, 'No more observations - end assimilation'
   end if
 

@@ -90,15 +90,13 @@ contains
 
 !> Initialize information on the module-type observation
 !!
-!! The routine is called by each filter process.
-!! at the beginning of the analysis step before 
-!! the loop through all local analysis domains.
+!! The routine is called by each filter process at the beginning of
+!! the analysis step before the loop through all local analysis domains.
 !! 
-!! It has to count the number of observations of the
-!! observation type handled in this module according
-!! to the current time step for all observations 
-!! required for the analyses in the loop over all local 
-!! analysis domains on the Process-local state domain.
+!! It has to count the number of observations of the observation type
+!! handled in this module according to the current time step for all
+!! observations required for the analyses in the loop over all local 
+!! analysis domains on the process-local state domain.
 !!
 !! The following four variables have to be initialized in this routine
 !! * thisobs\%doassim     - Whether to assimilate this type of observations
@@ -117,7 +115,7 @@ contains
 !! * thisobs\%inno_omit_ivar - Value of inverse variance to omit observation
 !!                          (default: 1.0e-12, change this if this value is not small compared to actual obs. error)
 !!
-!! Further variables are set by PDAF-OMI when the routine PDAFomi_gather_obs is called.
+!! Further variables are set by PDAF-OMI in the routine PDAFomi_gather_obs.
 !!
   subroutine init_dim_obs_B(step, dim_obs)
 
@@ -126,7 +124,7 @@ contains
          only: PDAFomi_gather_obs, PDAF_local_type, PDAFomi_set_localize_covar, &
          PDAF_DA_GENOBS
     use parallel_pdaf_mod, &             ! Parallelization variables
-         only: mype_assim
+         only: myproc_assim
     use assimilation_pdaf_mod, &         ! Variables for assimilation
          only: filtertype, cradius, coords_p, dim_state_p, &
          locweight, cradius, sradius, twin_experiment
@@ -137,9 +135,9 @@ contains
     use io_pdaf_mod, &                   ! IO operations
          only: nfcheck
 
-    ! Specific for 2D tutorial model
+    ! Specific for model
     use model_pdaf_mod, &                ! Model variables
-         only: nx, ny, nx_p, n_dim
+         only: nx, ny, nx_p, n_dim, offset_x_p
 
     implicit none
 
@@ -150,7 +148,6 @@ contains
 ! *** Local variables ***
     integer :: i, j                      ! Counters
     integer :: cnt_p, cnt0_p             ! Counters
-    integer :: off_nx                    ! Offset of local grid in global domain in x-direction
     integer :: dim_obs_p                 ! Number of process-local observations
     real, allocatable :: obs_field(:,:)  ! Observation field read from file
     real, allocatable :: obs_p(:)        ! Process-local observation vector
@@ -166,7 +163,7 @@ contains
 ! *** Initialize full observation dimension ***
 ! *********************************************
 
-    if (mype_assim==0) &
+    if (myproc_assim==0) &
          write (*,'(a,5x,a)') 'model-PDAF','Assimilate observations - obs type B'
 
     ! Store whether to assimilate this observation type (used in routines below)
@@ -196,7 +193,7 @@ contains
 ! **********************************
 
     ! Read observation field from file
-    if (mype_assim==0) &
+    if (myproc_assim==0) &
          write (*,'(a,5x,a, i6)') 'model-PDAF','--- read observation at step', step
 
     allocate(obs_field(ny, nx))
@@ -220,12 +217,9 @@ contains
 
     ! *** Count valid observations that lie within the process sub-domain ***
 
-    ! Get offset of local domain in global domain in x-direction
-    off_nx = nx_p*mype_assim
-
     ! Count process-local observations
     cnt_p = 0
-    do j = 1 + off_nx, nx_p + off_nx
+    do j = 1 + offset_x_p, nx_p + offset_x_p
        do i= 1, ny
           if (obs_field(i,j) > -999.0) cnt_p = cnt_p + 1
        end do
@@ -252,7 +246,7 @@ contains
 
        cnt_p = 0
        cnt0_p = 0
-       do j = 1 + off_nx, nx_p + off_nx
+       do j = 1 + offset_x_p, nx_p + offset_x_p
           do i= 1, ny
              cnt0_p = cnt0_p + 1
              if (obs_field(i,j) > -999.0) then
@@ -294,11 +288,11 @@ contains
     IF (twin_experiment .AND. filtertype/=PDAF_DA_GENOBS) THEN
 
        ! Set file name (separate files for each process)
-       write (procstr, '(i4.4)') mype_assim
+       write (procstr, '(i4.4)') myproc_assim
        file_synobs = trim(stub_synobs_B)//procstr//'.nc'
 
        ! Read synthetic observations
-       CALL read_syn_obs(file_synobs, dim_obs_p, obs_p, step, 1-mype_assim)
+       CALL read_syn_obs(file_synobs, dim_obs_p, obs_p, step, 1-myproc_assim)
     END IF
 
 
@@ -327,7 +321,7 @@ contains
     if (filtertype==PDAF_DA_GENOBS .and. firsttime) then
 
        ! Set file name (separate files for each process)
-       write (procstr, '(i4.4)') mype_assim
+       write (procstr, '(i4.4)') myproc_assim
        file_synobs = trim(stub_synobs_B)//procstr//'.nc'
 
        ! Initialize file
@@ -345,8 +339,7 @@ contains
     deallocate(obs_field)
     deallocate(obs_p, ocoord_p, ivar_obs_p)
 
-    ! Arrays in THISOBS have to be deallocated after the analysis step
-    ! by a call to deallocate_obs() in prepoststep_pdaf.
+    ! Note: Arrays in THISOBS are deallocated by PDAF-OMI
 
   end subroutine init_dim_obs_B
 

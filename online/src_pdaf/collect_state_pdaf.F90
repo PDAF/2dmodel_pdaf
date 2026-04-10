@@ -4,10 +4,10 @@
 !!
 !! Used by all DA methods.
 !!
-!! This subroutine is called during the forecast phase from PDAF_put_state_X
-!! or PDAF_assimilate_X after the propagation of each ensemble member. 
+!! This subroutine is called during the forecast phase from PDAF
+!! after the propagation of each ensemble member. 
 !! The supplied state vector has to be initialized from the model fields
-!! (typically via a module).
+!! (typically accessible via a module).
 !!
 !! The routine is executed by each process that is
 !! participating in the model integrations.
@@ -21,7 +21,7 @@ subroutine collect_state_pdaf(dim_p, state_p)
   use statevector_pdaf_mod, &            ! State vector variables
        only: id, sfields
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &                  ! Model variables
        only: nx_p, ny, fieldA_p, fieldB_p
 

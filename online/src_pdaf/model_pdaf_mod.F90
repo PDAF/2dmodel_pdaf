@@ -13,8 +13,8 @@
 module model_pdaf_mod
 
   use model_mod, &                ! Model variables
-       ONLY: nx, ny, nx_p, n_dim, coords_x_p, coords_y_p, &
-       total_steps, fieldA_p, fieldB_p
+       ONLY: nx, ny, nx_p, n_dim, offset_x_p, &
+       coords_x_p, coords_y_p, total_steps, fieldA_p, fieldB_p
 
   implicit none
 

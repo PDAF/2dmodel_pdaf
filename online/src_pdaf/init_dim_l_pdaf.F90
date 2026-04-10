@@ -22,7 +22,7 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   use statevector_pdaf_mod, &       ! State vector variables
        only: n_fields, sfields
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &             ! Model variables
        only: ny, coords_x_p, coords_y_p
 

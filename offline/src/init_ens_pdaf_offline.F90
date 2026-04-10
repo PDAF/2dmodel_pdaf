@@ -28,11 +28,11 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use assimilation_pdaf_mod, &    ! Assimilation varibles
        only: type_ens_init, file_covar
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
-       only: mype_assim
+       only: myproc_assim
   use statevector_pdaf_mod, &     ! State vector variables
        only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
-       only: read_state_field_pdaf, read_mean_covar_pdaf, read_covar_pdaf
+       only: read_ensstate_pdaf, read_mean_covar_pdaf, read_covar_pdaf
 
   implicit none
 
@@ -48,9 +48,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
   integer, intent(inout) :: flag                   !< PDAF status flag
 
 ! *** local variables ***
-  integer :: fid, member              ! Counters
-  character(len=2) :: ensstr          ! String for ensemble member
-  character(len=100) :: filename      ! Name of input file
+  integer :: member                   ! Counter
   real, allocatable :: eofs(:,:)      ! matrix of eigenvectors V 
   real, allocatable :: svals(:)       ! singular values
 
@@ -60,7 +58,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 ! **********************
 
   ! *** Generate full ensemble on filter-Process 0 ***
-  if (mype_assim==0) then
+  if (myproc_assim==0) then
      write (*, '(/a, 5x, a)') 'model-PDAF', 'Initialize state ensemble'
      if (type_ens_init==1 .or. type_ens_init==2) then
         write (*, '(a, 5x, a)') 'model-PDAF', '--- read ensemble from files'
@@ -84,24 +82,14 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ! *** Initialize ensemble reading model outputs ***
      ! *************************************************
 
-!+++ Specific part for 2D tutorial model
-
      ! Read fields from ensemble files
      do member = 1, dim_ens
-        write (ensstr, '(i2.2)') member
-
-        do fid = 1, n_fields
-           filename = '../inputs_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
-
-           call read_state_field_pdaf(filename, ens_p(sfields(fid)%off+1:sfields(fid)%off+sfields(fid)%dim, member))
-        end do
+        call read_ensstate_pdaf(member, ens_p(:, member))
      end do
-
-!+++ End of specific part
 
      ! Replace ensemble mean state by mean from covariance matrix file
      if (type_ens_init==2) then
-        if (mype_assim==0) &
+        if (myproc_assim==0) &
              write (*,'(a, 5x, a)') 'model-PDAF', '--- set ensemble mean state'
 
         ! Compute and substract ensemble mean
@@ -129,7 +117,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
      ! *** Read initial state and covar matrix ***
 
-     if (mype_assim==0) &
+     if (myproc_assim==0) &
           write(*,'(a,5x,a,a)') 'model-PDAF', '--- read covariance information from ', trim(file_covar)
 
      call read_covar_pdaf(file_covar, dim_ens, eofs, svals, state_p)
@@ -137,7 +125,7 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
      ! *** Generate ensemble of model states ***
 
-     if (mype_assim==0) &
+     if (myproc_assim==0) &
           write (*,'(a, 5x, a)') 'model-PDAF', '--- generate state ensemble'
      
      ! Use PDAF routine for second-order exact sampling

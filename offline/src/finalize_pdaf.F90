@@ -14,9 +14,9 @@
 subroutine finalize_pdaf()
 
   use PDAF, &                     ! PDAF
-       only: PDAF_print_info, PDAF_deallocate
+       only: PDAF_print_info, PDAF_finalize
   use parallel_pdaf_mod, &        ! Parallelization
-       only: mype_ens
+       only: myproc_ens
 
   implicit none
   
@@ -24,9 +24,9 @@ subroutine finalize_pdaf()
   call PDAF_print_info(11)
 
 ! *** Print PDAF timings onto screen ***
-  if (mype_ens==0) call PDAF_print_info(3)
+  if (myproc_ens==0) call PDAF_print_info(3)
 
 ! *** Deallocate PDAF arrays ***
-  call PDAF_deallocate()
+  call PDAF_finalize()
 
 end subroutine finalize_pdaf

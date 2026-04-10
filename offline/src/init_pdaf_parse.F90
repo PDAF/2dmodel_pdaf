@@ -8,7 +8,7 @@
 !! alternative to this might be Fortran namelist files.
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2011-15 - Lars Nerger - Initial code extracted from init_pdaf
 !! * Later revisions - see repository log
 !!
 subroutine init_pdaf_parse()
@@ -29,7 +29,7 @@ subroutine init_pdaf_parse()
   use io_pdaf_mod, &           ! File input/output control
        only: write_state, write_ens, write_var
 
-  ! Specific for 2D tutorial model
+  ! Specific for observations
   use obs_A_pdafomi, &         ! Variables for observation type A
        only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &         ! Variables for observation type B

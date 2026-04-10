@@ -32,7 +32,7 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
   use PDAF, &                         ! PDAF diagnostic routines
        only: PDAF_diag_stddev, PDAF_diag_variance, PDAFomi_diag_diffstats
   use parallel_pdaf_mod, &            ! Parallelization variables
-       only: COMM_assim, mype_assim
+       only: COMM_assim, myproc_assim
   use statevector_pdaf_mod, &         ! Statevector variables
        only: sfields, n_fields
   use io_pdaf_mod, &                  ! Output file operations
@@ -56,21 +56,23 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
 
 ! *** local variables ***
   integer :: i, j                     ! Counters
-  integer :: nobs                     ! Number of observations
   integer :: istart, iend             ! stard and end index of a field in state vector
   integer :: pdaf_status              ! status flag
+  character(len=3) :: anastr          ! String for call type (initial, forecast, analysis)
+  ! Variables for PDAF diagnostics
   real :: stddev_g                    ! Global ensemble standard deviation over all fields
   real, allocatable :: ens_stddev(:)  ! ensemble standard deviation for each field (=estimated RMS errors)
   real, allocatable :: variance_p(:)  ! Ensemble variance state vector
+  ! Variables for PDAF-OMI observation diagnostics
+  integer :: nobs                     ! Number of observations
   real, pointer :: obsstats_ptr(:,:)  ! Pointer for observation statistics
-  character(len=3) :: anastr          ! String for call type (initial, forecast, analysis)
 
 
 ! **********************
 ! *** INITIALIZATION ***
 ! **********************
 
-  if (mype_assim == 0) then
+  if (myproc_assim == 0) then
      if (step==0) then
         write (*, '(a, 5x, a)') 'model-PDAF', 'Analyze initial state ensemble'
         anastr = 'ini'
@@ -107,7 +109,7 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
   end do
 
   ! Output ensemble standard deviations
-  if (mype_assim == 0) then
+  if (myproc_assim == 0) then
      write (*, '(a,6x,a)') 'model-PDAF', 'Ensemble standard deviation (estimated RMS error)'
      do i = 1, n_fields
         write (*,'(a,4x,a13,4x,a10,2x,es12.4)') &
@@ -122,9 +124,13 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
   call PDAF_diag_variance(dim_p, dim_ens, state_p, ens_p, variance_p, &
      stddev_g, 0, 0, COMM_assim, pdaf_status)
 
-! *** Compute observation diagnostics
 
-  call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-mype_assim)
+! ***************************************
+! *** Compute observation diagnostics ***
+! ***************************************
+
+  ! Compute statistics on deviation between observation and observed ensemble
+  call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-myproc_assim)
 
 
 ! *******************

@@ -7,11 +7,10 @@
 !! This variant is for the offline mode of PDAF.
 !!
 !! This routine is generic. However, it assumes a constant observation
-!! error (rms_obs). Further, with parallelization the local state
-!! dimension dim_state_p is used.
+!! error for each observation type (rms_obs_OBSTYPE).
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2008-10 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
 subroutine init_pdaf_offline()
@@ -21,18 +20,20 @@ subroutine init_pdaf_offline()
        PDAFomi_set_domain_limits, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: mype_ens, mype_assim, n_modeltasks, abort_parallel
+       only: myproc_ens, myproc_assim, abort_parallel
   use assimilation_pdaf_mod, &         ! Variables for assimilation
        only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
-       step_offline, type_iau, steps_iau, type_forget, forget, cradius, sradius, coords_p, &
+       step_offline, type_forget, forget, cradius, sradius, coords_p, &
        type_winf, limit_winf, pf_res_type, pf_noise_type, pf_noise_amp, &
-       type_hyb, hyb_gamma, hyb_kappa, type_obs_init, type_ens_init, file_covar
+       type_hyb, hyb_gamma, hyb_kappa, type_obs_init, file_covar
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &                ! Model variables
        only: nx_p, ny, n_dim, coords_x_p, coords_y_p
+
+  ! Specific for observations
   use obs_A_pdafomi, &                 ! Variables for observation type A
        only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &                 ! Variables for observation type B
@@ -49,16 +50,14 @@ subroutine init_pdaf_offline()
 
 ! *** External subroutines ***
   external :: init_ens_pdaf_offline    ! Ensemble initialization
-  external :: next_observation_pdaf, & ! Provide time step of next observation
-       distribute_state_pdaf           ! Routine to distribute a state vector to model fields
   
 
 ! ***************************
 ! ***   Initialize PDAF   ***
 ! ***************************
 
-  if (mype_ens == 0) then
-     write (*,'(/a,1x,a)') 'model-PDAF', 'INITIALIZE PDAF - ONLINE MODE'
+  if (myproc_ens == 0) then
+     write (*,'(/a,1x,a)') 'model-PDAF', 'INITIALIZE PDAF - OFFLINE MODE'
   end if
 
 
@@ -67,8 +66,7 @@ subroutine init_pdaf_offline()
 ! **********************************************************
 
 ! *** Ensemble settings ***
-  dim_ens = n_modeltasks  ! Size of ensemble
-                          !   We use n_modeltasks here, initialized in init_parallel_pdaf
+  dim_ens = 6             ! Size of ensemble
 
 ! *** Model time step to process
   step_offline = 1        ! This determines which observation are read (can be set on command line)
@@ -112,6 +110,7 @@ subroutine init_pdaf_offline()
 
 ! *** Parse command line options - optional, but useful
 ! *** One could also use a namelist file
+
   call init_pdaf_parse()
 
 
@@ -122,14 +121,14 @@ subroutine init_pdaf_offline()
   call setup_statevector(dim_state, dim_state_p, screen)
 
 
-! *******************************************************
-! *** Call PDAF initialization routine (all processes ***
-! ***                                                 ***
-! *** For all filters, PDAF3_init is first called     ***
-! *** specifying only the required parameters.        ***
-! *** Further settings are done afterwards using      ***
-! *** calls to PDAF_set_iparam & PDAF_set_rparam.     ***
-! *******************************************************
+! ********************************************************
+! *** Call PDAF initialization routine - all processes ***
+! ***                                                  ***
+! *** For all filters, PDAF3_init is first called      ***
+! *** specifying only the required parameters.         ***
+! *** Further settings are done afterwards using       ***
+! *** calls to PDAF_set_iparam & PDAF_set_rparam.      ***
+! ********************************************************
 
   ! *** Here we specify only the required integer and real parameters
   ! *** Other parameters are set using calls to PDAF_set_iparam/PDAF_set_rparam
@@ -150,33 +149,33 @@ subroutine init_pdaf_offline()
   call PDAF_set_iparam(9, type_obs_init, status_pdaf)    ! Initialize observation before or after call to prepoststep
 
   ! Settings for NETF and LNETF
-  IF (filtertype==PDAF_DA_NETF .OR. filtertype==PDAF_DA_LNETF) THEN
-     CALL PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
-     CALL PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
-     CALL PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
-     CALL PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
-  END IF
+  if (filtertype==PDAF_DA_NETF .or. filtertype==PDAF_DA_LNETF) then
+     call PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
+     call PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
+     call PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
+     call PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
+  end if
 
   ! Settings for particle filter PF
-  IF (filtertype==PDAF_DA_PF) THEN
-     CALL PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
-     CALL PDAF_set_iparam(6, pf_res_type, status_pdaf)   ! Resampling type
-     CALL PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
-     CALL PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
-     CALL PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
-  END IF
+  if (filtertype==PDAF_DA_PF) then
+     call PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
+     call PDAF_set_iparam(6, pf_res_type, status_pdaf)   ! Resampling type
+     call PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
+     call PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
+     call PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
+  end if
 
   ! Settings for hybrid filter LKNETF
-  IF (filtertype==PDAF_DA_LKNETF) THEN
-     CALL PDAF_set_iparam(4, type_hyb, status_pdaf)      ! Choice of hybrid rule
-     CALL PDAF_set_rparam(2, hyb_gamma, status_pdaf)     ! Hybrid filter weight for state
-     CALL PDAF_set_rparam(3, hyb_kappa, status_pdaf)     ! Normalization factor for hybrid weight 
-  END IF
+  if (filtertype==PDAF_DA_LKNETF) then
+     call PDAF_set_iparam(4, type_hyb, status_pdaf)      ! Choice of hybrid rule
+     call PDAF_set_rparam(2, hyb_gamma, status_pdaf)     ! Hybrid filter weight for state
+     call PDAF_set_rparam(3, hyb_kappa, status_pdaf)     ! Normalization factor for hybrid weight 
+  end if
 
 ! *** Check whether initialization of PDAF was successful ***
   if (status_pdaf /= 0) then
      write (*,'(/1x,a6,i3,a43,i4,a1/)') &
-          'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', mype_ens,')'
+          'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', myproc_ens,')'
      call abort_parallel()
   end if
 
@@ -207,14 +206,14 @@ subroutine init_pdaf_offline()
 
 
 ! *************************************************************************
-! *** Set domain coordinate limits                                      ***
-! *** used with OMI's option use_global_obs with local ensemble methods ***
+! *** Set sub-domain coordinate limits                                  ***
+! *** Used when the PDAF-OMI option thisobs%use_global_obs is set to 0  ***
 ! *************************************************************************
   
 !+++ Specific initialization for 2D tutorial model
 
   ! Get offset of local domain in global domain in x-direction
-  off_nx = nx_p*mype_assim
+  off_nx = nx_p*myproc_assim
 
   lim_coords(1,1) = real(off_nx + 1)     ! West
   lim_coords(1,2) = real(off_nx + nx_p)  ! East

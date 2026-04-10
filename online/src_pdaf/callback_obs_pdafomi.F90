@@ -13,7 +13,7 @@
 !!
 !! **Adding an observation type:**
 !!   When adding an observation type, one has to add one module
-!!   obs_OBSTYProcess_pdafomi (based on the template obs_OBSTYProcess_pdafomi_TEMPLATE.F90).
+!!   obs_OBSTYPE_pdafomi (based on the template obs_OBSTYPE_pdafomi_TEMPLATE.F90).
 !!   In addition one has to add a call to the different routines include
 !!   in this file. It is recommended to keep the order of the calls
 !!   consistent over all files. 
@@ -111,7 +111,7 @@ end subroutine obs_op_pdafomi
 !> Call-back routine for init_dim_obs_l
 !!
 !! This routine calls the observation-specific
-!! routines init_dim_obs_l_OBSTYPE,.
+!! routines init_dim_obs_l_OBSTYPE.
 !!
 subroutine init_dim_obs_l_pdafomi(domain_p, step, dim_obs, dim_obs_l)
 

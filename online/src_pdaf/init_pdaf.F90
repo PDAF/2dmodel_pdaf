@@ -22,7 +22,7 @@ subroutine init_pdaf()
        PDAF3_init_forecast, PDAFomi_set_domain_limits, PDAF_iau_init, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: mype_ens, mype_assim, n_modeltasks, abort_parallel
+       only: myproc_ens, myproc_assim, n_modeltasks, abort_parallel
   use assimilation_pdaf_mod, &         ! Variables for assimilation
        only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
        type_iau, steps_iau, type_forget, forget, cradius, sradius, coords_p, &
@@ -31,9 +31,11 @@ subroutine init_pdaf()
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
 
-  ! Specific for 2D tutorial model
+  ! Specific for model
   use model_pdaf_mod, &                ! Model variables
-       only: nx_p, ny, n_dim, coords_x_p, coords_y_p
+       only: nx_p, ny, n_dim, offset_x_p, coords_x_p, coords_y_p
+
+  ! Specific for observations
   use obs_A_pdafomi, &                 ! Variables for observation type A
        only: assim_A, rms_obs_A, file_obs_A
   use obs_B_pdafomi, &                 ! Variables for observation type B
@@ -42,7 +44,7 @@ subroutine init_pdaf()
   implicit none
 
 ! *** Local variables ***
-  integer :: i, j, k, s, off_nx        ! Counters
+  integer :: i, j, k, s                ! Counters
   integer :: pdaf_param_i(2)           ! Integer parameter array for filter
   real    :: pdaf_param_r(1)           ! Real parameter array for filter
   integer :: status_pdaf               ! PDAF status flag
@@ -59,7 +61,7 @@ subroutine init_pdaf()
 ! ***   Initialize PDAF   ***
 ! ***************************
 
-  if (mype_ens == 0) then
+  if (myproc_ens == 0) then
      write (*,'(/a,1x,a)') 'model-PDAF', 'INITIALIZE PDAF - ONLINE MODE'
   end if
 
@@ -178,7 +180,7 @@ subroutine init_pdaf()
 ! *** Check whether initialization of PDAF was successful ***
   if (status_pdaf /= 0) then
      write (*,'(/1x,a6,i3,a43,i4,a1/)') &
-          'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', mype_ens,')'
+          'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', myproc_ens,')'
      call abort_parallel()
   end if
 
@@ -230,11 +232,8 @@ subroutine init_pdaf()
   
 !+++ Specific initialization for 2D tutorial model
 
-  ! Get offset of local domain in global domain in x-direction
-  off_nx = nx_p*mype_assim
-
-  lim_coords(1,1) = real(off_nx + 1)     ! West
-  lim_coords(1,2) = real(off_nx + nx_p)  ! East
+  lim_coords(1,1) = real(offset_x_p + 1)     ! West
+  lim_coords(1,2) = real(offset_x_p + nx_p)  ! East
   lim_coords(2,1) = real(ny)             ! North
   lim_coords(2,2) = 1.0                  ! South
 
