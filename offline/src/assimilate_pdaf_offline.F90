@@ -18,9 +18,9 @@
 subroutine assimilate_pdaf_offline()
 
   use PDAF, &                     ! PDAF interface definitions
-       only: PDAF3_assim_offline
+       only: PDAF3_assim_offline, PDAF_abort
   use parallel_pdaf_mod, &        ! Parallelization variables
-       only: myproc_ens, abort_parallel
+       only: myproc_ens
 
   implicit none
 
@@ -71,7 +71,7 @@ subroutine assimilate_pdaf_offline()
      write (*,'(/1x,a6,i3,a43,i4,a1/)') &
           'ERROR ', status_pdaf, &
           ' in PDAF3_assim_offline - stopping! (Process ', myproc_ens,')'
-     call abort_parallel()
+     call PDAF_abort(1)
   end if
 
 end subroutine assimilate_pdaf_offline

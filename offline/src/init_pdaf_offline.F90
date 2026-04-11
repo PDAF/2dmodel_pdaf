@@ -16,11 +16,11 @@
 subroutine init_pdaf_offline()
 
   use PDAF, &                          ! PDAF
-       only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, &
+       only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, PDAF_abort, &
        PDAFomi_set_domain_limits, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: myproc_ens, myproc_assim, abort_parallel
+       only: myproc_ens, myproc_assim
   use assim_pdaf_mod, &                ! Variables for assimilation
        only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
        step_offline, type_forget, forget, cradius, sradius, coords_p, &
@@ -176,7 +176,7 @@ subroutine init_pdaf_offline()
   if (status_pdaf /= 0) then
      write (*,'(/1x,a6,i3,a43,i4,a1/)') &
           'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', myproc_ens,')'
-     call abort_parallel()
+     call PDAF_abort(1)
   end if
 
 

@@ -271,15 +271,15 @@ end subroutine read_syn_obs
   subroutine nfcheck(status)
 
     use netcdf
-    use parallel_pdaf_mod, &
-         only: abort_parallel
+    use PDAF, &
+         only: PDAF_abort
 
 ! *** Aruments ***
     integer, intent ( in) :: status   ! Reading status
 
     if(status /= nf90_noerr) then
        print *, trim(nf90_strerror(status))
-       call abort_parallel()
+       call PDAF_abort(1)
     end if
 
   end subroutine nfcheck

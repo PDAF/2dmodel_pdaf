@@ -17,7 +17,7 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 
   use PDAF, &                       ! Routine to provide local indices to PDAF
        only: PDAFlocal_set_indices
-  use assimilation_pdaf_mod, &      ! Variables for assimilation
+  use assim_pdaf_mod, &             ! Variables for assimilation
        only: coords_l
   use statevector_pdaf_mod, &       ! State vector variables
        only: n_fields, sfields

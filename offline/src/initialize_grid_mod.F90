@@ -25,8 +25,10 @@ contains
 
   subroutine initialize_grid()
 
+    use PDAF, &                      ! PDAF
+         only: PDAF_abort
     use parallel_pdaf_mod, &         ! Model parallelzation variables
-         only: myproc_ens, nproc_ens, abort_parallel
+         only: myproc_ens, nproc_ens
 
     ! Specific for model
     use model_pdaf_mod, &            ! Model grid variables
@@ -61,7 +63,7 @@ contains
        nx_p = nx / nproc_ens
     else
        write (*,*) 'ERROR: Invalid number of processes'
-       call abort_parallel()
+       call PDAF_abort(1)
     end if
 
     if (myproc_ens == 0 .and. nproc_ens > 1) then

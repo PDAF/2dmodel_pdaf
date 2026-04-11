@@ -125,7 +125,7 @@ contains
          PDAF_DA_GENOBS
     use parallel_pdaf_mod, &             ! Parallelization variables
          only: myproc_assim
-    use assimilation_pdaf_mod, &         ! Variables for assimilation
+    use assim_pdaf_mod, &                ! Variables for assimilation
          only: filtertype, cradius, coords_p, dim_state_p, &
          locweight, cradius, sradius, twin_experiment
     use statevector_pdaf_mod, &          ! Statevector variables
@@ -404,7 +404,7 @@ contains
     use PDAF, only: PDAFomi_init_dim_obs_l
 
     ! Include localization radius and local coordinates
-    use assimilation_pdaf_mod, &   
+    use assim_pdaf_mod, &   
          only: coords_l, cradius, locweight, sradius
 
     implicit none

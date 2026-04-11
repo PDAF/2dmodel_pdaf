@@ -23,7 +23,7 @@
 !!
 subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
 
-  use assimilation_pdaf_mod, &     ! Assimilation variables
+  use assim_pdaf_mod, &            ! Assimilation variables
        only: delt_obs
   use parallel_pdaf_mod, &         ! Parallelization variables
        only: myproc_ens

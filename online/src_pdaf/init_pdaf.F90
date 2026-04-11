@@ -18,12 +18,12 @@
 subroutine init_pdaf()
 
   use PDAF, &                          ! PDAF
-       only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, &
+       only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, PDAF_abort, &
        PDAF3_init_forecast, PDAFomi_set_domain_limits, PDAF_iau_init, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: myproc_ens, myproc_assim, n_modeltasks, abort_parallel
-  use assimilation_pdaf_mod, &         ! Variables for assimilation
+       only: myproc_ens, myproc_assim, n_modeltasks
+  use assim_pdaf_mod, &                ! Variables for assimilation
        only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
        type_iau, steps_iau, type_forget, forget, cradius, sradius, coords_p, &
        type_winf, limit_winf, pf_res_type, pf_noise_type, pf_noise_amp, &
@@ -76,9 +76,9 @@ subroutine init_pdaf()
 
 ! *** Options for DA method
 
-  ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ! +++ For available options see ASSIMILATION_PDAF_MOD and INIT_PDAF_PARSE +++
-  ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! +++ For available options see ASSIM_PDAF_MOD and INIT_PDAF_PARSE +++
+  ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 ! ************************************************************
@@ -181,7 +181,7 @@ subroutine init_pdaf()
   if (status_pdaf /= 0) then
      write (*,'(/1x,a6,i3,a43,i4,a1/)') &
           'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', myproc_ens,')'
-     call abort_parallel()
+     call PDAF_abort(1)
   end if
 
 

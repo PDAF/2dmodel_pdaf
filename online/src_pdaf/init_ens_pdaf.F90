@@ -25,7 +25,7 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use netcdf
   use PDAF, &                     ! PDAF
        only: PDAF_sampleens, PDAF_diag_ensmean
-  use assimilation_pdaf_mod, &    ! Assimilation varibles
+  use assim_pdaf_mod, &           ! Assimilation varibles
        only: type_ens_init, file_covar
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: myproc_assim

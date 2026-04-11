@@ -30,8 +30,6 @@ contains
     use netcdf
     use statevector_pdaf_mod, &
          only: sfields, n_fields
-
-    ! Specific for model
     use model_pdaf_mod, &
          only: nx_p, ny, offset_x_p
 
@@ -87,8 +85,8 @@ contains
   subroutine read_covar_pdaf(filename, dim_ens, eofs_p, svals, state_p)
 
     use netcdf
-    use parallel_pdaf_mod, &
-         only: abort_parallel
+    use PDAF, &
+         only: PDAF_abort
     use statevector_pdaf_mod, &
          only: sfields, n_fields
     use model_pdaf_mod, &
@@ -172,7 +170,7 @@ contains
         write(*,*) 'Rank stored in file is smaller than requested EOF rank'
 
         call nfcheck( NF90_CLOSE(ncid))
-        call abort_parallel()
+        call PDAF_abort(1)
 
      end if checkdim
 
@@ -442,15 +440,15 @@ contains
   subroutine nfcheck(status)
 
     use netcdf
-    use parallel_pdaf_mod, &
-         only: abort_parallel
+    use PDAF, &
+         only: PDAF_abort
 
 ! *** Aruments ***
     integer, intent ( in) :: status   ! Reading status
 
     if(status /= nf90_noerr) then
        print *, trim(nf90_strerror(status))
-       call abort_parallel()
+       call PDAF_abort(1)
     end if
 
   end subroutine nfcheck

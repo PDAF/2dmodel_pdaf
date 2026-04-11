@@ -18,10 +18,11 @@
 subroutine assimilate_pdaf()
 
   use PDAF, &                     ! PDAF interface definitions
-       only: PDAF3_assimilate, PDAF3_generate_obs, PDAF_DA_GENOBS
+       only: PDAF3_assimilate, PDAF3_generate_obs, PDAF_abort, &
+       PDAF_DA_GENOBS
   use parallel_pdaf_mod, &        ! Parallelization variables
-       only: myproc_ens, abort_parallel
-  use assimilation_pdaf_mod, &    ! Variables for assimilation
+       only: myproc_ens
+  use assim_pdaf_mod, &           ! Variables for assimilation
        only: filtertype
 
   implicit none
@@ -85,7 +86,7 @@ subroutine assimilate_pdaf()
      write (*,'(/1x,a6,i3,a43,i4,a1/)') &
           'ERROR ', status_pdaf, &
           ' in PDAF3_assimilate - stopping! (Process ', myproc_ens,')'
-     call abort_parallel()
+     call PDAF_abort(1)
   end if
 
 end subroutine assimilate_pdaf

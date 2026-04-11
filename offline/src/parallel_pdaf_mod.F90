@@ -46,20 +46,4 @@ module parallel_pdaf_mod
   integer :: n_modeltasks=1       !< Number of parallel model tasks
   integer :: task_id=1            !< Index of my model task (1,...,n_modeltasks)
 
-contains
-!-------------------------------------------------------------------------------
-!> Abort MPI
-!!
-!! Routine for abort MPI program.
-!!
-  subroutine abort_parallel()
-
-    implicit none
-    
-    integer :: MPIerr             !< Error flag for MPI
-
-    call  MPI_Abort(MPI_COMM_WORLD, 1, MPIerr)
-
-  end subroutine abort_parallel
-
 end module parallel_pdaf_mod
