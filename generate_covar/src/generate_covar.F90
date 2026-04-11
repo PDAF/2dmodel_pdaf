@@ -25,7 +25,7 @@ program generate_covar
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny
   use parallel_pdaf_mod, &        ! Parallelization variables
-       only: mype_model, npes_model
+       only: myproc_model, nproc_model
   use initialize_grid_mod, &
        only: initialize_grid
   use statevector_pdaf_mod, &     ! State vector variables and init routine
@@ -136,7 +136,7 @@ program generate_covar
 ! ************************************************
 
 ! *** Initial Screen output ***
-  initscreen: if (mype_model == 0) then
+  initscreen: if (myproc_model == 0) then
      write (*,'(/10x,a)') '*******************************************'
      write (*,'(10x,a)') '*             GENERATE_COVAR              *'
      write (*,'(10x,a)') '*                                         *'
@@ -148,8 +148,8 @@ program generate_covar
      write (*,'(10x,a)') '*              NetCDF file                *'
      write (*,'(10x,a/)') '*******************************************'
 
-     if (npes_model > 1) then
-        write (*, '(16x, a, i3, a/)') 'Running on ', npes_model, ' PEs'
+     if (nproc_model > 1) then
+        write (*, '(16x, a, i3, a/)') 'Running on ', nproc_model, ' processes'
      else
         write (*, '(16x, a/)') 'Running on 1 PE'
      end if
@@ -209,7 +209,7 @@ program generate_covar
         do j = 1, nx
            do i = 1, ny
               s = s + 1
-              states(s, step) = field(i, nx*mype_model + j)
+              states(s, step) = field(i, nx*myproc_model + j)
            end do
         end do
 
@@ -398,7 +398,7 @@ subroutine nfcheck(status)
 
   if(status /= nf90_noerr) then
      print *, trim(nf90_strerror(status))
-     call PDAF_abort()
+     call PDAF_abort(1)
   end if
 
 end subroutine nfcheck
