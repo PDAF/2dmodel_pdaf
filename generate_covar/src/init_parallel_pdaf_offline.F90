@@ -12,44 +12,36 @@
 !! because it uses the module parallel_pdaf_mod.
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2004-11 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Revision for using PDAF3_init_forecast 
 !! * Later revisions - see repository log
 !!
 subroutine init_parallel_pdaf_offline(screen)
 
   use mpi
   use PDAF, &                     ! Command line parser
-       only: PDAF_parse, PDAF3_init_parallel
+       only: PDAF3_init_parallel
   use parallel_pdaf_mod, &        ! PDAF parallelization variables
-       only: n_modeltasks, task_id, mype_ens, npes_ens, COMM_ens, &
-       mype_model, npes_model, COMM_model, mype_assim, npes_assim, COMM_assim
+       only: n_modeltasks, task_id, myproc_ens, nproc_ens, COMM_ens, &
+       myproc_model, nproc_model, COMM_model, myproc_assim, nproc_assim, COMM_assim
 
   implicit none
 
 ! *** Arguments ***
   integer, intent(in)    :: screen           !< Whether screen information is shown
 
-! *** Local variables ***
-  integer :: dim_ens                         ! Ensemble size
-  character(len=32) :: handle                ! Handle for command line parser
-
-
-  ! Parse ensemble size
-  handle = 'dim_ens'
-  call PDAF_parse(handle, dim_ens)
-
   ! Set number of model tasks for offline mode
   n_modeltasks = 1
 
   ! Initialize ensemble parallelization
-  call PDAF3_init_parallel(screen, 0, 0, dim_ens, n_modeltasks, &
-     COMM_model, mype_model, npes_model, &
-     COMM_assim, mype_assim, npes_assim, &
+  call PDAF3_init_parallel(screen, 0, 0, 0, n_modeltasks, &
+     COMM_model, myproc_model, nproc_model, &
+     COMM_assim, myproc_assim, nproc_assim, &
      task_id)
 
   ! Initialize variables for all processes as they are used in some routines
-  COMM_ens = COMM_model
-  mype_ens = mype_model
-  npes_ens = npes_model
+  COMM_ens   = COMM_model
+  myproc_ens = myproc_model
+  nproc_ens  = nproc_model
 
 end subroutine init_parallel_pdaf_offline

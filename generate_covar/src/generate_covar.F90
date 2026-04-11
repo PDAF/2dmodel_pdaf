@@ -390,15 +390,15 @@ end program generate_covar
 subroutine nfcheck(status)
 
   use netcdf
-  use parallel_pdaf_mod, &
-       only: abort_parallel
+  use PDAF, &
+       only: PDAF_abort
 
 ! *** Arguments ***
   integer, intent ( in) :: status   ! Reading status
 
   if(status /= nf90_noerr) then
      print *, trim(nf90_strerror(status))
-     call abort_parallel()
+     call PDAF_abort()
   end if
 
 end subroutine nfcheck

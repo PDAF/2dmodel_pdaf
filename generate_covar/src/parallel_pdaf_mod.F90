@@ -15,7 +15,7 @@
 !! to provide the freedom to adapt it.
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2004-10 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
 module parallel_pdaf_mod
@@ -29,37 +29,21 @@ module parallel_pdaf_mod
 
   ! Variables for each model task
   integer :: COMM_model=0         !< MPI communicator for model tasks
-  integer :: mype_model=0         !< Number of Processs in COMM_model
-  integer :: npes_model=1         !< Process rank in COMM_model
+  integer :: myproc_model=0       !< Process rank in COMM_model
+  integer :: nproc_model=1        !< Number of Processses in COMM_model
 
   ! Variables describing all processes involved in model integrations
   integer :: COMM_ens=0           !< Jont Communicator for entire ensemble
-  integer :: mype_ens=0           !< Rank in COMM_ens
-  integer :: npes_ens=1           !< Size of COMM_ens
+  integer :: myproc_ens=0         !< Rank in COMM_ens
+  integer :: nproc_ens=1          !< Size of COMM_ens
 
   ! Variables describing the processes involved in the analysis step
   integer :: COMM_assim=0         !< MPI communicator processes in analysis step
-  integer :: npes_assim=0         !< Number of processes in COMM_da
-  integer :: mype_assim=1         !< Process rank in COMM_da
+  integer :: myproc_assim=1       !< Process rank in COMM_da
+  integer :: nproc_assim=0        !< Number of processes in COMM_da
 
   ! Additional variables for use with PDAF
   integer :: n_modeltasks=1       !< Number of parallel model tasks
   integer :: task_id=1            !< Index of my model task (1,...,n_modeltasks)
-
-contains
-!-------------------------------------------------------------------------------
-!> Abort MPI
-!!
-!! Routine for abort MPI program.
-!!
-  subroutine abort_parallel()
-
-    implicit none
-    
-    integer :: MPIerr             !< Error flag for MPI
-
-    call  MPI_Abort(MPI_COMM_WORLD, 1, MPIerr)
-
-  end subroutine abort_parallel
 
 end module parallel_pdaf_mod
