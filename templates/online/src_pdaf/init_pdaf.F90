@@ -1,0 +1,225 @@
+!>  Interface routine to call initialization of PDAF
+!!
+!! This routine collects the initialization of variables for PDAF.
+!! In addition, the initialization routine PDAF3_init is called
+!! to perform the internal initialization of PDAF and 
+!! PDAF3_init_forecast is called to initialize the forecasting.
+!!
+!! This variant is for the online mode of PDAF.
+!!
+!! This routine is generic. However, it assumes a constant observation
+!! error (rms_obs). Further, with parallelization the local state
+!! dimension dim_state_p is used.
+!!
+!! __Revision history:__
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * Later revisions - see repository log
+!!
+subroutine init_pdaf()
+
+  use PDAF, &                          ! PDAF
+       only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, PDAF_abort, &
+       PDAF3_init_forecast, PDAFomi_set_domain_limits, PDAF_iau_init, &
+       PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
+  use parallel_pdaf_mod, &             ! Parallelization variables
+       only: myproc_ens, myproc_assim, n_modeltasks
+  use assim_pdaf_mod, &                ! Variables for assimilation
+       only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
+       type_iau, steps_iau, type_forget, forget, locweight, cradius, sradius, coords_p, &
+       type_trans, type_sqrt, observe_ens, type_obs_init, &
+       type_winf, limit_winf, pf_res_type, pf_noise_type, pf_noise_amp, &
+       type_hyb, hyb_gamma, hyb_kappa, type_obs_init, type_ens_init, file_covar
+  use statevector_pdaf_mod, &          ! State vector variables and init routine
+       only: setup_statevector, n_fields
+
+  ! Specific to the model
+  use model_pdaf_mod, &                ! Model variables
+       only: n_dim !nx_p, ny, coords_x_p, coords_y_p
+
+  ! Specific for each observation type
+  use obs_OBSTYPE_pdafomi, &           ! Variables for observation OBSTYPE
+       only: assim_OBSTYPE, rms_obs_OBSTYPE
+
+  implicit none
+
+! *** Local variables ***
+  integer :: i, j, k, s, off_nx        ! Counters
+  integer :: pdaf_param_i(2)           ! Integer parameter array for filter
+  real    :: pdaf_param_r(1)           ! Real parameter array for filter
+  integer :: status_pdaf               ! PDAF status flag
+  real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
+
+! *** External subroutines ***
+  external :: init_ens_pdaf            ! Ensemble initialization
+  external :: next_observation_pdaf, & ! Provide time step of next observation
+       distribute_state_pdaf, &        ! Routine to distribute a state vector to model fields
+       prepoststep_pdaf                ! User supplied pre/poststep routine
+  
+
+! ***************************
+! ***   Initialize PDAF   ***
+! ***************************
+
+  if (myproc_ens == 0) then
+     write (*,'(/a,1x,a)') 'model-PDAF', 'INITIALIZE PDAF - ONLINE MODE'
+  end if
+
+
+! **********************************************************
+! ***   CONTROL OF PDAF - used in call to PDAF3_init     ***
+! **********************************************************
+
+! *** Ensemble settings ***
+  dim_ens = n_modeltasks  ! Size of ensemble
+                          !   We use n_modeltasks here, initialized in init_parallel_pdaf
+
+! *** Options for DA method
+
+  ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! +++ For available options see ASSIM_PDAF_MOD and INIT_PDAF_PARSE +++
+  ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+! ************************************************************
+! *** Settings used in call-back routines                  ***
+! *** Here we specify value that deviate from the defaults ***
+! ************************************************************
+
+! *** Forecast length ***
+  delt_obs = 2            ! Number of time steps between analysis steps
+
+! *** Localization settings
+  locweight = 0           ! Type of localizating weighting
+  cradius = 2.0           ! Cut-off radius for observation domain in local filters
+  sradius = cradius       ! Support radius for 5th-order polynomial
+                          ! or radius for 1/e for exponential weighting
+
+!+++ Specific variables for observations - see defaults in each observation module
+
+! *** Which observation type to assimilate
+  assim_OBSTYPE = .true.
+
+
+! ***********************************
+! *** Some optional functionality ***
+! ***********************************
+
+! *** Parse command line options - optional, but useful
+! *** One could also use a namelist file
+  call init_pdaf_parse()
+
+
+! ***************************
+! *** Define state vector ***
+! ***************************
+
+  call setup_statevector(dim_state, dim_state_p, screen)
+
+
+! *******************************************************
+! *** Call PDAF initialization routine (all processes ***
+! ***                                                 ***
+! *** For all filters, PDAF3_init is first called     ***
+! *** specifying only the required parameters.        ***
+! *** Further settings are done afterwards using      ***
+! *** calls to PDAF_set_iparam & PDAF_set_rparam.     ***
+! *******************************************************
+
+  ! *** Here we specify only the required integer and real parameters
+  ! *** Other parameters are set using calls to PDAF_set_iparam/PDAF_set_rparam
+  pdaf_param_i(1) = dim_state_p ! State dimension
+  pdaf_param_i(2) = dim_ens     ! Size of ensemble
+  pdaf_param_r(1) = forget      ! Forgetting factor
+
+  call PDAF3_init(filtertype, subtype, 0, &
+       pdaf_param_i, 2,&
+       pdaf_param_r, 1, &
+       init_ens_pdaf, screen, status_pdaf)
+
+  ! *** Additional parameter specifications ***
+  ! *** -- These are all optional --        ***
+
+  ! Generic settings
+  call PDAF_set_iparam(5, type_forget, status_pdaf)      ! Type of forgetting factor
+  call PDAF_set_iparam(6, type_trans, status_pdaf)       ! Type of ensemble transformation
+  call PDAF_set_iparam(7, type_sqrt, status_pdaf)        ! Type of transform square-root (SEIK-sub4/ESTKF)
+  call PDAF_set_iparam(8, observe_ens, status_pdaf)      ! Whether to apply observation operator to ensemble mean
+  call PDAF_set_iparam(9, type_obs_init, status_pdaf)    ! Initialize observation before or after call to prepoststep
+
+  ! Settings for NETF and LNETF
+  IF (filtertype==PDAF_DA_NETF .OR. filtertype==PDAF_DA_LNETF) THEN
+     CALL PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
+     CALL PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
+     CALL PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
+     CALL PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
+  END IF
+
+  ! Settings for particle filter PF
+  IF (filtertype==PDAF_DA_PF) THEN
+     CALL PDAF_set_iparam(4, pf_noise_type, status_pdaf) ! Perturbation type
+     CALL PDAF_set_iparam(6, pf_res_type, status_pdaf)   ! Resampling type
+     CALL PDAF_set_iparam(7, type_winf, status_pdaf)     ! Type of weights inflation
+     CALL PDAF_set_rparam(2, limit_winf, status_pdaf)    ! Limit for weights inflation
+     CALL PDAF_set_rparam(3, pf_noise_amp, status_pdaf)  ! Noise amplitude
+  END IF
+
+  ! Settings for hybrid filter LKNETF
+  IF (filtertype==PDAF_DA_LKNETF) THEN
+     CALL PDAF_set_iparam(4, type_hyb, status_pdaf)      ! Choice of hybrid rule
+     CALL PDAF_set_rparam(2, hyb_gamma, status_pdaf)     ! Hybrid filter weight for state
+     CALL PDAF_set_rparam(3, hyb_kappa, status_pdaf)     ! Normalization factor for hybrid weight 
+  END IF
+
+! *** Check whether initialization of PDAF was successful ***
+  if (status_pdaf /= 0) then
+     write (*,'(/1x,a6,i3,a43,i4,a1/)') &
+          'ERROR ', status_pdaf, ' in initialization of PDAF - stopping! (Process ', myproc_ens,')'
+     call PDAF_abort(1)
+  end if
+
+
+! **********************
+! *** Initialize IAU ***
+! **********************
+  
+  CALL PDAF_iau_init(type_iau, steps_iau, status_pdaf)
+
+
+! **********************************
+! *** Prepare ensemble forecasts ***
+! **********************************
+
+  call PDAF3_init_forecast(next_observation_pdaf, distribute_state_pdaf, &
+       prepoststep_pdaf, status_pdaf)
+
+
+! ***************************************************
+! *** Set coordinates of elements in state vector ***
+! *** (used for localization in EnKF/ENSRF)       ***
+! ***************************************************
+
+  ! For localization in EnKF and EnSRF/EAKF, PDAFomi_set_localize_covar
+  ! is called in the observation modules. This routine requires a 
+  ! coordinate array corresponding to the state vector.
+
+  allocate(coords_p(n_dim, dim_state_p))
+
+  ! +++ This can be filled using coords_x_p and coords_y_p
+!  coords_p(i,j) = ?
+
+
+! *************************************************************************
+! *** Set sub-domain coordinate limits                                  ***
+! *** Used when the PDAF-OMI option thisobs%use_global_obs is set to 0  ***
+! *************************************************************************
+  
+! +++ This is optional
+
+!   lim_coords(1,1) = ?     ! West
+!   lim_coords(1,2) = ?     ! East
+!   lim_coords(2,1) = ?     ! North
+!   lim_coords(2,2) = ?     ! South
+
+  call PDAFomi_set_domain_limits(lim_coords)
+
+end subroutine init_pdaf

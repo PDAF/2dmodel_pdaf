@@ -1,0 +1,162 @@
+!>  Parse command line options for PDAF
+!!
+!! This routine calls the command line parser to initialize
+!! variables for the data assimilation with PDAF.
+!!
+!! Using the parser is optional and shows one possibility
+!! to modify the variables of the compiled program. An 
+!! alternative to this might be Fortran namelist files.
+!!
+!! Most parts of the routine are generic. However, one can
+!! add the parsing of specific vairables, e.g. for controlling
+!! the assimilation of specific observation types.
+!!
+!! __Revision history:__
+!! * 2011-15 - Lars Nerger - Initial code extracted from init_pdaf
+!! * Later revisions - see repository log
+!!
+subroutine init_pdaf_parse()
+
+  use PDAF, &                ! Parser function
+       only: PDAF_parse
+  use assim_pdaf_mod, &      ! Variables for assimilation
+       only: screen, filtertype, subtype, dim_ens, delt_obs, &
+       step_offline, twin_experiment, &
+       model_error, model_err_amp, type_forget, forget, &
+       type_iau, steps_iau, rank_ana_enkf, &
+       locweight, cradius, sradius, &
+       type_trans, type_sqrt, dim_lag, type_hyb, &
+       hyb_gamma, hyb_kappa, type_winf, limit_winf, &
+       pf_res_type, pf_noise_type, pf_noise_amp, &
+       observe_ens, type_obs_init, do_omi_obsstats, &
+       type_ens_init, file_covar
+  use io_pdaf_mod, &           ! File input/output control
+       only: write_state, write_ens, write_var
+
+  ! Specific for observations
+!  use obs_OBSTYPE_pdafomi,   ! Variables for observation type OBSTYPE
+!       only: ...
+
+  implicit none
+
+! *** Local variables ***
+  character(len=32) :: handle  ! handle for command line parser
+
+
+! **********************************
+! *** Parse command line options ***
+! **********************************
+
+!+++ Specific part
+
+  ! Observation settings - particular for the implemented observation modules
+!   handle = 'assim_OBSTYPE'           ! Whether to assimilation observation type OBSTYPE
+!   CALL parse(handle, assim_OBSTYPE)
+!   handle = 'rms_obs_OBSTYPE'         ! Assumed uniform RMS error of observations OBSTYPE
+!   CALL parse(handle, rms_obs_OBSTYPE)
+
+  ! Settings for ensemble initialization
+  handle = 'type_ens_init'           ! Type of ensemble initialization
+  call PDAF_parse(handle, type_ens_init)
+  handle = 'file_covar'              ! Path and name of covariance matrix file
+  call PDAF_parse(handle, file_covar)
+
+  ! Setting controlling file output
+  handle = 'write_state'             ! Whether to write ensemble mean fields
+  call PDAF_parse(handle, write_state)
+  handle = 'write_ens'               ! Whether to write ensemble files
+  call PDAF_parse(handle, write_ens)
+  handle = 'write_var'               ! Whether to write ensemble variance files
+  call PDAF_parse(handle, write_var)
+
+!+++ End of specific part
+
+!------------------------------------------------------------------------------
+! The remaining PDAF_parse commands should be generic; usually no change necessary
+
+  ! Observation settings
+  handle = 'delt_obs'                ! Time step interval between filter analyses
+  call PDAF_parse(handle, delt_obs)
+  handle = 'observe_ens'             ! (0) apply H also to ensemble mean; (1) apply H only to ensemble states
+  call PDAF_parse(handle, observe_ens)
+  handle = 'type_obs_init'           ! init obs. (0) before or (1) after call to prepostsstep
+  call PDAF_parse(handle, type_obs_init)
+  handle = 'do_omi_obsstats'         ! Whether to let PDAF-OMI compute observation statistics
+  call PDAF_parse(handle, do_omi_obsstats)
+  handle = 'twin_experiment'         ! T: perform twin experiment with synthetic observations
+  call PDAF_parse(handle, twin_experiment)
+
+
+  ! Model step to process in offline mode
+  handle = 'step'                    ! Time step interval between filter analyses
+  call PDAF_parse(handle, step_offline)
+
+  ! Settings for model and time stepping
+  handle = 'model_error'             ! Control application of model error
+  call PDAF_parse(handle, model_error)
+  handle = 'model_err_amp'           ! Amplitude of model error
+  call PDAF_parse(handle, model_err_amp)
+
+  ! General settings for PDAF
+  handle = 'screen'                  ! set verbosity of PDAF
+  call PDAF_parse(handle, screen)
+  handle = 'dim_ens'                 ! set ensemble size/rank of covar matrix
+  call PDAF_parse(handle, dim_ens)
+  handle = 'filtertype'              ! Choose filter algorithm
+  call PDAF_parse(handle, filtertype)
+  handle = 'subtype'                 ! Set subtype of filter
+  call PDAF_parse(handle, subtype)
+
+  ! Control IAU
+  handle = 'type_iau'                ! Set whether to use incremental updating
+  call PDAF_parse(handle, type_iau)
+  handle = 'steps_iau'               ! Number of time steps over which IAU is applied
+  call PDAF_parse(handle, steps_iau)
+
+  ! Settings for smoother
+  handle = 'dim_lag'                 ! Size of lag in smoother
+  call PDAF_parse(handle, dim_lag)
+
+  ! Filter-specific settings
+  handle = 'forget'                  ! Set forgetting factor
+  call PDAF_parse(handle,forget)
+  handle = 'type_forget'             ! Set type of forgetting factor
+  call PDAF_parse(handle, type_forget)
+  handle = 'type_trans'              ! Type of ensemble transformation in SEIK/ETKF/ESTKF/LSEIK/LETKF/LESTKF
+  call PDAF_parse(handle, type_trans)
+  handle = 'type_sqrt'               ! Set type of transformation square-root (SEIK-sub4, ESTKF)
+  call PDAF_parse(handle, type_sqrt)
+  handle = 'rank_ana_enkf'           ! Set rank for pseudo inverse in EnKF
+  call PDAF_parse(handle, rank_ana_enkf)
+
+  ! Settings for localization in LSEIK/LETKF
+  handle = 'cradius'                 ! Set cut-off radius in grid points for observation domain
+  call PDAF_parse(handle, cradius)
+  handle = 'locweight'               ! Set type of localizating weighting
+  call PDAF_parse(handle, locweight)
+  sradius = cradius                  ! By default use cradius as support radius
+  handle = 'sradius'                 ! Set support radius for 5th-order polynomial
+                                     !  or radius for 1/e in exponential weighting
+  call PDAF_parse(handle, sradius)
+
+  ! Settings for nonlinear filters
+  handle = 'pf_res_type'             ! Resampling type for particle filter
+  call PDAF_parse(handle, pf_res_type)        
+  handle = 'pf_noise_type'           ! Type of perturbing noise in PF
+  call PDAF_parse(handle, pf_noise_type)        
+  handle = 'pf_noise_amp'            ! Amplitude of perturbing noise in PF
+  call PDAF_parse(handle, pf_noise_amp)        
+  handle = 'type_winf'               ! Set type of weights inflation in NETF/LNETF
+  call PDAF_parse(handle, type_winf)
+  handle = 'limit_winf'              ! Set limit for weights inflation
+  call PDAF_parse(handle, limit_winf)
+
+  ! Hybrid weights for LKNETF
+  handle = 'type_hyb'                ! Set type of hybrid weight
+  call PDAF_parse(handle, type_hyb)
+  handle = 'hyb_gamma'               ! Set hybrid filter weight for state (1.0 LETKF, 0.0 LNETF)
+  call PDAF_parse(handle, hyb_gamma)
+  handle = 'hyb_kappa'               ! Set hybrid norm (>1.0)
+  call PDAF_parse(handle, hyb_kappa)
+
+end subroutine init_pdaf_parse

@@ -1,0 +1,228 @@
+!> Module to build the state vector
+!!
+!! This module provides variables & routines for
+!! defining the state vector.
+!!
+!! The module contains three routines
+!! - **init_id** - initialize the array `id`
+!! - **init_sfields** - initialize the array `sfields`
+!! - **setup_statevector** - generic routine controlling the initialization
+!!
+!! The declarations of **id** and **sfields** as well as the
+!! routines **init_id** and **init_sfields** might need to be
+!! adapted to a particular modeling case.
+!!
+!! __Revision history__
+!! * 2026-02 - Lars Nerger - Initial code from restructuring
+!! * Later revisions - see repository log
+!!
+module statevector_pdaf_mod
+
+  implicit none
+  save
+
+! *** Variables to handle multiple fields in the state vector ***
+
+  !< Fortran type holding the indices of model fields in the state vector
+  !< This should be adapted to the fields in the state vector - it serves to give each field a name
+  type field_ids
+!+++ TEMPLATE: Adapt to the fields stored in particular model
+     integer :: NAME_FIELD_1
+!     integer :: NAME_FIELD_2
+!     integer :: ...
+  end type field_ids
+
+  !< Fortran type storing size and offset of each model field in the state vector
+  !< This is generic, but one could extend this type to more variables
+  type state_field
+     integer :: dim               ! size of field in state vector
+     integer :: off               ! offset of field in state vector
+     integer :: ndims             ! Number of dimensions
+     character(len=10) :: name    ! Name of field variable
+     !    Add further variables if needed
+  end type state_field
+
+
+  !---- The next variables usually do not need editing -----
+
+  !< Type variable holding field IDs in state vector
+  type(field_ids) :: id
+
+  !< number of fields in state vector
+  integer :: n_fields                   
+
+  !< Vector of type variable holding dimension and offset of each field
+  type(state_field), allocatable :: sfields(:)
+
+contains
+
+
+! -----------------------------------------------------------------
+!> This routine initializes the array `id`
+!!
+!! The initialization of n_fields and of the IDs id%X
+!! in this routine should be adapted to the particular state vector.
+!!
+  subroutine init_id(n_fields)
+
+    implicit none
+
+! *** Arguments ***
+    integer, intent(out) :: n_fields
+
+  ! Template reminder - delete when implementing functionality
+  write (*,*) 'TEMPLATE statevector_pdaf_mod.F90: Define IDs of fields in state vector!'
+
+! Set total number of fields
+!    n_fields = ?
+
+  ! Dummy setting to ensure that code can be run
+  n_fields = 1
+
+! Set field IDs
+    id%NAME_FIELD_1 = 1
+!    id%NAME_FIELD_1 = ...
+
+!+++ End of specific part
+
+  end subroutine init_id
+
+
+! -----------------------------------------------------------------
+!> This routine initializes the array `sfields`
+!!
+!! This routine initializes the sfields array with specifications
+!! of the fields in the state vector. It has to be adapted to
+!! the particular fields used in the state vector.
+!!
+  subroutine init_sfields()
+
+    use model_pdaf_mod, &  ! Model variables
+         only: nx_p, ny
+
+    implicit none
+
+! *** Local variables ***
+    integer :: i           ! Counter
+
+
+! *** Allocate ***
+
+    allocate(sfields(n_fields))
+
+! *****************************************************
+! *** Specify sfields entry for each field variable ***
+! *****************************************************
+
+    ! Template reminder - delete when implementing functionality
+    write (*,*) 'TEMPLATE statevector_pdaf_mod.F90: define field properties in variables SFIELDS!'
+
+!+++ Specific part for 2D tutorial model
+
+    ! field 1
+    sfields(id%NAME_FIELD_1)%ndims = 2
+    sfields(id%NAME_FIELD_1)%name = 'NAME_FLD_1'
+
+!+++ End of specific part
+
+
+! **************************************
+! ***   Set dimensions and offsets   ***
+! **************************************
+
+! +++ This needs to be adapted according to the grid size variables
+
+    ! Template reminder - delete when implementing functionality
+    write (*,*) 'TEMPLATE statevector_pdaf_mod.F90: set field dimensions in variables SFIELDS!'
+
+    ! Set field dimensions
+    do i = 1, n_fields
+       if (sfields(i)%ndims == 2) then
+          sfields(i)%dim = nx_p * ny
+       end if
+    end do
+
+! +++ The following is generic
+
+    ! Define field offsets in state vector
+    sfields(1)%off = 0
+    do i = 2, n_fields
+       sfields(i)%off = sfields(i-1)%off + sfields(i-1)%dim
+    end do
+
+  end subroutine init_sfields
+
+
+! -----------------------------------------------------------------
+!> Initialize the state vector
+!!
+!! This routine is generic. Case-specific adaptions should only
+!! be done in the routines init_id and init_sfields.
+!!
+  subroutine setup_statevector(dim_state, dim_state_p, screen)
+
+    use parallel_pdaf_mod, &
+         only: myproc_model, nproc_model, task_id, comm_ens, &
+         comm_model, MPI_SUM, MPI_INTEGER
+
+    implicit none
+
+! *** Arguments ***
+    integer, intent(out) :: dim_state    !< Global dimension of state vector
+    integer, intent(out) :: dim_state_p  !< Local dimension of state vector
+    integer, intent(in)  :: screen       !< Verbosity flag
+
+! *** Local variables ***
+    integer :: i                         ! Counters
+    integer :: MPIerr                    ! Error flag for MPI
+
+
+! ***********************************
+! *** Initialize the state vector ***
+! ***********************************
+
+! *** Initialize array `id` ***
+
+    call init_id(n_fields)
+
+! *** Initialize array `sfields` ***
+
+    call init_sfields()
+
+! *** Set state vector dimension ***
+
+    dim_state_p = sum(sfields(:)%dim)
+
+
+! *** Get global state dimension ***
+    call MPI_Reduce(dim_state_p, dim_state, 1, MPI_INTEGER, MPI_SUM, 0, COMM_model, MPIerr)
+
+! *** Write information about the state vector ***
+
+    if (task_id==1) then
+       if (myproc_model==0) then
+          write (*,'(/a,2x,a)') 'model-PDAF', '*** Setup of state vector ***'
+          write (*,'(a,3x,a,i5)') 'model-PDAF', '--- Number of fields in state vector:', n_fields
+          write (*,'(a,a7,3x,a2,4x,a8,5x,a9,6x,a6)') &
+               'model-PDAF','proc.','ID', 'variable', 'dimension', 'offset'
+       end if
+
+       if ((myproc_model==0 .and. screen<=2) .or. screen>2) then
+          do i = 1, n_fields
+             write (*,'(a, i6,2x,i4,4x,a10,2x,i10,2x,i10)') &
+                  'model-PDAF', myproc_model, i, sfields(i)%name, sfields(i)%dim, sfields(i)%off
+          end do
+       end if
+
+       if (nproc_model>1) then
+          if (screen>2 .or. myproc_model==0) write (*,'(a,2x,a,1x,i4,2x,a,1x,i10)') &
+               'model-PDAF', 'PE', myproc_model, 'process-local full state dimension: ',dim_state_p
+       end if
+       if (myproc_model==0) &
+            write (*,'(a,2x,a,1x,i10)') 'model-PDAF', 'Global state dimension: ',dim_state
+    end if
+    call MPI_Barrier(comm_ens, MPIerr)
+
+  end subroutine setup_statevector
+
+end module statevector_pdaf_mod

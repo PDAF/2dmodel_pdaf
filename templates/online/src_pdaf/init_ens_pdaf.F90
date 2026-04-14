@@ -1,0 +1,139 @@
+!> Initialize ensemble
+!!
+!! User-supplied call-back routine for PDAF.
+!!
+!! Used in all DA methods.
+!!
+!! The routine is called by PDAF when the DA is initialized.
+!! It has to initialize an ensemble of dim_ens states.
+!!
+!! The routine is called by all filter processes and 
+!! initializes the ensemble for the process-local domain.
+!!
+!! The routine is generic, while the functionality specific
+!! for a model is in the file reading routine. 
+!! Based on the value of type_ens_init, it allows to either
+!! directly read from model files or to generate the ensemble
+!! by 2nd order exact sampling from a covariance matrix.
+!!
+!! __Revision history:__
+!! * 2013-02 - Lars Nerger - Initial code
+!! * Later revisions - see repository log
+!!
+subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
+     ens_p, flag)
+
+  use netcdf
+  use PDAF, &                     ! PDAF
+       only: PDAF_sampleens, PDAF_diag_ensmean
+  use assim_pdaf_mod, &           ! Assimilation variables
+       only: type_ens_init, file_covar
+  use parallel_pdaf_mod, &        ! Assimilation parallelization variables
+       only: myproc_assim
+  use statevector_pdaf_mod, &     ! State vector variables
+       only: sfields, n_fields
+  use io_pdaf_mod, &              ! File operations
+       only: read_ensstate_pdaf, read_mean_covar_pdaf, read_covar_pdaf
+
+  implicit none
+
+! *** Arguments ***
+  integer, intent(in) :: filtertype                !< Type of filter to initialize
+  integer, intent(in) :: dim_p                     !< process-local state dimension
+  integer, intent(in) :: dim_ens                   !< Size of ensemble
+  real, intent(inout) :: state_p(dim_p)            !< process-local model state
+  !< (It is not necessary to initialize the array 'state_p' for ensemble filters.
+  !< It is available here only for convenience and can be used freely.)
+  real, intent(inout) :: Uinv(dim_ens-1,dim_ens-1) !< Array not referenced for ensemble filters
+  real, intent(out)   :: ens_p(dim_p, dim_ens)     !< process-local state ensemble
+  integer, intent(inout) :: flag                   !< PDAF status flag
+
+! *** local variables ***
+  integer :: member                   ! Counter
+  real, allocatable :: eofs(:,:)      ! matrix of eigenvectors V 
+  real, allocatable :: svals(:)       ! singular values
+
+
+! **********************
+! *** INITIALIZATION ***
+! **********************
+
+  ! *** Generate full ensemble on filter-Process 0 ***
+  if (myproc_assim==0) then
+     write (*, '(/a, 5x, a)') 'model-PDAF', 'Initialize state ensemble'
+     if (type_ens_init==1 .or. type_ens_init==2) then
+        write (*, '(a, 5x, a)') 'model-PDAF', '--- read ensemble from files'
+        if (type_ens_init==2) &
+             write (*, '(a, 5x, a)') 'model-PDAF', '--- read ensemble mean from covariance matrix file'
+     else
+        write (*, '(a, 5x, a)') 'model-PDAF', &
+             '--- generate ensemble from covariance matrix with 2nd-order exact sampling'
+     end if
+     write (*, '(a, 5x, a, i5)') 'model-PDAF', '--- Ensemble size:  ', dim_ens
+  end if
+
+
+! ********************************
+! *** Initialize ensemble      ***
+! ********************************
+
+  inittype: if (type_ens_init==1 .or. type_ens_init==2) then
+
+     ! *************************************************
+     ! *** Initialize ensemble reading model outputs ***
+     ! *************************************************
+
+     ! Read fields from ensemble files
+     do member = 1, dim_ens
+        call read_ensstate_pdaf(member, ens_p(:, member))
+     end do
+
+     ! Replace ensemble mean state by mean from covariance matrix file
+     if (type_ens_init==2) then
+        if (myproc_assim==0) &
+             write (*,'(a, 5x, a)') 'model-PDAF', '--- set ensemble mean state'
+
+        ! Compute and substract ensemble mean
+        call PDAF_diag_ensmean(dim_p, dim_ens, state_p, ens_p, flag)
+        do member = 1, dim_ens
+           ens_p(:,member) = ens_p(:,member) - state_p
+        end do
+
+        ! Read and add new mean
+        call read_mean_covar_pdaf(file_covar, state_p)
+        do member = 1, dim_ens
+           ens_p(:,member) = ens_p(:,member) + state_p
+        end do
+     end if
+
+  else inittype
+
+     ! **************************************************
+     ! *** Initialize ensemble from covariance matrix ***
+     ! **************************************************
+
+     ! allocate temporary arrays
+     allocate(eofs(dim_p, dim_ens-1))
+     allocate(svals(dim_ens-1))
+
+     ! *** Read initial state and covar matrix ***
+
+     if (myproc_assim==0) &
+          write(*,'(a,5x,a,a)') 'model-PDAF', '--- read covariance information from ', trim(file_covar)
+
+     call read_covar_pdaf(file_covar, dim_ens, eofs, svals, state_p)
+
+
+     ! *** Generate ensemble of model states ***
+
+     if (myproc_assim==0) &
+          write (*,'(a, 5x, a)') 'model-PDAF', '--- generate state ensemble'
+     
+     ! Use PDAF routine for second-order exact sampling
+     call PDAF_SampleEns(dim_p, dim_ens, eofs, svals, state_p, ens_p, 1, flag)
+
+     deallocate(eofs, svals)
+
+  end if inittype
+
+end subroutine init_ens_pdaf
