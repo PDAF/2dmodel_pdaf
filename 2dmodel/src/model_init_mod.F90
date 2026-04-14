@@ -17,7 +17,7 @@ contains
   subroutine initialize()
 
     use model_mod, &                ! Model variables
-         only: nx, ny, nx_p, n_dim, fieldA_p, fieldB_p, &
+         only: n_dim, nx, ny, nx_p, offset_x_p, fieldA_p, fieldB_p, &
          coords_x_p, coords_y_p, total_steps
     use model_parallel_mod, &       ! Model parallelzation variables
          only: mype_world, mype_2Dmodel, npes_2Dmodel, abort_parallel
@@ -65,6 +65,9 @@ contains
             '-- local domain sizes (nx_p x ny): ', nx_p, ' x', ny
     end if
 
+    ! Set offset of process-local grid in global grid
+    offset_x_p = nx_p*mype_2Dmodel
+
     ! allocate memory for process-local part of fields
     allocate(fieldA_p(ny, nx_p))
     allocate(fieldB_p(ny, nx_p))
@@ -92,7 +95,7 @@ contains
 
     ! Account for decomposition in x-direction
     do i = 1, nx_p
-       coords_x_p(i) = real(i + nx_p*mype_2Dmodel)
+       coords_x_p(i) = real(i + offset_x_p)
     end do
 
     ! We don't use decomposition in y-direction

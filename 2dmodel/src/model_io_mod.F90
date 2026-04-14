@@ -111,10 +111,8 @@ contains
 !!
   subroutine io_read_sngl(filename, field_p)
 
-    use model_parallel_mod, &
-         only: mype_2Dmodel
     use model_mod, &
-         only: nx_p, ny
+         only: nx_p, ny, offset_x_p
 
     implicit none
 
@@ -126,21 +124,15 @@ contains
     integer :: ncid                 !< ID of output file
     integer :: id_field             ! Netcdf field id
     integer :: countv(3), startv(3) ! Vectors for NC operations
-    integer :: off_nx               ! Offset of local grid in global domain in x-direction
 
     ! *** Read field
-
-     ! offset in x-direction due to domain-decomposition
-     off_nx = nx_p*mype_2Dmodel
-
-    ! Open file and get field ID
 
     call nfcheck( NF90_OPEN(trim(filename), NF90_NOWRITE, ncid))
     call nfcheck( NF90_INQ_VARID(ncid, 'field', id_field))
 
     startv(1) = 1
     countv(1) = ny
-    startv(2) = 1+off_nx
+    startv(2) = 1+offset_x_p
     countv(2) = nx_p
     startv(3) = 1
     countv(3) = 1

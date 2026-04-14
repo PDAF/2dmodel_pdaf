@@ -25,5 +25,6 @@ module model_mod
   real, allocatable :: coords_y_p(:) !< Process-local coordinates in y-direction
 
   integer :: nx_p                    !< Process-local size in x-direction
+  integer :: offset_x_p              !< Offset of sub-domain inglobal grid
 
 end module model_mod
