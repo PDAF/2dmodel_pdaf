@@ -86,8 +86,9 @@ Additional directories are
 * generate_covar/ - contains the code for a program generating a covariance matrix file from model outputs. This can be used to initialize an ensemble using second-order exact sampling (activated using '-type_ens_init 2' when running the DA cases). 
 * inputs_2fields/ - contains the input files, e.g., observation files and files to provide ensemble states. It also contains the script `pdaf_tutorial_online.py`, which generates the input files.
 * plotting/ - contains plot scripts
-* test_online/ - contains the script 'run.sh' which shows an example of how to run the online-coupled case in separate directories
 * runscripts/ - contains a selection of run scripts to run a series of experiments with and without DA
+* teamplate/ - contains template source files on which basis one can build the actual assimilation program in online or offline mode
+* test_online/ - contains the script 'run.sh' which shows an example of how to run the online-coupled case in separate directories
 
 ## Compiling
 
