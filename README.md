@@ -325,13 +325,10 @@ mpirun -np 2 ./model_pdaf -dim_ens 1 -filtertype 100 -delt_obs 1 -write_state F 
 In the second run, observation type A is deactivated, while observation type B is switched on.
 These runs will generate 4 files, i.e., one file for each observation type and sub-domain:
 ```
-obsA_syn_0000.nc, obsA_syn_0001.nc, obsB_syn_0000.nc, obsB_syn_0000.nc
+obsA_syn_0000.nc, obsA_syn_0001.nc, obsB_syn_0000.nc, obsB_syn_0001.nc
 ```
 Here, the 4-digit number is the process rank that wrote the file.
-The observations are written as a list of values. Information about observation locations or errors is initialized by the respective observation module during a twin experiment.
-
-> [!Note]
-> The functionality to generate a synthetic observation is only implemented in the example for the online coupled case.
+The observations are written as a list of values. Information about observation locations or errors are initialized by the respective observation module during a twin experiment.
 
 ### Performing a twin experiment
 
