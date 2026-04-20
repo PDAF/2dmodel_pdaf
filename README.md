@@ -87,7 +87,7 @@ Additional directories are
 * inputs_2fields/ - contains the input files, e.g., observation files and files to provide ensemble states. It also contains the script `pdaf_tutorial_online.py`, which generates the input files.
 * plotting/ - contains plot scripts
 * runscripts/ - contains a selection of run scripts to run a series of experiments with and without DA
-* teamplate/ - contains template source files on which basis one can build the actual assimilation program in online or offline mode
+* templates/ - contains template source files on which basis one can build the actual assimilation program in online or offline mode
 * test_online/ - contains the script 'run.sh' which shows an example of how to run the online-coupled case in separate directories
 
 ## Compiling
