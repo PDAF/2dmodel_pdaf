@@ -75,154 +75,6 @@ contains
 
   end subroutine read_ensstate_pdaf
 
-!-------------------------------------------------------------------------------
-!> Read covariance matrix information
-!!
-!! Routine to read the subdomain-part of the EOFs
-!! from a covariance matrix file and the related
-!! singular values.
-!!
-  subroutine read_covar_pdaf(filename, dim_ens, eofs_p, svals, state_p)
-
-    use netcdf
-    use PDAF, &
-         only: PDAF_abort
-    use statevector_pdaf_mod, &
-         only: sfields, n_fields
-    use model_pdaf_mod, &
-         only: nx_p, ny, offset_x_p
-
-    implicit none
-
-    ! Arguments
-    character(len=100), intent(in) :: filename  !< Name of output file
-    integer, intent(in) :: dim_ens
-    real, intent(out) :: eofs_p(:,:)            !< Process-local EOF field
-    real, intent(out) :: svals(:)               !< Singular values
-    real, intent(out) :: state_p(:)             !< Process local mean state
-
-    ! Local variables
-    integer :: j, fid                   ! Counters
-    integer :: ncid                     ! ID of output file
-    integer :: rank_file                ! Number of EOFs stored in covariance file
-    integer :: id_svals, id_eofs        ! IDs for fields
-    integer :: id_state                 ! ID for field
-    integer :: id_dim                   ! ID for dimension
-    integer :: countv(3), startv(3)     ! Vectors for NC operations
-
-
-    call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
-
-    ! Read rank stored in file
-    call nfcheck( NF90_INQ_DIMID(ncid, 'rank', id_dim))
-    call nfcheck( NF90_Inquire_dimension(ncid, id_dim, len=rank_file))
-
-    ! Check consistency of dimensions
-    checkdim: if (rank_file >= dim_ens-1) then
-
-       ! *** Read singular values
-
-       ! Inquire ID
-       call nfcheck( NF90_INQ_VARID(ncid, 'sigma', id_svals))
-
-       ! Read array
-       startv(1) = 1
-       countv(1) = dim_ens-1
-
-       call nfcheck( NF90_GET_VAR(ncid, id_svals, svals, start=startv(1:1), count=countv(1:1)))
-
-       ! Read mean state
-       do fid = 1, n_fields
-          call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
-
-          startv(2) = 1+offset_x_p
-          countv(2) = nx_p
-          startv(1) = 1
-          countv(1) = ny
-
-          call nfcheck( NF90_GET_VAR(ncid, id_state, &
-               state_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
-               start=startv(1:2), count=countv(1:2)))
-       end do
-
-       ! Read eofs
-       do j = 1, dim_ens-1
-          do fid = 1, n_fields
-             call nfcheck( NF90_INQ_VARID(ncid, 'u_svd'//trim(sfields(fid)%fname), id_eofs))
-
-             startv(3) = j
-             countv(3) = 1
-             startv(2) = 1+offset_x_p
-             countv(2) = nx_p
-             startv(1) = 1
-             countv(1) = ny
-
-             call nfcheck( NF90_GET_VAR(ncid, id_eofs, &
-                  eofs_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim, j), &
-                  start=startv(1:3), count=countv(1:3)))
-          end do
-        end do
-
-        call nfcheck( NF90_CLOSE(ncid))
-
-     else
-        ! *** Rank stored in file is smaller than requested EOF rank ***
-        write(*,*) 'Rank stored in file is smaller than requested EOF rank'
-
-        call nfcheck( NF90_CLOSE(ncid))
-        call PDAF_abort(1)
-
-     end if checkdim
-
-  end subroutine read_covar_pdaf
-
-!-------------------------------------------------------------------------------
-!> Read read mean state from covariance matrix file
-!!
-!! Routine to read the mean state variable from the 
-!! file holding the covariance matrix.
-!!
-  subroutine read_mean_covar_pdaf(filename, state_p)
-
-    use netcdf
-    use statevector_pdaf_mod, &
-         only: sfields, n_fields
-    use model_pdaf_mod, &
-         only: nx_p, ny, offset_x_p
-
-    implicit none
-
-    ! Arguments
-    character(len=100), intent(in) :: filename  !< Name of output file
-    real, intent(out) :: state_p(:)             !< Process local mean state
-
-    ! Local variables
-    integer :: fid                      ! Counters
-    integer :: ncid                     ! ID of output file
-    integer :: id_state                 ! ID for field
-    integer :: countv(2), startv(2)     ! Vectors for NC operations
-
-
-    call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
-
-    ! Read mean state
-    do fid = 1, n_fields
-       call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
-
-       startv(2) = 1+offset_x_p
-       countv(2) = nx_p
-       startv(1) = 1
-       countv(1) = ny
-
-       call nfcheck( NF90_GET_VAR(ncid, id_state, &
-            state_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
-            start=startv(1:2), count=countv(1:2)))
-    end do
-
-    call nfcheck( NF90_CLOSE(ncid))
-
-  end subroutine read_mean_covar_pdaf
-
 
 
 !-------------------------------------------------------------------------------
@@ -433,9 +285,169 @@ contains
 
   end subroutine write_field_pdaf
 
+!-------------------------------------------------------------------------------
+
+! The following routines are generic and do not need adaptions
+
+!-------------------------------------------------------------------------------
+!> Read covariance matrix information
+!!
+!! Routine to read the subdomain-part of the EOFs
+!! from a covariance matrix file and the related
+!! singular values.
+!!
+!! This routine uses the common storage in the covariance
+!! matrix file and does not need adaption.
+!!
+  subroutine read_covar_pdaf(filename, dim_ens, eofs_p, svals, state_p)
+
+    use netcdf
+    use PDAF, &
+         only: PDAF_abort
+    use statevector_pdaf_mod, &
+         only: sfields, n_fields
+    use model_pdaf_mod, &
+         only: nx_p, ny, offset_x_p
+
+    implicit none
+
+    ! Arguments
+    character(len=100), intent(in) :: filename  !< Name of output file
+    integer, intent(in) :: dim_ens
+    real, intent(out) :: eofs_p(:,:)            !< Process-local EOF field
+    real, intent(out) :: svals(:)               !< Singular values
+    real, intent(out) :: state_p(:)             !< Process local mean state
+
+    ! Local variables
+    integer :: j, fid                   ! Counters
+    integer :: ncid                     ! ID of output file
+    integer :: rank_file                ! Number of EOFs stored in covariance file
+    integer :: id_svals, id_eofs        ! IDs for fields
+    integer :: id_state                 ! ID for field
+    integer :: id_dim                   ! ID for dimension
+    integer :: countv(3), startv(3)     ! Vectors for NC operations
+
+
+    call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
+
+    ! Read rank stored in file
+    call nfcheck( NF90_INQ_DIMID(ncid, 'rank', id_dim))
+    call nfcheck( NF90_Inquire_dimension(ncid, id_dim, len=rank_file))
+
+    ! Check consistency of dimensions
+    checkdim: if (rank_file >= dim_ens-1) then
+
+       ! *** Read singular values
+
+       ! Inquire ID
+       call nfcheck( NF90_INQ_VARID(ncid, 'sigma', id_svals))
+
+       ! Read array
+       startv(1) = 1
+       countv(1) = dim_ens-1
+
+       call nfcheck( NF90_GET_VAR(ncid, id_svals, svals, start=startv(1:1), count=countv(1:1)))
+
+       ! Read mean state
+       do fid = 1, n_fields
+          call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
+
+          startv(2) = 1+offset_x_p
+          countv(2) = nx_p
+          startv(1) = 1
+          countv(1) = ny
+
+          call nfcheck( NF90_GET_VAR(ncid, id_state, &
+               state_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
+               start=startv(1:2), count=countv(1:2)))
+       end do
+
+       ! Read eofs
+       do j = 1, dim_ens-1
+          do fid = 1, n_fields
+             call nfcheck( NF90_INQ_VARID(ncid, 'u_svd'//trim(sfields(fid)%fname), id_eofs))
+
+             startv(3) = j
+             countv(3) = 1
+             startv(2) = 1+offset_x_p
+             countv(2) = nx_p
+             startv(1) = 1
+             countv(1) = ny
+
+             call nfcheck( NF90_GET_VAR(ncid, id_eofs, &
+                  eofs_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim, j), &
+                  start=startv(1:3), count=countv(1:3)))
+          end do
+        end do
+
+        call nfcheck( NF90_CLOSE(ncid))
+
+     else
+        ! *** Rank stored in file is smaller than requested EOF rank ***
+        write(*,*) 'Rank stored in file is smaller than requested EOF rank'
+
+        call nfcheck( NF90_CLOSE(ncid))
+        call PDAF_abort(1)
+
+     end if checkdim
+
+  end subroutine read_covar_pdaf
+
+!-------------------------------------------------------------------------------
+!> Read read mean state from covariance matrix file
+!!
+!! Routine to read the mean state variable from the 
+!! file holding the covariance matrix.
+!!
+!! This routine uses the common storage in the covariance
+!! matrix file and does not need adaption.
+!!
+  subroutine read_mean_covar_pdaf(filename, state_p)
+
+    use netcdf
+    use statevector_pdaf_mod, &
+         only: sfields, n_fields
+    use model_pdaf_mod, &
+         only: nx_p, ny, offset_x_p
+
+    implicit none
+
+    ! Arguments
+    character(len=100), intent(in) :: filename  !< Name of output file
+    real, intent(out) :: state_p(:)             !< Process local mean state
+
+    ! Local variables
+    integer :: fid                      ! Counters
+    integer :: ncid                     ! ID of output file
+    integer :: id_state                 ! ID for field
+    integer :: countv(2), startv(2)     ! Vectors for NC operations
+
+
+    call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
+
+    ! Read mean state
+    do fid = 1, n_fields
+       call nfcheck( NF90_INQ_VARID(ncid, 'mean'//trim(sfields(fid)%fname), id_state))
+
+       startv(2) = 1+offset_x_p
+       countv(2) = nx_p
+       startv(1) = 1
+       countv(1) = ny
+
+       call nfcheck( NF90_GET_VAR(ncid, id_state, &
+            state_p(sfields(fid)%off+1 : sfields(fid)%off+sfields(fid)%dim), &
+            start=startv(1:2), count=countv(1:2)))
+    end do
+
+    call nfcheck( NF90_CLOSE(ncid))
+
+  end subroutine read_mean_covar_pdaf
+
 
 !-------------------------------------------------------------------------------
 !> Check status of netcdf operation
+!!
+!! This routine is a generic routine without need for adaption.
 !!
   subroutine nfcheck(status)
 
