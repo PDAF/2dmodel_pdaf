@@ -12,14 +12,14 @@
 !! because one might want to adapt the names of call-back routines.
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
-!! * Later revisions - see repository log
+!! * 2013-08 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Revision for advanced tutorial revising tutorial case
+!! * Other revisions - see repository log
 !!
 subroutine assimilate_pdaf()
 
   use PDAF, &                     ! PDAF interface definitions
-       only: PDAF3_assimilate, PDAF3_generate_obs, PDAF_abort, &
-       PDAF_DA_GENOBS
+       only: PDAF3_assimilate, PDAF3_generate_obs, PDAF_abort, PDAF_DA_GENOBS
   use parallel_pdaf_mod, &        ! Parallelization variables
        only: myproc_ens
   use assim_pdaf_mod, &           ! Variables for assimilation

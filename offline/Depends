@@ -1,7 +1,8 @@
 build/assim_pdaf_mod.o: src/assim_pdaf_mod.F90
-build/assimilate_pdaf_offline.o: src/assimilate_pdaf_offline.F90 build/parallel_pdaf_mod.o
+build/assimilate_pdaf_offline.o: src/assimilate_pdaf_offline.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o
 build/callback_obs_pdafomi.o: src/callback_obs_pdafomi.F90 build/obs_A_pdafomi.o build/obs_B_pdafomi.o
 build/finalize_pdaf.o: src/finalize_pdaf.F90 build/parallel_pdaf_mod.o
+build/get_obs_pdaf.o: src/get_obs_pdaf.F90 build/synobs_pdaf_mod.o
 build/init_dim_l_pdaf.o: src/init_dim_l_pdaf.F90 build/assim_pdaf_mod.o build/statevector_pdaf_mod.o build/model_pdaf_mod_offline.o
 build/init_ens_pdaf_offline.o: src/init_ens_pdaf_offline.F90 build/assim_pdaf_mod.o build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/io_pdaf_mod.o
 build/init_n_domains_pdaf.o: src/init_n_domains_pdaf.F90 build/model_pdaf_mod_offline.o
@@ -17,4 +18,4 @@ build/obs_B_pdafomi.o: src/obs_B_pdafomi.F90 build/parallel_pdaf_mod.o build/ass
 build/parallel_pdaf_mod.o: src/parallel_pdaf_mod.F90
 build/prepoststep_pdaf_offline.o: src/prepoststep_pdaf_offline.F90 build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/io_pdaf_mod.o
 build/statevector_pdaf_mod.o: src/statevector_pdaf_mod.F90 build/model_pdaf_mod_offline.o build/parallel_pdaf_mod.o
-build/synobs_pdaf_mod.o: src/synobs_pdaf_mod.F90 build/parallel_pdaf_mod.o
+build/synobs_pdaf_mod.o: src/synobs_pdaf_mod.F90

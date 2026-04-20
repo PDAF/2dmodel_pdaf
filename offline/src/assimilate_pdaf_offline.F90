@@ -13,14 +13,17 @@
 !!
 !! __Revision history:__
 !! * 2009-11 - Lars Nerger - Initial code by restructuring
-!! * Later revisions - see repository log
+!! * 2026-02 - Lars Nerger - Revision for advanced tutorial revising tutorial case
+!! * Other revisions - see repository log
 !!
 subroutine assimilate_pdaf_offline()
 
   use PDAF, &                     ! PDAF interface definitions
-       only: PDAF3_assim_offline, PDAF_abort
+       only: PDAF3_assim_offline, PDAF3_generate_obs_offline, PDAF_abort, PDAF_DA_GENOBS
   use parallel_pdaf_mod, &        ! Parallelization variables
        only: myproc_ens
+  use assim_pdaf_mod, &           ! Variables for assimilation
+       only: filtertype
 
   implicit none
 
@@ -42,6 +45,8 @@ subroutine assimilate_pdaf_offline()
   external :: init_dim_obs_pdafomi, &  ! Get dimension of full obs. vector for Process-local domain
        obs_op_pdafomi, &               ! Obs. operator for full obs. vector for Process-local domain
        init_dim_obs_l_pdafomi          ! Get dimension of obs. vector for local analysis domain
+  ! Subroutine used for generating observations
+  external :: get_obs_pdaf             ! Get vector of synthetic observations from PDAF
 
 
 ! *********************************
@@ -57,10 +62,17 @@ subroutine assimilate_pdaf_offline()
 ! +++ routines that are never called for global filters. 
 
   ! Call universal PDAF3 ensemble assimilation routine
-  call PDAF3_assim_offline( &
-       init_dim_obs_pdafomi, obs_op_pdafomi, &
-       init_n_domains_pdaf, init_dim_l_pdaf, init_dim_obs_l_pdafomi, &
-       prepoststep_pdaf_offline, status_pdaf)
+  if (filtertype /= PDAF_DA_GENOBS) then
+     call PDAF3_assim_offline( &
+          init_dim_obs_pdafomi, obs_op_pdafomi, &
+          init_n_domains_pdaf, init_dim_l_pdaf, init_dim_obs_l_pdafomi, &
+          prepoststep_pdaf_offline, status_pdaf)
+  else
+     ! Observation generation has its own OMI interface routine
+     call PDAF3_generate_obs_offline( &
+          init_dim_obs_pdafomi, obs_op_pdafomi, get_obs_pdaf, &
+          prepoststep_pdaf_offline, status_pdaf)
+  end if
 
 
 ! ************************
