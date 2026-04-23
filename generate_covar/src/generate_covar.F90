@@ -20,7 +20,7 @@ program generate_covar
   use netcdf
   use PDAF, &                     ! PDAF
        only: PDAF_eofcovar, PDAF_parse
-  use assimilation_pdaf_mod, &    ! Dimensions
+  use assim_pdaf_mod, &           ! Dimensions
        only: dim_state, dim_state_p, screen
   use model_pdaf_mod, &           ! Model variables
        only: nx, ny

@@ -20,7 +20,7 @@ include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 ######################################################
 
 SRC_COVAR  =	model_pdaf_mod_offline.F90 \
-		assimilation_pdaf_mod.F90 \
+		assim_pdaf_mod.F90 \
 		parallel_pdaf_mod.F90 \
 		initialize_grid_mod.F90 \
 		statevector_pdaf_mod.F90 \
