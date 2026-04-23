@@ -147,21 +147,25 @@ contains
 
 ! *** Local variables ***
     integer :: i, j                      ! Counters
-    integer :: cnt_p, cnt0_p             ! Counters
     integer :: dim_obs_p                 ! Number of process-local observations
-    real, allocatable :: obs_field(:,:)  ! Observation field read from file
     real, allocatable :: obs_p(:)        ! Process-local observation vector
     real, allocatable :: ivar_obs_p(:)   ! Process-local inverse observation error variance
     real, allocatable :: ocoord_p(:,:)   ! Process-local observation coordinates 
+    logical, save :: firsttime=.true.    ! Flag for first call
+
+    !+++ Specific variables for 2D tutorial model
+    integer :: cnt_p, cnt0_p             ! Counters
+    real, allocatable :: obs_field(:,:)  ! Observation field read from file
     integer :: ncid, id_obs              ! variables for netcdf file reading
     integer :: countv(3), startv(3)      ! Vectors for NC operations
     character(len=4) :: procstr          ! 4-digit string for process rank
-    logical, save :: firsttime=.true.    ! Flag for first call
 
 
 ! *********************************************
 ! *** Initialize full observation dimension ***
 ! *********************************************
+
+!+++ Specific for 2D tutorial model
 
     if (myproc_assim==0) &
          write (*,'(a,5x,a)') 'model-PDAF','Assimilate observations - obs type B'
@@ -175,17 +179,6 @@ contains
     ! Number of coordinates used for distance computation
     ! The distance compution starts from the first row
     thisobs%ncoord = 2
-
-    ! Specify the overall domain size
-    ! ONLY REQUIRED FOR THISOBS%USE_GLOBAL_OBS = 0
-    ! OR THISOBS%DISTTYPE = 1 (periodicity)
-    allocate(thisobs%domainsize(2))
-    thisobs%domainsize(1) = real(nx)
-    thisobs%domainsize(2) = real(ny)
-    
-    ! Specify whether to (1) use global observations for local filters,
-    ! or (0) restrict the full observations to those relevant for a process domain
-    thisobs%use_global_obs = 1
 
 
 ! **********************************
@@ -225,6 +218,8 @@ contains
        end do
     end do
 
+!+++ End of specific part
+
     ! Set number of local observations
     dim_obs_p = cnt_p
 
@@ -238,6 +233,8 @@ contains
        allocate(obs_p(dim_obs_p))
        allocate(ivar_obs_p(dim_obs_p))
        allocate(ocoord_p(thisobs%ncoord, dim_obs_p))
+
+!+++ Specific for 2D tutorial model
 
        ! Allocate process-local index array
        ! This array has a many rows as required for the observation operator
@@ -267,6 +264,8 @@ contains
        ! *** Set inverse observation error variances ***
 
        ivar_obs_p(:) = 1.0 / (rms_obs_B*rms_obs_B)
+
+!+++ End of specific part
 
     else haveobs
 
@@ -375,6 +374,8 @@ contains
 ! *** Apply observation operator H on a state vector ***
 ! ******************************************************
 
+!+++ Specific for 2D tutorial model with grid-point observations
+
     ! observation operator for observed grid point values
     call PDAFomi_obs_op_gridpoint(thisobs, state_p, ostate)
 
@@ -419,6 +420,8 @@ contains
 ! **********************************************
 ! *** Initialize local observation dimension ***
 ! **********************************************
+
+!+++ Generic if localization cut-off radius is uniform
 
     call PDAFomi_init_dim_obs_l(thisobs_l, thisobs, coords_l, &
          locweight, cradius, sradius, dim_obs_l)

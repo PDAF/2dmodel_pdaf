@@ -5,8 +5,6 @@
 !! the actual file writing.
 !! For reading the field of a sub-domain is read.
 !!
-!! Implementation for the 2D example with domain decomposition
-!!
 !! __Revision history:__
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
@@ -25,11 +23,16 @@ contains
 !! Routine to read the fields into a state vector from the ensemble. 
 !! The fields are read for their subdomain-part at one time step.
 !!
+!! The functionality is specific for the 2D domain of the example
+!! model. Each ensemble member is stored in a separate file.
+!!
   subroutine read_ensstate_pdaf(member, state_p)
 
     use netcdf
     use statevector_pdaf_mod, &
          only: sfields, n_fields
+
+    ! Specific for model
     use model_pdaf_mod, &
          only: nx_p, ny, offset_x_p
 
@@ -83,6 +86,9 @@ contains
 !! Routine collecting the writing of the ensemble mean state, 
 !! the ensemble states, and the variance fields. This routine
 !! sets the file name and then calls the actual output routine.
+!!
+!! The functionality is specific for the 2D domain of the example
+!! model by assuming the each field is stored in a separate file.
 !!
   subroutine write_pdaf(step, dim_p, dim_ens, state_p, ens_p, variance_p)
 
@@ -194,13 +200,20 @@ contains
 !! state vector and write this into a 2D array assuming 
 !! a certain ordering consistent with e.g. init_ens_pdaf.
 !!
+!! The functionality is specific for the 2D domain of the example
+!! model by assuming that the domain-decomposition is along the
+!! x-direction. Also specific is that each file only contains one
+!! filed and a single time and the naming of dimensions.
+!!
   subroutine write_field_pdaf(step, filename, fieldvec_p)
 
     use mpi
     use netcdf
-    use parallel_pdaf_mod, &             ! Parallelization variables
+    use parallel_pdaf_mod, &              ! Parallelization variables
          only: COMM_assim, myproc_assim
-    use model_pdaf_mod, &                ! Model variables
+
+    ! Specific for model
+    use model_pdaf_mod, &                 ! Model variables
          only: nx, ny, nx_p
 
     implicit none
@@ -213,9 +226,7 @@ contains
 ! *** Local variables ***
     integer :: ncid                       ! ID of output file
     integer :: MPIerr                     ! Error flag for MPI
-    integer :: id_field                   ! Netcdf field if
-    integer :: id_t                       ! Netcdf timestep id
-    integer :: dimid_x, dimid_y, dimid_t  ! dimension IDs
+    integer :: id_field, id_t             ! Netcdf field ids
     integer :: dimids(3)                  ! Array for netcdf operation
     integer :: countv(3), startv(3)       ! Vectors for NC operations
     real, allocatable :: field(:,:)       ! Array for global model field
@@ -246,19 +257,16 @@ contains
        ! *** Create file and define dimensions
 
        call nfcheck( NF90_CREATE(trim(filename), 0, ncid))
-       call nfcheck( NF90_DEF_DIM(ncid, 'dim_x', nx, dimid_x))
-       call nfcheck( NF90_DEF_DIM(ncid, 'dim_y', ny, dimid_y))
-       call nfcheck( NF90_DEF_DIM(ncid, 'dim_steps', 1, dimid_t))
+       call nfcheck( NF90_DEF_DIM(ncid, 'dim_y', ny, dimids(1)))
+       call nfcheck( NF90_DEF_DIM(ncid, 'dim_x', nx, dimids(2)))
+       call nfcheck( NF90_DEF_DIM(ncid, 'dim_steps', 1, dimids(3)))
 
        ! *** Define variables
 
        ! Time step
-       call nfcheck( NF90_DEF_VAR(ncid, 'timestep', NF90_INT, dimid_t, id_t))
+       call nfcheck( NF90_DEF_VAR(ncid, 'timestep', NF90_INT, dimids(3), id_t))
 
        ! Field
-       dimids(1) = dimid_y
-       dimids(2) = dimid_x
-       dimids(3) = dimid_t
        call nfcheck( NF90_DEF_VAR(ncid, 'field', NF90_DOUBLE, dimids(1:3), id_field))
 
        call nfcheck( NF90_ENDDEF(ncid)) 
@@ -286,18 +294,15 @@ contains
   end subroutine write_field_pdaf
 
 !-------------------------------------------------------------------------------
-
-! The following routines are generic and do not need adaptions
-
-!-------------------------------------------------------------------------------
 !> Read covariance matrix information
 !!
 !! Routine to read the subdomain-part of the EOFs
 !! from a covariance matrix file and the related
 !! singular values.
 !!
-!! This routine uses the common storage in the covariance
-!! matrix file and does not need adaption.
+!! The functionality is specific for the 2D domain of the example
+!! model since the covariance matrix file contains the fields 
+!! as 2D arrays.
 !!
   subroutine read_covar_pdaf(filename, dim_ens, eofs_p, svals, state_p)
 
@@ -306,6 +311,8 @@ contains
          only: PDAF_abort
     use statevector_pdaf_mod, &
          only: sfields, n_fields
+
+    ! Specific for model
     use model_pdaf_mod, &
          only: nx_p, ny, offset_x_p
 
@@ -319,13 +326,12 @@ contains
     real, intent(out) :: state_p(:)             !< Process local mean state
 
     ! Local variables
-    integer :: j, fid                   ! Counters
-    integer :: ncid                     ! ID of output file
-    integer :: rank_file                ! Number of EOFs stored in covariance file
-    integer :: id_svals, id_eofs        ! IDs for fields
-    integer :: id_state                 ! ID for field
-    integer :: id_dim                   ! ID for dimension
-    integer :: countv(3), startv(3)     ! Vectors for NC operations
+    integer :: j, fid                           ! Counters
+    integer :: ncid                             ! ID of output file
+    integer :: rank_file                        ! Number of EOFs stored in covariance file
+    integer :: id_svals, id_eofs, id_state      ! IDs for fields
+    integer :: id_dim                           ! ID for dimension
+    integer :: countv(3), startv(3)             ! Vectors for NC operations
 
 
     call nfcheck( NF90_OPEN(filename, NF90_NOWRITE, ncid))
@@ -399,14 +405,17 @@ contains
 !! Routine to read the mean state variable from the 
 !! file holding the covariance matrix.
 !!
-!! This routine uses the common storage in the covariance
-!! matrix file and does not need adaption.
+!! The functionality is specific for the 2D domain of the example
+!! model since the covariance matrix file contains the fields 
+!! as 2D arrays.
 !!
   subroutine read_mean_covar_pdaf(filename, state_p)
 
     use netcdf
     use statevector_pdaf_mod, &
          only: sfields, n_fields
+
+    ! Specific for model
     use model_pdaf_mod, &
          only: nx_p, ny, offset_x_p
 

@@ -23,26 +23,32 @@ module statevector_pdaf_mod
 
 ! *** Variables to handle multiple fields in the state vector ***
 
-!+++ Specific part for 2D tutorial model
 
   !< Fortran type holding the indices of model fields in the state vector
   !< This should be adapted to the fields in the state vector - it serves to give each field a name
   type field_ids
+
+!+++ Specific part for 2D tutorial model
      integer :: fieldA 
      integer :: fieldB
+!+++ End of specific part
+
   end type field_ids
+
 
   !< Fortran type storing size and offset of each model field in the state vector
   !< This is generic, but one could extend this type to more variables
   type state_field
      integer :: dim               ! size of field in state vector
      integer :: off               ! offset of field in state vector
-     integer :: ndims             ! Number of dimensions
      character(len=10) :: name    ! Name of field variable
+
+!+++ Specific part for 2D tutorial model
      character(len=10) :: fname   ! Name of field in output file (optional)     
+!+++ End of specific part
+
   end type state_field
 
-!+++ End of specific part
 
   !---- The next variables usually do not need editing -----
 
@@ -115,28 +121,20 @@ contains
 !+++ Specific part for 2D tutorial model
 
     ! fieldA
-    sfields(id%fieldA)%ndims = 2
+    sfields(id%fieldA)%dim = nx_p * ny
     sfields(id%fieldA)%name = 'fieldA'
     sfields(id%fieldA)%fname = 'A'
 
     ! fieldB
-    sfields(id%fieldB)%ndims = 2
+    sfields(id%fieldB)%dim = nx_p * ny
     sfields(id%fieldB)%name = 'fieldB'
     sfields(id%fieldB)%fname = 'B'
 
+! +++ End of specific part
 
-! **************************************
-! ***   Set dimensions and offsets   ***
-! **************************************
-
-    ! Set field dimensions
-    do i = 1, n_fields
-       if (sfields(i)%ndims == 2) then
-          sfields(i)%dim = nx_p * ny
-       end if
-    end do
-
-! +++ The following is generic
+! ***********************
+! ***   Set offsets   ***
+! ***********************
 
     ! Define field offsets in state vector
     sfields(1)%off = 0

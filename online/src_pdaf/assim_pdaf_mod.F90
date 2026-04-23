@@ -21,11 +21,6 @@ module assim_pdaf_mod
 !+++ Specific part for 2D tutorial model
 
   real :: coords_l(2)                 !< Coordinates of local analysis domain (only size is case-specific)
-  integer :: type_ens_init=1          !< Type of ensemble init:
-                                      !< (1) read model files; use mean state from these files
-                                      !< (2) read model files; use mean state from covariance file 
-                                      !< (3) generate ensemble from covariance matrix
-  character(len=100) :: file_covar    !< Path and name of covariance matrix file
 
 !+++ End of specific part
 
@@ -36,6 +31,13 @@ module assim_pdaf_mod
 ! -----------------------------------------------------------------
 ! --- Below are the generic variables used for configuring PDAF ---
 ! --- Default values are set here, and deviation in init_pdaf   ---
+
+! Settings for ensemble initialization
+  integer :: type_ens_init=1          !< Type of ensemble init:
+                                      !< (1) read model files; use mean state from these files
+                                      !< (2) read model files; use mean state from covariance file 
+                                      !< (3) generate ensemble from covariance matrix
+  character(len=100) :: file_covar    !< Path and name of covariance matrix file
 
 ! Settings for state vector size
   integer :: dim_state          !< Global model state dimension

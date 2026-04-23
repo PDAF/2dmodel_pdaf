@@ -61,24 +61,24 @@ subroutine init_pdaf_parse()
   handle = 'file_obs_B'              ! Path and name of observation file type B
   call PDAF_parse(handle, file_obs_B)
 
+!+++ End of specific part
+
+!------------------------------------------------------------------------------
+! The remaining PDAF_parse commands should be generic; usually no change necessary
+
   ! Settings for ensemble initialization
   handle = 'type_ens_init'           ! Type of ensemble initialization
   call PDAF_parse(handle, type_ens_init)
   handle = 'file_covar'              ! Path and name of covariance matrix file
   call PDAF_parse(handle, file_covar)
 
-  ! Setting controlling file output
+  ! Settings controlling file output
   handle = 'write_state'             ! Whether to write ensemble mean fields
   call PDAF_parse(handle, write_state)
   handle = 'write_ens'               ! Whether to write ensemble files
   call PDAF_parse(handle, write_ens)
   handle = 'write_var'               ! Whether to write ensemble variance files
   call PDAF_parse(handle, write_var)
-
-!+++ End of specific part
-
-!------------------------------------------------------------------------------
-! The remaining PDAF_parse commands should be generic; usually no change necessary
 
   ! Observation settings
   handle = 'delt_obs'                ! Time step interval between filter analyses

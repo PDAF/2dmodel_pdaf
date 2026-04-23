@@ -17,7 +17,6 @@ subroutine init_pdaf_offline()
 
   use PDAF, &                          ! PDAF
        only: PDAF3_init, PDAF_set_iparam, PDAF_set_rparam, PDAF_abort, &
-       PDAFomi_set_domain_limits, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
        only: myproc_ens, myproc_assim
@@ -31,7 +30,7 @@ subroutine init_pdaf_offline()
 
   ! Specific for model
   use model_pdaf_mod, &                ! Model variables
-       only: nx_p, ny, n_dim, coords_x_p, coords_y_p
+       only: nx_p, ny, n_dim, offset_x_p, coords_x_p, coords_y_p
 
   ! Specific for observations
   use obs_A_pdafomi, &                 ! Variables for observation type A
@@ -42,11 +41,10 @@ subroutine init_pdaf_offline()
   implicit none
 
 ! *** Local variables ***
-  integer :: i, j, k, s, off_nx        ! Counters
+  integer :: i, j, k, s                ! Counters
   integer :: pdaf_param_i(2)           ! Integer parameter array for filter
   real    :: pdaf_param_r(1)           ! Real parameter array for filter
   integer :: status_pdaf               ! PDAF status flag
-  real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
 
 ! *** External subroutines ***
   external :: init_ens_pdaf_offline    ! Ensemble initialization
@@ -89,8 +87,6 @@ subroutine init_pdaf_offline()
 
 ! *** Localization settings
   cradius = 5.0           ! Cut-off radius in local filters (in units of model coordinate)
-  sradius = cradius       ! Support radius for 5th-order polynomial
-                          ! or radius for 1/e for exponential weighting
 
 !+++ Specific variables for observations - see defaults in each observation module
 
@@ -185,13 +181,13 @@ subroutine init_pdaf_offline()
 ! *** (used for localization in EnKF/ENSRF)       ***
 ! ***************************************************
 
-!+++ Specific initialization for 2D tutorial model
-
   allocate(coords_p(n_dim, dim_state_p))
 
   ! For localization in EnKF and EnSRF/EAKF, PDAFomi_set_localize_covar
   ! is called in the observation modules. This routine requires a 
   ! coordinate array corresponding to the state vector.
+
+!+++ Specific initialization for 2D tutorial model
 
   s = 0
   do k = 1, n_fields
@@ -203,23 +199,5 @@ subroutine init_pdaf_offline()
         end do
      end do
   end do
-
-
-! *************************************************************************
-! *** Set sub-domain coordinate limits                                  ***
-! *** Used when the PDAF-OMI option thisobs%use_global_obs is set to 0  ***
-! *************************************************************************
-  
-!+++ Specific initialization for 2D tutorial model
-
-  ! Get offset of local domain in global domain in x-direction
-  off_nx = nx_p*myproc_assim
-
-  lim_coords(1,1) = real(off_nx + 1)     ! West
-  lim_coords(1,2) = real(off_nx + nx_p)  ! East
-  lim_coords(2,1) = real(ny)             ! North
-  lim_coords(2,2) = 1.0                  ! South
-
-  call PDAFomi_set_domain_limits(lim_coords)
 
 end subroutine init_pdaf_offline
