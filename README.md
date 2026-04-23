@@ -13,19 +13,18 @@ PDAF based on a simple two-field 2D model. It
 
 To get the code, compile the online-coupled program and perform a first experiment:
  1. Use  `git clone --recurse-submodules https://github.com/PDAF/2dmodel_pdaf.git` to get the tutorial together with the PDAF library
- 2. Set compile settings: `export PDAF_ARCH=linux_gfortran_openmpi` (or a suitable (custom) configuration in `pdaf/make.arch/`)
- 3. Build PDAF via `make -C pdaf -j 4`
- 4. Set path to PDAF dirctory: `export PDAFDIR=$(realpath pdaf)`
- 5. `cd online`
-    1. Adapt settings in `online/compile_settings.txt` to your system
-    2. Build the online coupled model via `make model_pdaf`
-    3. Start an experiment via `mpirun -np 6 ./model_pdaf -dim_ens 6`
+ 2. Check which compile settings from `pdaf/make.arch/` to use; e.g. `linux_gfortran_openmpi.h` (or a suitable (custom) configuration in `pdaf/make.arch/`)
+ 3. Build PDAF via `make -C pdaf -j 4  PDAF_ARCH=linux_gfortran_openmpi`
+ 4. `cd online`
+    1. Adapt settings in `online/compile_settings.txt` to your system (usually analogous to the file used from `pdaf/make.arch`)
+    2. Build the online coupled model via `make model_pdaf PDAFDIR=../pdaf`
+    3. Start an experiment via `mpirun -np 4 ./model_pdaf -dim_ens 4`
 
 > [!NOTE]
 > PDAF needs libraries for BLAS, LAPACK and MPI; the program in `online` further needs a libraries for netCDF.
 
 >[!Important]
-> Steps 1-5 are executed from the root directory of this repository; Steps i-iii are executed in the directory `online/`.
+> Steps 1-4 are executed from the root directory of this repository; Steps i-iii are executed in the directory `online/`.
 
 >[!TIP]
 > In the remainder of this README you find more details on the content of this repository, options for running experiments, and for understanding and plotting the output files.  Also refer to the detailed description in this README if you run into any problems with this quick guide.
