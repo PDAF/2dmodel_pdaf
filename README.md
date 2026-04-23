@@ -13,8 +13,8 @@ PDAF based on a simple two-field 2D model. It
 
 To get the code, compile the online-coupled program and perform a first experiment:
  1. Use  `git clone --recurse-submodules https://github.com/PDAF/2dmodel_pdaf.git` to get the tutorial together with the PDAF library
- 2. Check which compile settings from `pdaf/make.arch/` to use; e.g. `linux_gfortran_openmpi.h` (or a suitable (custom) configuration in `pdaf/make.arch/`)
- 3. Build PDAF via `make -C pdaf -j 4  PDAF_ARCH=linux_gfortran_openmpi`
+ 2. Check which compile settings from `pdaf/make.arch/` to use; e.g. `linux_gfortran.h` (or a suitable (custom) configuration in `pdaf/make.arch/`)
+ 3. Build PDAF via `make -C pdaf -j 4  PDAF_ARCH=linux_gfortran`
  4. `cd online`
     1. Adapt settings in `online/compile_settings.txt` to your system (usually analogous to the file used from `pdaf/make.arch`)
     2. Build the online coupled model via `make model_pdaf PDAFDIR=../pdaf`
