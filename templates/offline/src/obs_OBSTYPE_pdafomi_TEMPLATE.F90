@@ -478,13 +478,14 @@ contains
 !!
   subroutine init_dim_obs_l_OBSTYPE(domain_p, step, dim_obs, dim_obs_l)
 
-    use PDAF, &                ! Include PDAF-OMI routine
+    use PDAF, &                          ! Include PDAF-OMI routine
          only: PDAFomi_init_dim_obs_l
+    use assim_pdaf_mod, &                ! Localization radius and weight function type
+         only: cradius, sradius, locweight
 
-    ! Include localization radius and local coordinates
-    ! one can also set observation-specific values for the localization.
-    use assim_pdaf_mod, &   
-         only: coords_l, cradius, locweight, sradius
+    ! Specific for model
+    use model_pdaf_mod, &                ! Model variables
+         only: coords_l
 
     implicit none
 

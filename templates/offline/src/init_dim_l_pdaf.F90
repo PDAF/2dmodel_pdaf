@@ -17,14 +17,12 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 
   use PDAF, &                       ! Routine to provide local indices to PDAF
        only: PDAFlocal_set_indices
-  use assim_pdaf_mod, &             ! Variables for assimilation
-       only: coords_l
   use statevector_pdaf_mod, &       ! State vector variables
        only: n_fields, sfields
 
   ! Specific for model
   use model_pdaf_mod, &             ! Model variables
-       only: ny, coords_x_p, coords_y_p
+       only: coords_l, ny, coords_x_p, coords_y_p
 
   implicit none
 
@@ -50,6 +48,9 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
 ! **********************************************
 ! *** Initialize coordinates of local domain ***
 ! **********************************************
+
+    ! Template reminder - delete when implementing functionality
+  write (*,*) 'TEMPLATE init_dim_l_pdaf.F90: Ensure that coords_l is declared correctly in model_pdaf_mod!'
 
   ! Global coordinates of local analysis domain
   ! these can be determined from coords_x_p and coords_y_p

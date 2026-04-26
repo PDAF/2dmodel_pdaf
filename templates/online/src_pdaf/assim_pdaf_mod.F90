@@ -3,9 +3,13 @@
 !! This module provides variables needed by the user code for the
 !! assimilation. For simplicity, all assimilation-related variables
 !! are stored here, even if they are only used in the main program
-!! for the filter initialization.
+!! for the filter initialization. The module declares the variables
+!! and sets defaults.
+!!
 !! When using the template init_pdaf_parse, most variables can be
 !! specified as a command line argument.
+!!
+!! The module is generic.
 !!
 !! __Revision history:__
 !! * 2013-02 - Lars Nerger - Initial code
@@ -16,24 +20,12 @@ module assim_pdaf_mod
   implicit none
   save
 
-! +++ Variables specific for model setup +++
-
-  real :: coords_l(2)                 !< Coordinates of local analysis domain (only size is case-specific)
+! Settings for ensemble initialization
   integer :: type_ens_init=1          !< Type of ensemble init:
                                       !< (1) read model files; use mean state from these files
                                       !< (2) read model files; use mean state from covariance file 
                                       !< (3) generate ensemble from covariance matrix
   character(len=100) :: file_covar    !< Path and name of covariance matrix file
-
-!+++ End of specific part
-
-! Do not remove the following line, it is relevant for OpenMP parallelization
-!$OMP THREADPRIVATE(coords_l)
-
-
-! -----------------------------------------------------------------
-! --- Below are the generic variables used for configuring PDAF ---
-! --- Default values are set here, and deviation in init_pdaf   ---
 
 ! Settings for state vector size
   integer :: dim_state          !< Global model state dimension

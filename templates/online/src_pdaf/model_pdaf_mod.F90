@@ -24,6 +24,13 @@ module model_pdaf_mod
 
 ! *** Additional variables ***
 
+! +++ TEMPLATE: Set size of coords_l according to number of coordinates used in localization
+
+  real :: coords_l(2)              !< Coordinates of local analysis domain (only size is case-specific)
+
+! Do not remove the following line, it is relevant for OpenMP parallelization
+!$OMP THREADPRIVATE(coords_l)
+
 ! One might like to declare here additional variables relating
 ! to the model fields or model grid only used for DA.
 

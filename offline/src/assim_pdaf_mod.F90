@@ -3,11 +3,13 @@
 !! This module provides variables needed by the user code for the
 !! assimilation. For simplicity, all assimilation-related variables
 !! are stored here, even if they are only used in the main program
-!! for the filter initialization.
+!! for the filter initialization. The module declares the variables
+!! and sets defaults.
+!!
 !! When using the template init_pdaf_parse, most variables can be
 !! specified as a command line argument.
 !!
-!! Implementation for the 2D online example with two fields.
+!! The module is generic.
 !!
 !! __Revision history:__
 !! * 2013-02 - Lars Nerger - Initial code
@@ -17,20 +19,6 @@ module assim_pdaf_mod
 
   implicit none
   save
-
-!+++ Specific part for 2D tutorial model
-
-  real :: coords_l(2)                 !< Coordinates of local analysis domain (only size is case-specific)
-
-!+++ End of specific part
-
-! Do not remove the following line, it is relevant for OpenMP parallelization
-!$OMP THREADPRIVATE(coords_l)
-
-
-! -----------------------------------------------------------------
-! --- Below are the generic variables used for configuring PDAF ---
-! --- Default values are set here, and deviation in init_pdaf   ---
 
 ! Settings for ensemble initialization
   integer :: type_ens_init=1          !< Type of ensemble init:
