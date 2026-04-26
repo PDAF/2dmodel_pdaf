@@ -23,7 +23,7 @@ include srcfiles_pdaf
 OBJ_MODEL := $(SRC_MODEL:%.F90=build/%.o)
 
 # Define object files - to be create in build/
-OBJ_MODEL_FLEX := $(SRC_MODEL_FLEX:%.F90=build/%.o)
+#OBJ_MODEL_FLEX := $(SRC_MODEL_FLEX:%.F90=build/%.o)
 
 # PDAF: Define PDAF-related object files
 OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=build/%.o)

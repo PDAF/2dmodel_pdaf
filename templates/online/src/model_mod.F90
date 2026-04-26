@@ -19,6 +19,8 @@ module model_mod
   integer :: ny=10                      !< Size of 2D grid in y-direction
   integer :: n_dim=2                    !< Number of model dimensions
   integer :: total_steps=10             !< Total number of time steps
+  real :: time=0.0                      !< Model time
+  real :: dt=0.1                        !< Time step size
   real, allocatable :: fieldA_p(:,:)    !< Process-local part of model field A
   real, allocatable :: fieldB_p(:,:)    !< Process-local part of model field B
   real, allocatable :: coords_x_p(:)    !< Process-local coordinates in x-direction
