@@ -25,7 +25,7 @@
 !! * 2013-02 - Lars Nerger - Initial code based on offline_1D
 !! * Later revisions - see repository log
 !!
-subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
+subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
      state_p, Uinv, ens_p, flag)
 
   use mpi                             ! MPI
@@ -154,4 +154,4 @@ subroutine prepoststep_pdaf_offline(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, 
 
   deallocate(variance_p)
 
-end subroutine prepoststep_pdaf_offline
+end subroutine prepoststep_pdaf

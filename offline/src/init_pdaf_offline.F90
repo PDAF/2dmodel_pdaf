@@ -47,7 +47,7 @@ subroutine init_pdaf_offline()
   integer :: status_pdaf               ! PDAF status flag
 
 ! *** External subroutines ***
-  external :: init_ens_pdaf_offline    ! Ensemble initialization
+  external :: init_ens_pdaf            ! Ensemble initialization
   
 
 ! ***************************
@@ -135,7 +135,7 @@ subroutine init_pdaf_offline()
   call PDAF3_init(filtertype, subtype, step_offline, &
        pdaf_param_i, 2,&
        pdaf_param_r, 1, &
-       init_ens_pdaf_offline, screen, status_pdaf)
+       init_ens_pdaf, screen, status_pdaf)
 
   ! *** Additional parameter specifications ***
   ! *** -- These are all optional --        ***

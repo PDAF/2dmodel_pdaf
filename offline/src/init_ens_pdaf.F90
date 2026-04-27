@@ -10,20 +10,16 @@
 !! The routine is called by all filter processes and 
 !! initializes the ensemble for the process-local domain.
 !!
-!! The routine is generic, while the functionality specific
-!! for a model is in the file reading routine. 
-!! Based on the value of type_ens_init, it allows to either
-!! directly read from model files or to generate the ensemble
+!! This routine is generic; the specific initialization are the
+!! file reading operations in the io-module. The ensemble is
+!! either directly read from model files or it can be generated
 !! by 2nd order exact sampling from a covariance matrix.
-!! For the offline mode, one usually reads model restart files,
-!! except for the intial time, where one could generate the
-!! ensemble from a covariance matrix.
 !!
 !! __Revision history:__
-!! * 2013-02 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
+subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ens_p, flag)
 
   use netcdf
@@ -139,4 +135,4 @@ subroutine init_ens_pdaf_offline(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
   end if inittype
 
-end subroutine init_ens_pdaf_offline
+end subroutine init_ens_pdaf

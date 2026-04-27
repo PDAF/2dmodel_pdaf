@@ -8,7 +8,7 @@
 #		      PDAF_ARCH is filename without .h)
 #
 # Example
-# make offline_pdaf PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../PDAF
+# make generate_covar PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../pdaf
 #####################################################################
 
 # Include machine-specific definitions

@@ -8,7 +8,7 @@
 #		      PDAF_ARCH is filename without .h)
 #
 # Example
-# make offline_pdaf PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../PDAF
+# make offline_pdaf PDAF_ARCH=linux_gfortran_openmpi PDAFDIR=../pdaf
 #####################################################################
 
 # Include machine-specific definitions
@@ -36,8 +36,8 @@ SRC_PDAF_INT =  init_parallel_pdaf_offline.F90 \
 		finalize_pdaf.F90 \
 
 # user-supplied call-back routines
-SRC_CB  =       init_ens_pdaf_offline.F90 \
-		prepoststep_pdaf_offline.F90 \
+SRC_CB  =       init_ens_pdaf.F90 \
+		prepoststep_pdaf.F90 \
 		get_obs_pdaf.F90
 
 # User-supplied call-back routines for localization
