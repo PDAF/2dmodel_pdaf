@@ -13,9 +13,9 @@
 !!
 subroutine init_pdaf_parse()
 
-  use PDAF, &                ! Parser function
+  use PDAF, &                  ! Parser function
        only: PDAF_parse
-  use assim_pdaf_mod, &      ! Variables for assimilation
+  use assim_pdaf_mod, &        ! Variables for assimilation
        only: screen, filtertype, subtype, dim_ens, delt_obs, &
        step_offline, twin_experiment, &
        model_error, model_err_amp, type_forget, forget, &
@@ -25,9 +25,9 @@ subroutine init_pdaf_parse()
        hyb_gamma, hyb_kappa, type_winf, limit_winf, &
        pf_res_type, pf_noise_type, pf_noise_amp, &
        observe_ens, type_obs_init, do_omi_obsstats, &
-       type_ens_init, file_covar
+       type_ens_init
   use io_pdaf_mod, &           ! File input/output control
-       only: write_state, write_ens, write_var
+       only: write_state, write_ens, write_var, file_covar
 
   ! Specific for observations
   use obs_A_pdafomi, &         ! Variables for observation type A

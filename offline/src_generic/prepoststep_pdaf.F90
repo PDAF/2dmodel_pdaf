@@ -33,6 +33,8 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
        only: PDAF_diag_stddev, PDAF_diag_variance, PDAFomi_diag_diffstats
   use parallel_pdaf_mod, &            ! Parallelization variables
        only: COMM_assim, myproc_assim
+  use assim_pdaf_mod, &               ! Assimilation variables
+       only: do_omi_obsstats
   use statevector_pdaf_mod, &         ! Statevector variables
        only: sfields, n_fields
   use io_pdaf_mod, &                  ! Output file operations
@@ -130,7 +132,8 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 ! ***************************************
 
   ! Compute statistics on deviation between observation and observed ensemble
-  call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-myproc_assim)
+  if (do_omi_obsstats) &
+       call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-myproc_assim)
 
 
 ! *******************

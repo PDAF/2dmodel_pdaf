@@ -26,13 +26,13 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
   use PDAF, &                     ! PDAF
        only: PDAF_sampleens, PDAF_diag_ensmean
   use assim_pdaf_mod, &           ! Assimilation varibles
-       only: type_ens_init, file_covar
+       only: type_ens_init
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: myproc_assim
   use statevector_pdaf_mod, &     ! State vector variables
        only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
-       only: read_ensstate_pdaf, read_mean_covar_pdaf, read_covar_pdaf
+       only: read_ensstate_pdaf, read_mean_covar_pdaf, read_covar_pdaf, file_covar
 
   implicit none
 

@@ -11,9 +11,11 @@
 !!
 module io_pdaf_mod
 
-  logical :: write_state = .true.
-  logical :: write_ens   = .false.
-  logical :: write_var   = .false.
+  logical :: write_state = .true.     !< Whether to write ensemble mean state
+  logical :: write_ens   = .false.    !< Whether to write ensemble states
+  logical :: write_var   = .false.    !< Whether to write variance state 
+
+  character(len=100) :: file_covar    !< Path and name of covariance matrix file
 
 contains
 
