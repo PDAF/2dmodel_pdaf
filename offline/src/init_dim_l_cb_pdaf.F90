@@ -13,7 +13,7 @@
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-subroutine init_dim_l_pdaf(step, domain_p, dim_l)
+subroutine init_dim_l_cb_pdaf(step, domain_p, dim_l)
 
   use PDAF, &                       ! Routine to provide local indices to PDAF
        only: PDAFlocal_set_indices
@@ -86,4 +86,4 @@ subroutine init_dim_l_pdaf(step, domain_p, dim_l)
   ! Deallocate index array
   deallocate(id_lstate_in_pstate)
 
-end subroutine init_dim_l_pdaf
+end subroutine init_dim_l_cb_pdaf

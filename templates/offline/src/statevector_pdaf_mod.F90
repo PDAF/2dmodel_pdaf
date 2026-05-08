@@ -121,28 +121,15 @@ contains
 
     ! field 1
     sfields(id%NAME_FIELD_1)%ndims = 2
-    sfields(id%NAME_FIELD_1)%name = 'NAME_FLD_1'
+    sfields(id%NAME_FIELD_1)%dim   = nx_p * ny
+    sfields(id%NAME_FIELD_1)%name  = 'NAME_FLD_1'
 
 !+++ End of specific part
 
 
-! **************************************
-! ***   Set dimensions and offsets   ***
-! **************************************
-
-! +++ This needs to be adapted according to the grid size variables
-
-    ! Template reminder - delete when implementing functionality
-    write (*,*) 'TEMPLATE statevector_pdaf_mod.F90: set field dimensions in variables SFIELDS!'
-
-    ! Set field dimensions
-    do i = 1, n_fields
-       if (sfields(i)%ndims == 2) then
-          sfields(i)%dim = nx_p * ny
-       end if
-    end do
-
-! +++ The following is generic
+! ***********************
+! ***   Set offsets   ***
+! ***********************
 
     ! Define field offsets in state vector
     sfields(1)%off = 0

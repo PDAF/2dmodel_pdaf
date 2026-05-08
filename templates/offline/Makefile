@@ -20,33 +20,34 @@ include $(PDAFDIR)/make.arch/$(PDAF_ARCH).h
 
 ######################################################
 
-# Modules used for PDAF
-MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
-		parallel_pdaf_mod.F90 \
-		assim_pdaf_mod.F90 \
-		statevector_pdaf_mod.F90 \
-		initialize_grid_mod.F90 \
-		io_pdaf_mod.F90 \
-		main_offline.F90
+# Generic routines and modules used for PDAF
+ASSIM_GEN =    parallel_pdaf_mod.F90 \
+      init_parallel_pdaf_offline.F90 \
+      assim_pdaf_mod.F90 \
+      assimilate_pdaf_offline.F90 \
+      finalize_pdaf.F90 \
+      main_offline.F90 \
+      init_ens_cb_pdaf.F90 \
+      prepoststep_cb_pdaf.F90 \
+      get_obs_cb_pdaf.F90 \
+      synobs_pdaf_mod.F90
+
+# Case-specific modules
+MOD_ASSIM =    model_pdaf_mod_offline.F90 \
+      statevector_pdaf_mod.F90 \
+      initialize_grid_mod.F90 \
+      io_pdaf_mod.F90 \
 
 # Interface to PDAF - model sided
-SRC_PDAF_INT =  init_parallel_pdaf_offline.F90 \
-		init_pdaf_offline.F90 \
-		assimilate_pdaf_offline.F90 \
-		finalize_pdaf.F90 \
-
-# user-supplied call-back routines
-SRC_CB  =       init_ens_pdaf.F90 \
-		prepoststep_pdaf.F90
+SRC_PDAF_INT =  init_pdaf_offline.F90
 
 # User-supplied call-back routines for localization
-SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
-		init_dim_l_pdaf.F90
+SRC_CB_LOCAL =  init_n_domains_cb_pdaf.F90 \
+      init_dim_l_cb_pdaf.F90
 
 # Routines for PDAF-OMI observation handling
-SRC_CB_OMI = 	obs_OBSTYPE_pdafomi_TEMPLATE.F90 \
-		callback_obs_pdafomi.F90
-#		synobs_pdaf_mod.F90
+SRC_CB_OMI =   obs_OBSTYPE_pdafomi.F90 \
+      callback_obs_pdafomi.F90
 
 # Additional routines call by other routines
 SRC_MISC =      init_pdaf_parse.F90
@@ -57,6 +58,9 @@ SRC_PDAF_USER = $(MOD_ASSIM) $(SRC_CB_OMI) $(SRC_MISC) $(SRC_PDAF_INT) $(SRC_CB)
 #######################################################
 # object files
 OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=build/%.o)
+
+# object files
+OBJ_PDAF_GEN := $(ASSIM_GEN:%.F90=build/%.o)
 
 ######################################################
 
@@ -75,10 +79,9 @@ info:
 	@echo "Machine-specific definitions (PDAF_ARCH): " $(PDAF_ARCH);
 	@echo "------------------------------------------------------------------";
 
-
-offline_pdaf : libpdaf-d.a $(OBJ_PDAF_USER)
+offline_pdaf : libpdaf-d.a $(OBJ_PDAF_GEN) $(OBJ_PDAF_USER)
 	$(LD)  $(OPT_LNK)  -o $@ \
-	$(OBJ_PDAF_USER) \
+	$(OBJ_PDAF_GEN) $(OBJ_PDAF_USER) \
 	-L$(PDAFDIR)/lib -lpdaf-d $(LINK_LIBS) $(NC_LIB)
 
 ######################################################
@@ -93,6 +96,9 @@ libpdaf-d.a:
 # use pattern rule to create rules for all object files
 
 $(OBJ_PDAF_USER): build/%.o: src/%.F90
+	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include -c -o $@ $(MODULEOPT) build/ $<
+
+$(OBJ_PDAF_GEN): build/%.o: src_generic/%.F90
 	$(FC) $(OPT) $(CPP_DEFS) $(NC_INC) -I$(PDAFDIR)/include -c -o $@ $(MODULEOPT) build/ $<
 
 ######################################################

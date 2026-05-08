@@ -15,7 +15,7 @@
 !! 2019-01 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
-subroutine get_obs_pdaf(step, dim_obs, observation)
+subroutine get_obs_cb_pdaf(step, dim_obs, observation)
 
 ! Outcommented because it requires netCDF
 !   use synobs_pdaf_mod, &
@@ -38,5 +38,4 @@ subroutine get_obs_pdaf(step, dim_obs, observation)
 
 !   call write_syn_obs(step, file_synobs, dim_obs, observation, 1)
 
-end subroutine get_obs_pdaf
-
+end subroutine get_obs_cb_pdaf

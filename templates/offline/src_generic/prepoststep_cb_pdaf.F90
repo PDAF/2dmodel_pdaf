@@ -25,13 +25,15 @@
 !! * 2013-02 - Lars Nerger - Initial code based on offline_1D
 !! * Later revisions - see repository log
 !!
-subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
+subroutine prepoststep_cb_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
      state_p, Uinv, ens_p, flag)
 
   use mpi                             ! MPI
   use PDAF, &                         ! PDAF diagnostic routines
        only: PDAF_diag_stddev, PDAF_diag_variance, &
        PDAFomi_diag_obs_rmsd, PDAFomi_diag_diffstats
+  use assim_pdaf_mod, &               ! Assimilation variables
+       only: do_omi_obsstats
   use parallel_pdaf_mod, &            ! Parallelization variables
        only: COMM_assim, myproc_assim
   use statevector_pdaf_mod, &         ! Statevector variables
@@ -132,12 +134,14 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 ! ***************************************
 
 ! +++ TEMPLATE: We include two statistics here, which are both optional
+ 
+  if (do_omi_obsstats) then
+     ! Compute RMS deviation between observation and observed ensemble mean
+     call PDAFomi_diag_obs_rmsd(nobs, obsrmsd_ptr, 1-myproc_assim)
 
-  ! Compute RMS deviation between observation and observed ensemble mean
-  call PDAFomi_diag_obs_rmsd(nobs, obsrmsd_ptr, 1-myproc_assim)
-
-  ! Compute statistics on deviation between observation and observed ensemble
-  call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-myproc_assim)
+     ! Compute statistics on deviation between observation and observed ensemble
+     call PDAFomi_diag_diffstats(nobs, obsstats_ptr, 1-myproc_assim)
+  end if
 
 
 ! *******************
@@ -154,4 +158,4 @@ subroutine prepoststep_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
   deallocate(variance_p)
 
-end subroutine prepoststep_pdaf
+end subroutine prepoststep_cb_pdaf

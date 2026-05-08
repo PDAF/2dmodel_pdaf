@@ -20,7 +20,7 @@ subroutine init_pdaf_offline()
        PDAFomi_set_domain_limits, PDAF_abort, &
        PDAF_DA_NETF, PDAF_DA_LNETF, PDAF_DA_PF, PDAF_DA_LKNETF
   use parallel_pdaf_mod, &             ! Parallelization variables
-       only: myproc_ens, myproc_assim, n_modeltasks
+       only: myproc_ens, myproc_assim
   use assim_pdaf_mod, &                ! Variables for assimilation
        only: screen, dim_state_p, dim_state, dim_ens, filtertype, subtype, delt_obs, &
        step_offline, type_forget, forget, locweight, cradius, sradius, coords_p, &
@@ -30,7 +30,7 @@ subroutine init_pdaf_offline()
   use statevector_pdaf_mod, &          ! State vector variables and init routine
        only: setup_statevector, n_fields
 
-  ! Specific to the model
+  ! Specific for model
   use model_pdaf_mod, &                ! Model variables
        only: n_dim !nx_p, ny, coords_x_p, coords_y_p
 
@@ -47,7 +47,7 @@ subroutine init_pdaf_offline()
   real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
 
 ! *** External subroutines ***
-  external :: init_ens_pdaf            ! Ensemble initialization
+  external :: init_ens_cb_pdaf         ! Ensemble initialization
   
 
 ! ***************************
@@ -81,16 +81,15 @@ subroutine init_pdaf_offline()
 ! *** Here we specify value that deviate from the defaults ***
 ! ************************************************************
 
-! *** Localization settings
-  locweight = 0           ! Type of localizating weighting
-  cradius = 2.0           ! Cut-off radius for observation domain in local filters
-  sradius = cradius       ! Support radius for 5th-order polynomial
-                          ! or radius for 1/e for exponential weighting
+! *** Localization settings - usually set at run-time
+  cradius = 5.0           ! Cut-off radius in local filters (in units of model coordinate)
 
 !+++ Specific variables for observations - see defaults in each observation module
 
 ! *** Which observation type to assimilate
   assim_OBSTYPE = .true.
+
+!+++ End of specific variables for observations
 
 
 ! ***********************************
@@ -128,7 +127,7 @@ subroutine init_pdaf_offline()
   call PDAF3_init(filtertype, subtype, step_offline, &
        pdaf_param_i, 2,&
        pdaf_param_r, 1, &
-       init_ens_pdaf, screen, status_pdaf)
+       init_ens_cb_pdaf, screen, status_pdaf)
 
   ! *** Additional parameter specifications ***
   ! *** -- These are all optional --        ***

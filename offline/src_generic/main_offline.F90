@@ -26,8 +26,6 @@ program main_offline
 
   use parallel_pdaf_mod, &   ! Parallelization
        only: nproc_ens, myproc_ens
-  use initialize_grid_mod, &
-       only: initialize_grid
 
   implicit none
 

@@ -27,23 +27,23 @@ ASSIM_GEN = 	parallel_pdaf_mod.F90 \
 		assimilate_pdaf_offline.F90 \
 		finalize_pdaf.F90 \
 		main_offline.F90 \
-		init_ens_pdaf.F90 \
-		prepoststep_pdaf.F90 \
+		init_ens_cb_pdaf.F90 \
+		prepoststep_cb_pdaf.F90 \
 		synobs_pdaf_mod.F90 \
-		get_obs_pdaf.F90
+		get_obs_cb_pdaf.F90
 
 # Case-specific modules
 MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		statevector_pdaf_mod.F90 \
-		initialize_grid_mod.F90 \
+		initialize_grid.F90 \
 		io_pdaf_mod.F90 \
 
 # Interface to PDAF - model sided
 SRC_PDAF_INT =  init_pdaf_offline.F90
 
 # User-supplied call-back routines for localization
-SRC_CB_LOCAL =  init_n_domains_pdaf.F90 \
-		init_dim_l_pdaf.F90
+SRC_CB_LOCAL =  init_n_domains_cb_pdaf.F90 \
+		init_dim_l_cb_pdaf.F90
 
 # Routines for PDAF-OMI observation handling
 SRC_CB_OMI = 	obs_A_pdafomi.F90 \

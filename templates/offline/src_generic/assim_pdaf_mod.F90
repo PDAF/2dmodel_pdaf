@@ -41,7 +41,7 @@ module assim_pdaf_mod
   integer :: observe_ens=0      !< (0) apply H also to ensemble mean; (1) apply H only to ensemble states
   integer :: type_obs_init=0    !< init obs. (0) before or (1) after call to prepostsstep
   logical :: twin_experiment=.false. !< Whether to run an twin experiment with synthetic observations
-  logical :: do_omi_obsstats=.false. !< Whether to let OMI compute observation statistics
+  logical :: do_omi_obsstats=.true.  !< Whether to let OMI compute observation statistics
 
 ! General control of PDAF - available as command line options
   integer :: screen=2           !< Control verbosity of PDAF

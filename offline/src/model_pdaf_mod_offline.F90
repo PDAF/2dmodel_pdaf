@@ -27,8 +27,9 @@ module model_pdaf_mod
   real, allocatable :: coords_x_p(:) !< Process-local coordinates in x-direction
   real, allocatable :: coords_y_p(:) !< Process-local coordinates in y-direction
 
+  ! Particular variables used with parallelization
   integer :: nx_p                    !< Process-local size in x-direction
-  integer :: offset_x_p              !< Offset of sub-domain inglobal grid
+  integer :: offset_x_p              !< Offset of sub-domain in global grid
 
 
 ! *** Additional variables ***

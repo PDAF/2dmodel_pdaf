@@ -10,29 +10,30 @@
 !! The routine is called by all filter processes and 
 !! initializes the ensemble for the process-local domain.
 !!
-!! This routine is generic; the specific initialization are the
-!! file reading operations in the io-module. The ensemble is
-!! either directly read from model files or it can be generated
+!! The routine is generic, while the functionality specific
+!! for a model is in the file reading routine. 
+!! Based on the value of type_ens_init, it allows to either
+!! directly read from model files or to generate the ensemble
 !! by 2nd order exact sampling from a covariance matrix.
 !!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2013-02 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
-subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
+subroutine init_ens_cb_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ens_p, flag)
 
   use netcdf
   use PDAF, &                     ! PDAF
        only: PDAF_sampleens, PDAF_diag_ensmean
-  use assim_pdaf_mod, &           ! Assimilation varibles
-       only: type_ens_init
+  use assim_pdaf_mod, &           ! Assimilation variables
+       only: type_ens_init, file_covar
   use parallel_pdaf_mod, &        ! Assimilation parallelization variables
        only: myproc_assim
   use statevector_pdaf_mod, &     ! State vector variables
        only: sfields, n_fields
   use io_pdaf_mod, &              ! File operations
-       only: read_ensstate_pdaf, read_mean_covar_pdaf, read_covar_pdaf, file_covar
+       only: read_ensstate_pdaf, read_mean_covar_pdaf, read_covar_pdaf
 
   implicit none
 
@@ -135,4 +136,4 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
   end if inittype
 
-end subroutine init_ens_pdaf
+end subroutine init_ens_cb_pdaf

@@ -14,7 +14,7 @@
 !! * 2005-09 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
-subroutine init_n_domains_pdaf(step, n_domains_p)
+subroutine init_n_domains_cb_pdaf(step, n_domains_p)
 
   ! Specific for model
 !   use model_pdaf_mod, &               ! Model-related variables
@@ -39,4 +39,4 @@ subroutine init_n_domains_pdaf(step, n_domains_p)
   ! dummy initialization to allow testing
   n_domains_p = 1
 
-end subroutine init_n_domains_pdaf
+end subroutine init_n_domains_cb_pdaf

@@ -1,4 +1,4 @@
-!> Interface routine to call initialization of PDAF
+! > Interface routine to call initialization of PDAF
 !!
 !! This routine collects the initialization of variables for PDAF.
 !! In addition, the initialization routine PDAF_init is called
@@ -52,7 +52,7 @@ subroutine init_pdaf_offline()
   real    :: lim_coords(2,2)           ! limiting coordinates of process sub-domain
 
 ! *** External subroutines ***
-  external :: init_ens_pdaf            ! Ensemble initialization
+  external :: init_ens_cb_pdaf         ! Ensemble initialization
   
 
 ! ***************************
@@ -140,7 +140,7 @@ subroutine init_pdaf_offline()
   call PDAF3_init(filtertype, subtype, step_offline, &
        pdaf_param_i, 2,&
        pdaf_param_r, 1, &
-       init_ens_pdaf, screen, status_pdaf)
+       init_ens_cb_pdaf, screen, status_pdaf)
 
   ! *** Additional parameter specifications ***
   ! *** -- These are all optional --        ***

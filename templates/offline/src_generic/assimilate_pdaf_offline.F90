@@ -34,14 +34,14 @@ subroutine assimilate_pdaf_offline()
 ! The PDAF-internal name of a subroutine might be different from the external name!
 
   ! Interface between model and PDAF, and prepoststep
-  external :: prepoststep_pdaf         ! User supplied pre/poststep routine
+  external :: prepoststep_cb_pdaf       ! User supplied pre/poststep routine
   ! Localization of state vector
-  external :: init_n_domains_pdaf, &   ! Provide number of local analysis domains
-       init_dim_l_pdaf                 ! Initialize state dimension for local analysis domain
+  external :: init_n_domains_cb_pdaf, & ! Provide number of local analysis domains
+       init_dim_l_cb_pdaf               ! Initialize state dimension for local analysis domain
   ! Interface to PDAF-OMI for local and global filters
-  external :: init_dim_obs_pdafomi, &  ! Get dimension of full obs. vector for Process-local domain
-       obs_op_pdafomi, &               ! Obs. operator for full obs. vector for Process-local domain
-       init_dim_obs_l_pdafomi          ! Get dimension of obs. vector for local analysis domain
+  external :: init_dim_obs_pdafomi, &   ! Get dimension of full obs. vector for Process-local domain
+       obs_op_pdafomi, &                ! Obs. operator for full obs. vector for Process-local domain
+       init_dim_obs_l_pdafomi           ! Get dimension of obs. vector for local analysis domain
 
 
 ! *********************************
@@ -59,8 +59,8 @@ subroutine assimilate_pdaf_offline()
   ! Call universal PDAF3 ensemble assimilation routine
   call PDAF3_assim_offline( &
        init_dim_obs_pdafomi, obs_op_pdafomi, &
-       init_n_domains_pdaf, init_dim_l_pdaf, init_dim_obs_l_pdafomi, &
-       prepoststep_pdaf, status_pdaf)
+       init_n_domains_cb_pdaf, init_dim_l_cb_pdaf, init_dim_obs_l_pdafomi, &
+       prepoststep_cb_pdaf, status_pdaf)
 
 
 ! ************************
