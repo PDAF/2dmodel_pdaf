@@ -27,7 +27,7 @@ subroutine init_pdaf_parse()
        observe_ens, type_obs_init, do_omi_obsstats, &
        type_ens_init
   use io_pdaf_mod, &           ! File input/output control
-       only: write_state, write_ens, write_var, file_covar
+       only: write_state, write_ens, write_var, file_covar, path_ini
 
   ! Specific for observations
   use obs_A_pdafomi, &         ! Variables for observation type A
@@ -61,6 +61,11 @@ subroutine init_pdaf_parse()
   handle = 'file_obs_B'              ! Path and name of observation file type B
   call PDAF_parse(handle, file_obs_B)
 
+  handle = 'file_covar'              ! Path and name of covariance matrix file
+  call PDAF_parse(handle, file_covar)
+  handle = 'path_ini'                ! Path to ensemble input files
+  call PDAF_parse(handle, path_ini)
+
 !+++ End of specific part
 
 !------------------------------------------------------------------------------
@@ -69,8 +74,6 @@ subroutine init_pdaf_parse()
   ! Settings for ensemble initialization
   handle = 'type_ens_init'           ! Type of ensemble initialization
   call PDAF_parse(handle, type_ens_init)
-  handle = 'file_covar'              ! Path and name of covariance matrix file
-  call PDAF_parse(handle, file_covar)
 
   ! Settings controlling file output
   handle = 'write_state'             ! Whether to write ensemble mean fields

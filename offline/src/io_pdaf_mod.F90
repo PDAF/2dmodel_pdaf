@@ -16,6 +16,7 @@ module io_pdaf_mod
   logical :: write_var   = .false.    !< Whether to write variance state 
 
   character(len=100) :: file_covar    !< Path and name of covariance matrix file
+  character(len=100) :: path_ini      !< Path for input files
 
 contains
 
@@ -58,7 +59,7 @@ contains
     ! *** Read fields
 
     do fid = 1, n_fields
-       filename = '../inputs_2fields/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
+       filename = trim(path_ini)//'/ens'//trim(sfields(fid)%fname)//'_'//trim(ensstr)//'.nc'
 
        ! Open file, get field ID, and read field
 
