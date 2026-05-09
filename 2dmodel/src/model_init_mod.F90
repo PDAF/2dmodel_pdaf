@@ -27,8 +27,10 @@ contains
     implicit none
 
 ! *** local variables ***
-    integer :: i, j                 ! Counters
-    character(len=100) :: filename  ! Name of output file
+    integer :: i, j                  ! Counters
+    character(len=100) :: filename   ! Name of output file
+    character(len=100) :: str1, str2 ! String for cammand line parsing
+    character(len=100) :: path       ! Path for input files
 
 
 ! **********************
@@ -36,17 +38,41 @@ contains
 ! **********************
 
 ! *** Model specifications ***
-    nx = 36          ! Extent of grid in x-direction
-    ny = 18          ! Extent of grid in y-direction
-    n_dim = 2        ! Number of model dimensions
-    total_steps = 20 ! Number of time steps to perform
+    nx = 36                    ! Extent of grid in x-direction
+    ny = 18                    ! Extent of grid in y-direction
+    n_dim = 2                  ! Number of model dimensions
+    total_steps = 20           ! Number of time steps to perform
+    path = '../inputs_2fields' ! Path to input files
+
+
+! *** Parse command line arguments ***
+
+    ! Number of time steps
+    IF (command_argument_count() > 0) THEN 
+       DO i = 1, command_argument_count() - 1 
+          CALL get_command_argument(i, str1)
+          CALL get_command_argument(i+1, str2)
+          IF (str1 == '-nsteps') READ(str2, *) total_steps
+       ENDDO
+    ENDIF
+
+    ! Path for input files
+    IF (command_argument_count() > 0) THEN 
+       DO i = 1, command_argument_count() - 1 
+          CALL get_command_argument(i, str1)
+          CALL get_command_argument(i+1, str2)
+          IF (str1 == '-path') READ(str2, '(a)') path
+       ENDDO
+    ENDIF
 
 ! *** Screen output ***
     if (mype_world == 0) then
        write (*, '(1x, a)') 'INITIALIZE PARALLELIZED 2D TUTORIAL MODEL'
        write (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
        write (*, '(10x,a,i4)') 'Time steps', total_steps
-    end if
+       write (*, '(10x,a,a)') 'Read inputs from ', path
+    end if    
+
 
 ! *** Initialize size of local nx for parallelization ***
     if (npes_2Dmodel==1 .or. npes_2Dmodel==2 .or. npes_2Dmodel==3 .or. npes_2Dmodel==4 .or. &
@@ -79,10 +105,10 @@ contains
 ! *** Read initial fields from file ***
 ! *************************************
 
-    filename = '../inputs_2fields/trueA_ini.nc'
+    filename = trim(path)//'/trueA_ini.nc'
     call io_read_sngl(filename, fieldA_p)
 
-    filename = '../inputs_2fields/trueB_ini.nc'
+    filename = trim(path)//'/trueB_ini.nc'
     call io_read_sngl(filename, fieldB_p)
 
 
