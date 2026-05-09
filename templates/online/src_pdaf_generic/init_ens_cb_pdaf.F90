@@ -20,7 +20,7 @@
 !! * 2013-02 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
-subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
+subroutine init_ens_cb_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
      ens_p, flag)
 
   use netcdf
@@ -136,4 +136,4 @@ subroutine init_ens_pdaf(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
   end if inittype
 
-end subroutine init_ens_pdaf
+end subroutine init_ens_cb_pdaf

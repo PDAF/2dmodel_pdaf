@@ -28,7 +28,7 @@ ASSIM_GEN =    parallel_pdaf_mod.F90 \
       finalize_pdaf.F90 \
       main_offline.F90 \
       init_ens_cb_pdaf.F90 \
-      prepoststep_cb_pdaf.F90 \
+      prepost_cb_pdaf.F90 \
       get_obs_cb_pdaf.F90 \
       synobs_pdaf_mod.F90
 

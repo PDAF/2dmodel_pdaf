@@ -15,22 +15,20 @@
 !!
 !! The routine is called by all processes
 !!         
-!! Version for the 2D tutorial model.
-!!
 !! __Revision history:__
-!! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
+!! * 2004-10 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
-subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
+subroutine next_obs_cb_pdaf(stepnow, nsteps, doexit, time)
 
   use assim_pdaf_mod, &            ! Assimilation variables
        only: delt_obs
   use parallel_pdaf_mod, &         ! Parallelization variables
        only: myproc_ens
 
-  ! Specific for model
+  ! Specific for 2D tutorial model
   use model_pdaf_mod, &            ! Model variables
-       only: total_steps
+       only: total_steps, time_model => time
 
   implicit none
 
@@ -45,23 +43,33 @@ subroutine next_observation_pdaf(stepnow, nsteps, doexit, time)
 ! *** Set number of time steps until next observation ***
 ! *******************************************************
 
-  time = 0.0          ! Not used in this implementation
-  doexit = 0          ! Not used in this implementation
+  ! Template reminder - delete when implementing functionality
+  WRITE (*,*) 'TEMPLATE next_observation_pdaf.F90: Set number of time steps in forecast!'
 
-!+++ Specific part for 2D tutorial model depending on 'total_steps'
+  nsteps = delt_obs   ! This assumes a constant time step interval
 
-  if (stepnow + nsteps <= total_steps) then
-     ! *** During the assimilation process ***
-     nsteps = delt_obs   ! This assumes a constant time step interval
-
-     if (myproc_ens == 0) write (*, '(a, i7, 3x, a, i7)') &
-          'model-PDAF', stepnow, 'Next observation at time step', stepnow + nsteps
-  else
-     ! *** End of assimilation process ***
-     nsteps = 0          ! No more steps
-
-     if (myproc_ens == 0) write (*, '(a, i7, 3x, a)') &
-          'model-PDAF', stepnow, 'No more observations - end assimilation'
+  if (stepnow+nsteps > total_steps) then
+     nsteps = total_steps - stepnow
   end if
 
-end subroutine next_observation_pdaf
+  if (stepnow == total_steps) then
+     nsteps = 0
+     doexit = 1
+  end if
+
+
+! *********************************
+! *** Set current physical time ***
+! *********************************
+
+  time = time_model
+
+
+! *********************
+! *** Set exit flag ***
+! *********************
+
+  ! This is not used on the fully parallel mode
+!   doexit = ??
+
+end subroutine next_obs_cb_pdaf

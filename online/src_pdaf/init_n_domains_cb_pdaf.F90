@@ -14,7 +14,7 @@
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-subroutine init_n_domains_pdaf(step, n_domains_p)
+subroutine init_n_domains_cb_pdaf(step, n_domains_p)
 
   ! Specific for model
   use model_pdaf_mod, &               ! Model-related variables
@@ -36,4 +36,4 @@ subroutine init_n_domains_pdaf(step, n_domains_p)
   ! Here simply the process-local state dimension
   n_domains_p = nx_p*ny
 
-end subroutine init_n_domains_pdaf
+end subroutine init_n_domains_cb_pdaf

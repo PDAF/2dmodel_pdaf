@@ -28,6 +28,9 @@ OBJ_MODEL := $(SRC_MODEL:%.F90=build/%.o)
 # PDAF: Define PDAF-related object files
 OBJ_PDAF_USER := $(SRC_PDAF_USER:%.F90=build/%.o)
 
+# PDAF: Define PDAF-related object files
+OBJ_PDAF_GEN := $(ASSIM_GEN:%.F90=build/%.o)
+
 ######################################################
 
 .phony: info
@@ -46,14 +49,14 @@ model : $(OBJ_MODEL)
 	$(LD)  $(LNKFLAGS)  -o $@  $(OBJ_MODEL) $(LIBS)
 
 # PDAF: Target to compile assimilative model
-model_pdaf : $(OBJ_MODEL) $(OBJ_PDAF_USER)
+model_pdaf : $(OBJ_MODEL) $(OBJ_PDAF_GEN) $(OBJ_PDAF_USER)
 	$(LD)  $(FFLAGS)  -o $@ \
-	$(OBJ_MODEL) $(OBJ_PDAF_USER) $(LIBS)
+	$(OBJ_MODEL) $(OBJ_PDAF_GEN) $(OBJ_PDAF_USER) $(LIBS)
 
 # PDAF: Target to compile assimilative model
-model_pdaf_flexible : $(OBJ_MODEL_FLEX) $(OBJ_PDAF_USER)
+model_pdaf_flexible : $(OBJ_MODEL_FLEX) $(OBJ_PDAF_GEN) $(OBJ_PDAF_USER)
 	$(LD)  $(FFLAGS)  -o $@ \
-	$(OBJ_MODEL_FLEX) $(OBJ_PDAF_USER) $(LIBS)
+	$(OBJ_MODEL_FLEX) $(OBJ_PDAF_GEN) $(OBJ_PDAF_USER) $(LIBS)
 
 ######################################################
 # use pattern rule to create rules for all object files
@@ -62,6 +65,10 @@ $(OBJ_MODEL): build/%.o: src/%.F90
 	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 $(OBJ_MODEL_FLEX): build/%.o: src_flexible/%.F90
+	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
+
+# PDAF: Compile rule for user-code in src_pdaf_generic/
+$(OBJ_PDAF_GEN): build/%.o: src_pdaf_generic/%.F90
 	$(FC) $(FFLAGS) $(INCLUDES) -c -o $@ $(MODULEOPT) build/ $<
 
 # PDAF: Compile rule for user-code in src_pdaf/

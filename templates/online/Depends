@@ -1,23 +1,23 @@
-build/assim_pdaf_mod.o: src_pdaf/assim_pdaf_mod.F90
-build/assimilate_pdaf.o: src_pdaf/assimilate_pdaf.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o
-build/callback_obs_pdafomi.o: src_pdaf/callback_obs_pdafomi.F90 build/obs_OBSTYPE_pdafomi_TEMPLATE.o
-build/collect_state_pdaf.o: src_pdaf/collect_state_pdaf.F90 build/statevector_pdaf_mod.o
-build/distribute_state_pdaf.o: src_pdaf/distribute_state_pdaf.F90 build/statevector_pdaf_mod.o
-build/finalize_pdaf.o: src_pdaf/finalize_pdaf.F90 build/parallel_pdaf_mod.o
-build/get_obs_pdaf.o: src_pdaf/get_obs_pdaf.F90
-build/init_dim_l_pdaf.o: src_pdaf/init_dim_l_pdaf.F90 build/statevector_pdaf_mod.o build/model_pdaf_mod.o
-build/init_ens_pdaf.o: src_pdaf/init_ens_pdaf.F90 build/assim_pdaf_mod.o build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/io_pdaf_mod.o
-build/init_n_domains_pdaf.o: src_pdaf/init_n_domains_pdaf.F90
-build/init_parallel_pdaf.o: src_pdaf/init_parallel_pdaf.F90 build/parallel_pdaf_mod.o
-build/init_pdaf.o: src_pdaf/init_pdaf.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o build/statevector_pdaf_mod.o build/model_pdaf_mod.o build/obs_OBSTYPE_pdafomi_TEMPLATE.o
+build/assim_pdaf_mod.o: src_pdaf_generic/assim_pdaf_mod.F90
+build/assimilate_pdaf.o: src_pdaf_generic/assimilate_pdaf.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o
+build/callback_obs_pdafomi.o: src_pdaf/callback_obs_pdafomi.F90 build/obs_OBSTYPE_pdafomi.o
+build/coll_state_cb_pdaf.o: src_pdaf/coll_state_cb_pdaf.F90 build/statevector_pdaf_mod.o
+build/dist_state_cb_pdaf.o: src_pdaf/dist_state_cb_pdaf.F90 build/statevector_pdaf_mod.o
+build/finalize_pdaf.o: src_pdaf_generic/finalize_pdaf.F90 build/parallel_pdaf_mod.o
+build/get_obs_cb_pdaf.o: src_pdaf_generic/get_obs_cb_pdaf.F90
+build/init_dim_l_cb_pdaf.o: src_pdaf/init_dim_l_cb_pdaf.F90 build/statevector_pdaf_mod.o build/model_pdaf_mod.o
+build/init_ens_cb_pdaf.o: src_pdaf_generic/init_ens_cb_pdaf.F90 build/assim_pdaf_mod.o build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/io_pdaf_mod.o
+build/init_n_domains_cb_pdaf.o: src_pdaf/init_n_domains_cb_pdaf.F90
+build/init_parallel_pdaf.o: src_pdaf_generic/init_parallel_pdaf.F90 build/parallel_pdaf_mod.o
+build/init_pdaf.o: src_pdaf/init_pdaf.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o build/statevector_pdaf_mod.o build/model_pdaf_mod.o build/obs_OBSTYPE_pdafomi.o
 build/init_pdaf_parse.o: src_pdaf/init_pdaf_parse.F90 build/assim_pdaf_mod.o build/io_pdaf_mod.o
 build/io_pdaf_mod.o: src_pdaf/io_pdaf_mod.F90 build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/model_pdaf_mod.o
 build/main.o: src/main.F90 build/parallel_pdaf_mod.o build/model_mod.o
 build/model_mod.o: src/model_mod.F90
 build/model_pdaf_mod.o: src_pdaf/model_pdaf_mod.F90 build/model_mod.o
-build/next_observation_pdaf.o: src_pdaf/next_observation_pdaf.F90 build/assim_pdaf_mod.o build/parallel_pdaf_mod.o build/model_pdaf_mod.o
-build/obs_OBSTYPE_pdafomi_TEMPLATE.o: src_pdaf/obs_OBSTYPE_pdafomi_TEMPLATE.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o build/statevector_pdaf_mod.o build/model_pdaf_mod.o
-build/parallel_pdaf_mod.o: src_pdaf/parallel_pdaf_mod.F90
-build/prepoststep_pdaf.o: src_pdaf/prepoststep_pdaf.F90 build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/io_pdaf_mod.o
+build/next_obs_cb_pdaf.o: src_pdaf/next_obs_cb_pdaf.F90 build/assim_pdaf_mod.o build/parallel_pdaf_mod.o build/model_pdaf_mod.o
+build/obs_OBSTYPE_pdafomi.o: src_pdaf/obs_OBSTYPE_pdafomi.F90 build/parallel_pdaf_mod.o build/assim_pdaf_mod.o build/statevector_pdaf_mod.o build/model_pdaf_mod.o
+build/parallel_pdaf_mod.o: src_pdaf_generic/parallel_pdaf_mod.F90
+build/prepost_cb_pdaf.o: src_pdaf_generic/prepost_cb_pdaf.F90 build/parallel_pdaf_mod.o build/statevector_pdaf_mod.o build/io_pdaf_mod.o
 build/statevector_pdaf_mod.o: src_pdaf/statevector_pdaf_mod.F90 build/model_pdaf_mod.o build/parallel_pdaf_mod.o
-build/synobs_pdaf_mod.o: src_pdaf/synobs_pdaf_mod.F90
+build/synobs_pdaf_mod.o: src_pdaf_generic/synobs_pdaf_mod.F90

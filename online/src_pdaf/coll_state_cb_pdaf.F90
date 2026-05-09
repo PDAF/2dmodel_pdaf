@@ -1,14 +1,13 @@
-!>  Initialize model fields from state vector
+!>  Initialize state vector from model fields
 !!
 !! User-supplied call-back routine for PDAF.
 !!
-!! Used in all DA methods.
+!! Used by all DA methods.
 !!
-!! During the forecast phase of the filter this subroutine is called from
-!! PDAF_init_forecast or PDAF3_assimilate  supplying a model state, which
-!! has to be integrated. The routine has to initialize the fields of the 
-!! model (typically available through a module) from the state vector 
-!! provided by PDAF.
+!! This subroutine is called during the forecast phase from PDAF
+!! after the propagation of each ensemble member. 
+!! The supplied state vector has to be initialized from the model fields
+!! (typically accessible via a module).
 !!
 !! The routine is executed by each process that is
 !! participating in the model integrations.
@@ -17,7 +16,7 @@
 !! * 2026-02 - Lars Nerger - Initial code for advanced tutorial revising tutorial case
 !! * Later revisions - see repository log
 !!
-subroutine distribute_state_pdaf(dim_p, state_p)
+subroutine coll_state_cb_pdaf(dim_p, state_p)
 
   use statevector_pdaf_mod, &            ! State vector variables
        only: id, sfields
@@ -30,16 +29,16 @@ subroutine distribute_state_pdaf(dim_p, state_p)
   
 ! *** Arguments ***
   integer, intent(in) :: dim_p           !< Process-local state dimension
-  real, intent(inout) :: state_p(dim_p)  !< Process-local state vector
+  real, intent(inout) :: state_p(dim_p)  !< local state vector
 
 ! *** local variables ***
   integer :: i, j, s         ! Counters
-
+  
 
 ! *************************************************
-! *** Initialize model fields from state vector ***
+! *** Initialize state vector from model fields ***
 ! *** for process-local model domain            ***
-!**************************************************
+! *************************************************
 
   ! +++ Note on counter s:
   ! +++ Using the counter s looks primitive, but it
@@ -53,7 +52,7 @@ subroutine distribute_state_pdaf(dim_p, state_p)
   do j = 1, nx_p
      do i = 1, ny
         s = s + 1
-        fieldA_p(i, j) = state_p(s)
+        state_p(s) = fieldA_p(i, j)
      end do
   end do
 
@@ -62,10 +61,10 @@ subroutine distribute_state_pdaf(dim_p, state_p)
   do j = 1, nx_p
      do i = 1, ny
         s = s + 1
-        fieldB_p(i, j) = state_p(s)
+        state_p(s) = fieldB_p(i, j)
      end do
   end do
 
 !+++ End of specific part
 
-end subroutine distribute_state_pdaf
+end subroutine coll_state_cb_pdaf

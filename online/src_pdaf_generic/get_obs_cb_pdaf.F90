@@ -12,14 +12,13 @@
 !! because it is a call-back routine for PDAF.
 !!
 !! __Revision history:__
-!! 2019-01 - Lars Nerger - Initial code
+!! * 2026-02 - Lars Nerger - Initial code based on template
 !! * Later revisions - see repository log
 !!
-subroutine get_obs_pdaf(step, dim_obs, observation)
+subroutine get_obs_cb_pdaf(step, dim_obs, observation)
 
-! Outcommented because it requires netCDF
-!   use synobs_pdaf_mod, &
-!        only: file_synobs, write_syn_obs
+  use synobs_pdaf_mod, &
+       only: file_synobs, write_syn_obs
 
   implicit none
 
@@ -36,7 +35,7 @@ subroutine get_obs_pdaf(step, dim_obs, observation)
   ! Note 'file_synobs' is set in the observation module when
   ! initializing the output file
 
-!   call write_syn_obs(step, file_synobs, dim_obs, observation, 1)
+  call write_syn_obs(step, file_synobs, dim_obs, observation, 1)
 
-end subroutine get_obs_pdaf
+end subroutine get_obs_cb_pdaf
 

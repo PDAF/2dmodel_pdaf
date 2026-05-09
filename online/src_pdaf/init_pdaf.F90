@@ -50,10 +50,10 @@ subroutine init_pdaf()
   integer :: status_pdaf               ! PDAF status flag
 
 ! *** External subroutines ***
-  external :: init_ens_pdaf            ! Ensemble initialization
-  external :: next_observation_pdaf, & ! Provide time step of next observation
-       distribute_state_pdaf, &        ! Routine to distribute a state vector to model fields
-       prepoststep_pdaf                ! User supplied pre/poststep routine
+  external :: init_ens_cb_pdaf         ! Ensemble initialization
+  external :: next_obs_cb_pdaf, &      ! Provide time step of next observation
+       dist_state_cb_pdaf, &           ! Routine to distribute a state vector to model fields
+       prepost_cb_pdaf                 ! User supplied pre/poststep routine
   
 
 ! ***************************
@@ -141,7 +141,7 @@ subroutine init_pdaf()
   call PDAF3_init(filtertype, subtype, 0, &
        pdaf_param_i, 2,&
        pdaf_param_r, 1, &
-       init_ens_pdaf, screen, status_pdaf)
+       init_ens_cb_pdaf, screen, status_pdaf)
 
   ! *** Additional parameter specifications ***
   ! *** -- These are all optional --        ***
@@ -193,8 +193,8 @@ subroutine init_pdaf()
 ! *** Prepare ensemble forecasts ***
 ! **********************************
 
-  call PDAF3_init_forecast(next_observation_pdaf, distribute_state_pdaf, &
-       prepoststep_pdaf, status_pdaf)
+  call PDAF3_init_forecast(next_obs_cb_pdaf, dist_state_cb_pdaf, &
+       prepost_cb_pdaf, status_pdaf)
 
 
 ! ***************************************************

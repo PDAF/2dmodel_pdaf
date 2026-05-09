@@ -1,22 +1,22 @@
-!>  Initialize state vector from model fields
+!>  Initialize model fields from state vector
 !!
 !! User-supplied call-back routine for PDAF.
 !!
-!! Used by all DA methods.
+!! Used in all DA methods.
 !!
-!! This subroutine is called during the forecast phase from PDAF
-!! after the propagation of each ensemble member. 
-!! The supplied state vector has to be initialized from the model fields
-!! (typically accessible via a module).
+!! During the forecast phase, this subroutine is called from PDAF
+!! providing a model state, which has to be integrated.
+!! The routine has to initialize the fields of the model (typically
+!! available through a module) from the provided state vector.
 !!
 !! The routine is executed by each process that is
 !! participating in the model integrations.
 !!
 !! __Revision history:__
-!! * 2004-11 - Lars Nerger - Initial code
+!! * 2004-10 - Lars Nerger - Initial code
 !! * Later revisions - see repository log
 !!
-subroutine collect_state_pdaf(dim_p, state_p)
+subroutine dist_state_cb_pdaf(dim_p, state_p)
 
   use statevector_pdaf_mod, &            ! State vector variables
        only: id, sfields
@@ -29,19 +29,19 @@ subroutine collect_state_pdaf(dim_p, state_p)
   
 ! *** Arguments ***
   integer, intent(in) :: dim_p           !< Process-local state dimension
-  real, intent(inout) :: state_p(dim_p)  !< local state vector
+  real, intent(inout) :: state_p(dim_p)  !< Process-local state vector
 
 ! *** local variables ***
-  
+
 
 ! *************************************************
-! *** Initialize state vector from model fields ***
+! *** Initialize model fields from state vector ***
 ! *** for process-local model domain            ***
-! *************************************************
+!**************************************************
 
   ! Template reminder - delete when implementing functionality
-  WRITE (*,*) 'TEMPLATE collect_state_pdaf.F90: Implement initialization of state vector here!'
+  WRITE (*,*) 'TEMPLATE distribute_state_pdaf.F90: Implement initialization of model fields here!'
 
-!   state_p = field_X ????
+!  FIELD_X = state_p
 
-end subroutine collect_state_pdaf
+end subroutine dist_state_cb_pdaf

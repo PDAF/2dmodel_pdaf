@@ -34,7 +34,7 @@ subroutine assimilate_pdaf_offline()
 ! The PDAF-internal name of a subroutine might be different from the external name!
 
   ! Interface between model and PDAF, and prepoststep
-  external :: prepoststep_cb_pdaf       ! User supplied pre/poststep routine
+  external :: prepost_cb_pdaf           ! User supplied pre/poststep routine
   ! Localization of state vector
   external :: init_n_domains_cb_pdaf, & ! Provide number of local analysis domains
        init_dim_l_cb_pdaf               ! Initialize state dimension for local analysis domain
@@ -60,7 +60,7 @@ subroutine assimilate_pdaf_offline()
   call PDAF3_assim_offline( &
        init_dim_obs_pdafomi, obs_op_pdafomi, &
        init_n_domains_cb_pdaf, init_dim_l_cb_pdaf, init_dim_obs_l_pdafomi, &
-       prepoststep_cb_pdaf, status_pdaf)
+       prepost_cb_pdaf, status_pdaf)
 
 
 ! ************************

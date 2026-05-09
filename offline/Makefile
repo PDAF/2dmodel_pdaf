@@ -28,7 +28,7 @@ ASSIM_GEN = 	parallel_pdaf_mod.F90 \
 		finalize_pdaf.F90 \
 		main_offline.F90 \
 		init_ens_cb_pdaf.F90 \
-		prepoststep_cb_pdaf.F90 \
+		prepost_cb_pdaf.F90 \
 		synobs_pdaf_mod.F90 \
 		get_obs_cb_pdaf.F90
 
@@ -36,7 +36,7 @@ ASSIM_GEN = 	parallel_pdaf_mod.F90 \
 MOD_ASSIM = 	model_pdaf_mod_offline.F90 \
 		statevector_pdaf_mod.F90 \
 		initialize_grid.F90 \
-		io_pdaf_mod.F90 \
+		io_pdaf_mod.F90
 
 # Interface to PDAF - model sided
 SRC_PDAF_INT =  init_pdaf_offline.F90
